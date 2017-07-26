@@ -1,7 +1,5 @@
 package caixa
 
-import "github.com/mundipagg/boleto-api/models"
-
 //Response focado sna integracao com a Caixa
 const registerBoletoResponseCaixa = `{
     {{if (eq .returnCode "1")}}
@@ -22,7 +20,6 @@ const registerBoletoResponseCaixa = `{
 }
 `
 
-//GetRegisterBoletoAPIResponseTmpl retorna o template de resposta para a Api
-func GetRegisterBoletoAPIResponseTmpl(bank models.BankNumber) string {
+func getAPIResponseCaixa() string {
 	return registerBoletoResponseCaixa
 }

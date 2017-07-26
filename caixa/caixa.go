@@ -39,9 +39,9 @@ func (b bankCaixa) Log() *log.Log {
 func (b bankCaixa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
 	r := flow.NewFlow()
 	urlCaixa := config.Get().URLCaixaRegisterBoleto
-	from := flow.Transform(GetResponseTemplateCaixa())
-	to := flow.Transform(GetRegisterBoletoAPIResponseTmpl(models.Caixa))
-	bod := r.From("message://?source=inline", boleto, GetRegisterBoletoCaixaTmpl(), tmpl.GetFuncMaps())
+	from := flow.Transform(getResponseCaixa())
+	to := flow.Transform(getAPIResponseCaixa())
+	bod := r.From("message://?source=inline", boleto, getRequestCaixa(), tmpl.GetFuncMaps())
 	bod = bod.To("logseq://?type=request&url="+urlCaixa, b.log)
 	//bod = bod.To("print://?msg=${body}")
 	bod = bod.To(urlCaixa, map[string]string{"method": "POST", "insecureSkipVerify": "true"})

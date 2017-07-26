@@ -104,12 +104,10 @@ const incluiBoleto = `
 </soapenv:Envelope>
 `
 
-//GetRegisterBoletoCaixaTmpl retorna o padrão de registro de boleto da Caixa
-func GetRegisterBoletoCaixaTmpl() string {
+func getRequestCaixa() string {
 	return incluiBoleto
 }
 
-//GetResponseTemplateCaixa retorna o template de mensagem da Caixa
-func GetResponseTemplateCaixa() string {
+func getResponseCaixa() string {
 	return responseCaixa
 }
