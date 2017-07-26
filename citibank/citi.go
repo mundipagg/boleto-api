@@ -1,4 +1,4 @@
-package bank
+package citibank
 
 import (
 	"github.com/PMoneda/flow"
@@ -16,7 +16,7 @@ type bankCiti struct {
 	log      *log.Log
 }
 
-func newCiti() bankCiti {
+func New() bankCiti {
 	b := bankCiti{
 		validate: models.NewValidator(),
 		log:      log.CreateLog(),

@@ -1,4 +1,4 @@
-package bank
+package caixa
 
 import (
 	"fmt"
@@ -18,7 +18,7 @@ type bankCaixa struct {
 	log      *log.Log
 }
 
-func newCaixa() bankCaixa {
+func New() bankCaixa {
 	b := bankCaixa{
 		validate: models.NewValidator(),
 		log:      log.CreateLog(),

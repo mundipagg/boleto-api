@@ -1,4 +1,4 @@
-package letters
+package caixa
 
 const responseCaixa = `
 <?xml version="1.0" encoding="utf-8"?>

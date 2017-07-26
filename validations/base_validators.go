@@ -1,4 +1,4 @@
-package bank
+package validations
 
 import (
 	"strconv"
@@ -6,7 +6,7 @@ import (
 	"github.com/mundipagg/boleto-api/models"
 )
 
-func baseValidateRecipientDocumentNumber(b interface{}) error {
+func BaseValidateRecipientDocumentNumber(b interface{}) error {
 	switch t := b.(type) {
 	case *models.BoletoRequest:
 		if t.Recipient.Document.IsCPF() {
@@ -21,7 +21,7 @@ func baseValidateRecipientDocumentNumber(b interface{}) error {
 	}
 }
 
-func sumAccountDigits(a string, m []int) int {
+func SumAccountDigits(a string, m []int) int {
 	sum := 0
 	for idx, c := range a {
 		i, _ := strconv.Atoi(string(c))
@@ -31,7 +31,7 @@ func sumAccountDigits(a string, m []int) int {
 	return sum
 }
 
-func baseValidateBuyerDocumentNumber(b interface{}) error {
+func BaseValidateBuyerDocumentNumber(b interface{}) error {
 	switch t := b.(type) {
 	case *models.BoletoRequest:
 		if t.Buyer.Document.IsCPF() {
@@ -46,7 +46,7 @@ func baseValidateBuyerDocumentNumber(b interface{}) error {
 	}
 }
 
-func baseValidateExpireDate(b interface{}) error {
+func BaseValidateExpireDate(b interface{}) error {
 	switch t := b.(type) {
 	case *models.BoletoRequest:
 		return t.Title.IsExpireDateValid()
@@ -55,7 +55,7 @@ func baseValidateExpireDate(b interface{}) error {
 	}
 }
 
-func baseValidateAmountInCents(b interface{}) error {
+func BaseValidateAmountInCents(b interface{}) error {
 	switch t := b.(type) {
 	case *models.BoletoRequest:
 		return t.Title.IsAmountInCentsValid()

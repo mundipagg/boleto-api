@@ -1,4 +1,4 @@
-package letters
+package citibank
 
 const responseCiti = `
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">

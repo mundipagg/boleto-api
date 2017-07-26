@@ -1,4 +1,4 @@
-package bank
+package caixa
 
 import (
 	"fmt"

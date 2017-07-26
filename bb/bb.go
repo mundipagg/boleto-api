@@ -1,12 +1,12 @@
-package bank
+package bb
 
 import (
 	"errors"
 
-	"github.com/PMoneda/flow"
+	"bitbucket.org/mundipagg/boletoapi/letters"
 
+	"github.com/PMoneda/flow"
 	"github.com/mundipagg/boleto-api/config"
-	"github.com/mundipagg/boleto-api/letters"
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/tmpl"
@@ -18,7 +18,7 @@ type bankBB struct {
 }
 
 //Cria uma nova instância do objeto que implementa os serviços do Banco do Brasil e configura os validadores que serão utilizados
-func newBB() bankBB {
+func New() bankBB {
 	b := bankBB{
 		validate: models.NewValidator(),
 		log:      log.CreateLog(),
@@ -27,10 +27,10 @@ func newBB() bankBB {
 	b.validate.Push(bbValidateAgencyAndDigit)
 	b.validate.Push(bbValidateOurNumber)
 	b.validate.Push(bbValidateWalletVariation)
-	b.validate.Push(baseValidateAmountInCents)
-	b.validate.Push(baseValidateExpireDate)
-	b.validate.Push(baseValidateBuyerDocumentNumber)
-	b.validate.Push(baseValidateRecipientDocumentNumber)
+	b.validate.Push(validations.BaseValidateAmountInCents)
+	b.validate.Push(validations.BaseValidateExpireDate)
+	b.validate.Push(validations.BaseValidateBuyerDocumentNumber)
+	b.validate.Push(validations.BaseValidateRecipientDocumentNumber)
 	b.validate.Push(bbValidateTitleInstructions)
 	b.validate.Push(bbValidateTitleDocumentNumber)
 	return b
