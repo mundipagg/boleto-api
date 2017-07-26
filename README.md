@@ -8,8 +8,8 @@ BoletoOnline is an API for boleto's online register in banks and boleto's creati
 
 Currently, we support the following banks:
 * Banco do Brasil
-* Caixa(coming soon)
-* Citi (coming soon)
+* Caixa
+* Citi (loading 90%)
 * Santander (coming soon)
 * Bradesco (coming soon)
 * Itaú (coming soon)
@@ -74,8 +74,9 @@ Using Boleto API Online
 ------------------
 
 You can use [Postman](https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop) to request the API's services or even the curl
-
-```
+See following examples
+### Banco do Brasil
+```curl
 % curl -X POST \
   http://localhost:3000/v1/boleto/register \
   -d '{
@@ -132,9 +133,8 @@ You can use [Postman](https://chrome.google.com/webstore/detail/postman/fhbjgbif
     },
     "BankNumber":1
 }
-
 ```
-API's success response
+### Response Banco do Brasil
 ```
 {
   "Url": "http://localhost:3000/boleto?fmt=html&id=g8HXWatft9oMLdTMAqzxbnPYFv3sqgV_KD0W7j8Cy9nkCLZMIK1WH2p9JwP1Jzz4ZtohmQ==",
@@ -155,6 +155,69 @@ API's success response
 }
 
 ```
+### Caixa
+```curl
+curl -X POST \
+  http://localhost:3000/v1/boleto/register \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json' \
+  -H 'postman-token: 1bc1dd5f-cc34-0716-3d56-f18798d3fb39' \
+  -d '{
+    "BankNumber": 104,
+    "Agreement": {
+        "AgreementNumber": 200656,
+        "Agency":"1679"
+    },
+    "Title": {
+        "ExpireDate": "2017-08-30",
+        "AmountInCents": 1000,
+        "OurNumber": 0,
+        "Instructions": "Mensagem",
+        "DocumentNumber": "NPC160517"
+    },
+    "Buyer": {
+        "Name": "TESTE PAGADOR 001",
+        "Document": {
+            "Type": "CPF",
+            "Number": "57962014849"
+        },
+        "Address": {
+            "Street": "SAUS QUADRA 03",
+            "Number": "",
+            "Complement": "",
+            "ZipCode": "20520051",
+            "City": "Rio de Janeiro",
+            "District": "Tijuca",
+            "StateCode": "RJ"
+        }
+    },
+    "Recipient": {
+        "Document": {
+            "Type": "CNPJ",
+            "Number": "00732159000109"
+        }
+    }
+}'
+```
+### Response
+```
+{
+    "id": "e1EVv1KRwuGX6OXOo7PNGYR-ePD1VPtjv5iqya1LJiLiaIKozN11YMiePNk-WebdgP4eIA==",
+    "digitableLine": "10492.00650 61000.100042 09922.269841 3 72670000001000",
+    "barCodeNumber": "10493726700000010002006561000100040992226984",
+    "ourNumber": "14000000099222698",
+    "links": [
+        {
+            "href": "https://200.201.168.67:8010/ecobranca/SIGCB/imprimir/0200656/14000000099222698",
+            "rel": "pdf",
+            "method": "GET"
+        }
+    ]
+}
+```
+In case of Caixa, the impress of boleto will be handled by Caixa. So API will return the Caixa's boleto URL.
+
+
 The API's response will have the following pattern if any error occur:
 ```
 {
@@ -240,19 +303,24 @@ In the root, we have the following packages:
 
 * `api`: Rest Controllers
 * `auth`: Bank authentication
-* `bank`: Boleto's register
+* `bank`: Boleto's register interface
+* `bb`: Implementation of Banco do Brasil
+* `caixa`: Implementation of Caixa
+* `citibank`: Implementation of Citibank
 * `boleto`: User boleto's creation
 * `cache`: Database (key value) in-memory used only when the application is running in mock mode
 * `config`: Application config
 * `db`: Database persistency
 * `devops`: Contains the upload, deploy, backup and restore files from the application
-* `letters`: Bank's integration layout
+* `validations`: Basic data validations
 * `log`: Application log
 * `models`: Application's data structure
 * `parser`: XML parser
 * `test`: Tests utilitaries
 * `tmpl`: Template utilitaries
 * `util`: Miscellaneous utilitaries
+* `integrationTests`: Contains all black box tests
+* `vendor`: Thirdpart libraries
 
 For more information
 -----------------
