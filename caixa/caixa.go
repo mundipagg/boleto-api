@@ -6,11 +6,11 @@ import (
 	"github.com/PMoneda/flow"
 
 	"github.com/mundipagg/boleto-api/config"
-	"github.com/mundipagg/boleto-api/letters"
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/tmpl"
 	"github.com/mundipagg/boleto-api/util"
+	"github.com/mundipagg/boleto-api/validations"
 )
 
 type bankCaixa struct {
@@ -23,10 +23,10 @@ func New() bankCaixa {
 		validate: models.NewValidator(),
 		log:      log.CreateLog(),
 	}
-	b.validate.Push(baseValidateAmountInCents)
-	b.validate.Push(baseValidateExpireDate)
-	b.validate.Push(baseValidateBuyerDocumentNumber)
-	b.validate.Push(baseValidateRecipientDocumentNumber)
+	b.validate.Push(validations.ValidateAmount)
+	b.validate.Push(validations.ValidateExpireDate)
+	b.validate.Push(validations.ValidateBuyerDocumentNumber)
+	b.validate.Push(validations.ValidateRecipientDocumentNumber)
 	b.validate.Push(caixaValidateAgency)
 	b.validate.Push(validateInstructions)
 	return b
@@ -39,9 +39,9 @@ func (b bankCaixa) Log() *log.Log {
 func (b bankCaixa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
 	r := flow.NewFlow()
 	urlCaixa := config.Get().URLCaixaRegisterBoleto
-	from := flow.Transform(letters.GetResponseTemplateCaixa())
-	to := flow.Transform(letters.GetRegisterBoletoAPIResponseTmpl(models.Caixa))
-	bod := r.From("message://?source=inline", boleto, letters.GetRegisterBoletoCaixaTmpl(), tmpl.GetFuncMaps())
+	from := flow.Transform(GetResponseTemplateCaixa())
+	to := flow.Transform(GetRegisterBoletoAPIResponseTmpl(models.Caixa))
+	bod := r.From("message://?source=inline", boleto, GetRegisterBoletoCaixaTmpl(), tmpl.GetFuncMaps())
 	bod = bod.To("logseq://?type=request&url="+urlCaixa, b.log)
 	//bod = bod.To("print://?msg=${body}")
 	bod = bod.To(urlCaixa, map[string]string{"method": "POST", "insecureSkipVerify": "true"})

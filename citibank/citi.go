@@ -4,11 +4,11 @@ import (
 	"github.com/PMoneda/flow"
 
 	"github.com/mundipagg/boleto-api/config"
-	"github.com/mundipagg/boleto-api/letters"
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/tmpl"
 	"github.com/mundipagg/boleto-api/util"
+	"github.com/mundipagg/boleto-api/validations"
 )
 
 type bankCiti struct {
@@ -21,10 +21,10 @@ func New() bankCiti {
 		validate: models.NewValidator(),
 		log:      log.CreateLog(),
 	}
-	b.validate.Push(baseValidateAmountInCents)
-	b.validate.Push(baseValidateExpireDate)
-	b.validate.Push(baseValidateBuyerDocumentNumber)
-	b.validate.Push(baseValidateRecipientDocumentNumber)
+	b.validate.Push(validations.ValidateAmount)
+	b.validate.Push(validations.ValidateExpireDate)
+	b.validate.Push(validations.ValidateBuyerDocumentNumber)
+	b.validate.Push(validations.ValidateRecipientDocumentNumber)
 	return b
 }
 
@@ -35,9 +35,9 @@ func (b bankCiti) Log() *log.Log {
 func (b bankCiti) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
 	r := flow.NewFlow()
 	serviceURL := config.Get().URLCiti
-	from := letters.GetResponseTemplateCiti()
-	to := letters.GetRegisterBoletoAPIResponseTmpl(models.Citibank)
-	bod := r.From("message://?source=inline", boleto, letters.GetRegisterBoletoCitiTmpl(), tmpl.GetFuncMaps())
+	from := GetResponseTemplateCiti()
+	to := GetRegisterBoletoAPIResponseTmpl(models.Citibank)
+	bod := r.From("message://?source=inline", boleto, GetRegisterBoletoCitiTmpl(), tmpl.GetFuncMaps())
 	bod = bod.To("logseq://?type=request&url="+serviceURL, b.log)
 	bod = bod.To(serviceURL, map[string]string{"method": "POST", "insecureSkipVerify": "true"})
 	bod = bod.To("logseq://?type=response&url="+serviceURL, b.log)

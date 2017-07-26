@@ -1,37 +1,20 @@
 package bb
 
 import (
-	"strconv"
-
 	"github.com/mundipagg/boleto-api/models"
+	"github.com/mundipagg/boleto-api/validations"
 )
 
 var bb bankBB
 
-func modElevenCalculator(a string, m []int) string {
-	sum := sumAccountDigits(a, m)
-
-	digit := 11 - sum%11
-
-	if digit == 10 {
-		return "X"
-	}
-
-	if digit == 11 {
-		return "0"
-	}
-
-	return strconv.Itoa(digit)
-}
-
 func bbAgencyDigitCalculator(agency string) string {
 	multiplier := []int{5, 4, 3, 2}
-	return modElevenCalculator(agency, multiplier)
+	return validations.ModElevenCalculator(agency, multiplier)
 }
 
 func bbAccountDigitCalculator(agency, account string) string {
 	multiplier := []int{9, 8, 7, 6, 5, 4, 3, 2}
-	return modElevenCalculator(account, multiplier)
+	return validations.ModElevenCalculator(account, multiplier)
 }
 
 func bbValidateAgencyAndDigit(b interface{}) error {
@@ -44,12 +27,8 @@ func bbValidateAgencyAndDigit(b interface{}) error {
 		t.Agreement.CalculateAgencyDigit(bbAgencyDigitCalculator)
 		return nil
 	default:
-		return invalidType(t)
+		return validations.InvalidType(t)
 	}
-}
-
-func invalidType(t interface{}) error {
-	return models.NewErrorResponse("MP500", "Tipo inválido")
 }
 
 func bbValidateAccountAndDigit(b interface{}) error {
@@ -62,7 +41,7 @@ func bbValidateAccountAndDigit(b interface{}) error {
 		t.Agreement.CalculateAccountDigit(bbAccountDigitCalculator)
 		return nil
 	default:
-		return invalidType(t)
+		return validations.InvalidType(t)
 	}
 }
 
@@ -74,7 +53,7 @@ func bbValidateOurNumber(b interface{}) error {
 		}
 		return nil
 	default:
-		return invalidType(t)
+		return validations.InvalidType(t)
 	}
 }
 
@@ -86,7 +65,7 @@ func bbValidateWalletVariation(b interface{}) error {
 		}
 		return nil
 	default:
-		return invalidType(t)
+		return validations.InvalidType(t)
 	}
 }
 
@@ -95,7 +74,7 @@ func bbValidateTitleInstructions(b interface{}) error {
 	case *models.BoletoRequest:
 		return t.Title.ValidateInstructionsLength(220)
 	default:
-		return invalidType(t)
+		return validations.InvalidType(t)
 	}
 }
 
@@ -104,6 +83,6 @@ func bbValidateTitleDocumentNumber(b interface{}) error {
 	case *models.BoletoRequest:
 		return t.Title.ValidateDocumentNumber()
 	default:
-		return invalidType(t)
+		return validations.InvalidType(t)
 	}
 }

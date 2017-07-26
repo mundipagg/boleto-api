@@ -26,7 +26,7 @@ func TestGetCaixaCheckSumInfo(t *testing.T) {
 			},
 		},
 	}
-	caixa := newCaixa()
+	caixa := New()
 	Convey("Geração do token de autorização da Caixa", t, func() {
 		Convey("Deve-se formar uma string seguindo o padrão da documentação", func() {
 			So(caixa.getCheckSumCode(boleto), ShouldEqual, "0200656000000000000000003008201700000000000100000732159000109")

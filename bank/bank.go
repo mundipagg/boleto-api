@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/mundipagg/boleto-api/bb"
+	"github.com/mundipagg/boleto-api/caixa"
+	"github.com/mundipagg/boleto-api/citibank"
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/models"
 )

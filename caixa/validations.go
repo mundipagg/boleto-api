@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/mundipagg/boleto-api/models"
+	"github.com/mundipagg/boleto-api/validations"
 )
 
 func caixaAccountDigitCalculator(agency, account string) string {
@@ -14,7 +15,7 @@ func caixaAccountDigitCalculator(agency, account string) string {
 }
 
 func caixaModElevenCalculator(a string, m []int) string {
-	sum := sumAccountDigits(a, m)
+	sum := validations.SumAccountDigits(a, m)
 	digit := (sum * 10) % 11
 	if digit == 10 {
 		return "0"
@@ -30,7 +31,7 @@ func validateInstructions(b interface{}) error {
 		}
 		return nil
 	default:
-		return invalidType(t)
+		return validations.InvalidType(t)
 	}
 }
 
@@ -48,13 +49,13 @@ func caixaValidateAccountAndDigit(b interface{}) error {
 		t.Agreement.CalculateAccountDigit(caixaAccountDigitCalculator)
 		return nil
 	default:
-		return invalidType(t)
+		return validations.InvalidType(t)
 	}
 }
 
 func caixaAgencyDigitCalculator(agency string) string {
 	multiplier := []int{5, 4, 3, 2}
-	return modElevenCalculator(agency, multiplier)
+	return validations.ModElevenCalculator(agency, multiplier)
 }
 
 func caixaValidateAgency(b interface{}) error {
@@ -66,6 +67,6 @@ func caixaValidateAgency(b interface{}) error {
 		}
 		return nil
 	default:
-		return invalidType(t)
+		return validations.InvalidType(t)
 	}
 }
