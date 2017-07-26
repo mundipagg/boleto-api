@@ -84,14 +84,14 @@ func (b bankBB) ProcessBoleto(boleto *models.BoletoRequest) (models.BoletoRespon
 func (b bankBB) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
 	r := flow.NewFlow()
 	url := config.Get().URLBBRegisterBoleto
-	from := GetRegisterBoletoBBTmpl()
+	from := getRequest()
 	r = r.From("message://?source=inline", boleto, from, tmpl.GetFuncMaps())
 	r = r.To("logseq://?type=request&url="+url, b.log)
 	r = r.To(url, map[string]string{"method": "POST", "insecureSkipVerify": "true"})
 	r = r.To("logseq://?type=response&url="+url, b.log)
 	ch := r.Choice()
 	ch = ch.When(flow.Header("status").IsEqualTo("200"))
-	ch = ch.To("transform://?format=xml", GetBBregisterLetter(), GetRegisterBoletoAPIResponseTmpl(models.BancoDoBrasil), tmpl.GetFuncMaps())
+	ch = ch.To("transform://?format=xml", getResponseBB(), getAPIResponse(), tmpl.GetFuncMaps())
 	ch = ch.To("unmarshall://?format=json", new(models.BoletoResponse))
 	ch = ch.Otherwise()
 	ch = ch.To("logseq://?type=response&url="+url, b.log).To("apierro://")
