@@ -1,7 +1,5 @@
 package citibank
 
-import "github.com/mundipagg/boleto-api/models"
-
 const registerBoletoResponseCiti = `{
     {{if (hasErrorTags . "errorCode" "errorMessage" "exception")}}
         {{if (hasErrorTags . "exception")}}
@@ -32,7 +30,6 @@ const registerBoletoResponseCiti = `{
 }
 `
 
-//GetRegisterBoletoAPIResponseTmpl retorna o template de resposta para a Api
-func GetRegisterBoletoAPIResponseTmpl(bank models.BankNumber) string {
+func getAPIResponseCiti() string {
 	return registerBoletoResponseCiti
 }

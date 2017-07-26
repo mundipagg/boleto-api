@@ -35,9 +35,9 @@ func (b bankCiti) Log() *log.Log {
 func (b bankCiti) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
 	r := flow.NewFlow()
 	serviceURL := config.Get().URLCiti
-	from := GetResponseTemplateCiti()
-	to := GetRegisterBoletoAPIResponseTmpl(models.Citibank)
-	bod := r.From("message://?source=inline", boleto, GetRegisterBoletoCitiTmpl(), tmpl.GetFuncMaps())
+	from := getResponseCiti()
+	to := getAPIResponseCiti()
+	bod := r.From("message://?source=inline", boleto, getRequestCiti(), tmpl.GetFuncMaps())
 	bod = bod.To("logseq://?type=request&url="+serviceURL, b.log)
 	bod = bod.To(serviceURL, map[string]string{"method": "POST", "insecureSkipVerify": "true"})
 	bod = bod.To("logseq://?type=response&url="+serviceURL, b.log)

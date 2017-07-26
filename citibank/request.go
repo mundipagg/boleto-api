@@ -82,12 +82,10 @@ const registerBoletoCiti = `
 </soapenv:Envelope>
 `
 
-//GetRegisterBoletoCitiTmpl retorna o padrão de registro de boleto do Citibank
-func GetRegisterBoletoCitiTmpl() string {
+func getRequestCiti() string {
 	return registerBoletoCiti
 }
 
-//GetResponseTemplateCiti retorna o template de mensagem do Citibank
-func GetResponseTemplateCiti() string {
+func getResponseCiti() string {
 	return responseCiti
 }
