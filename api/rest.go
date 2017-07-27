@@ -1,10 +1,13 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/log"
+
+	"os"
 
 	"github.com/mundipagg/boleto-api/models"
 	gin "gopkg.in/gin-gonic/gin.v1"
@@ -21,7 +24,15 @@ func InstallRestAPI() {
 	}
 	InstallV1(router)
 	router.GET("/boleto", getBoleto)
-	router.Run(config.Get().APIPort)
+	if config.Get().DevMode {
+		router.Run(config.Get().APIPort)
+	} else {
+		err := router.RunTLS(config.Get().APIPort, config.Get().TLSCertPath, config.Get().TLSKeyPath)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(-1)
+		}
+	}
 
 }
 

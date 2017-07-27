@@ -28,6 +28,8 @@ type Config struct {
 	MongoURL               string
 	BoletoJSONFileStore    string
 	DisableLog             bool
+	TLSCertPath            string
+	TLSKeyPath             string
 }
 
 var cnf Config
@@ -62,6 +64,8 @@ func Install(mockMode, devMode, disableLog bool) {
 		DisableLog:             disableLog,
 		MongoURL:               os.Getenv("MONGODB_URL"),
 		BoletoJSONFileStore:    os.Getenv("BOLETO_JSON_STORE"),
+		TLSCertPath:            os.Getenv("TLS_CERT_PATH"),
+		TLSKeyPath:             os.Getenv("TLS_KEY_PATH"),
 	}
 }
 
