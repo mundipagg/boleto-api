@@ -14,9 +14,22 @@ import (
 	"github.com/mundipagg/boleto-api/util"
 )
 
+//Params this struct contains all execution parameters to run application
+type Params struct {
+	DevMode    bool
+	MockMode   bool
+	DisableLog bool
+	HTTPOnly   bool
+}
+
+//NewParams returns new Empty pointer to ExecutionParameters
+func NewParams() *Params {
+	return new(Params)
+}
+
 //Run starts boleto api Application
-func Run(devMode, mockMode, disableLog bool) {
-	configFlags(devMode, mockMode, disableLog)
+func Run(params *Params) {
+	configFlags(params.DevMode, params.MockMode, params.DisableLog, params.HTTPOnly)
 	installflowConnectors()
 	robot.GoRobots()
 	installLog()
@@ -37,7 +50,7 @@ func installflowConnectors() {
 	flow.RegisterConnector("apierro", models.BoletoErrorConector)
 }
 
-func configFlags(devMode, mockMode, disableLog bool) {
+func configFlags(devMode, mockMode, disableLog, httpOnly bool) {
 	if devMode {
 		os.Setenv("API_PORT", "3000")
 		os.Setenv("API_VERSION", "0.0.1")
@@ -61,5 +74,5 @@ func configFlags(devMode, mockMode, disableLog bool) {
 			os.Setenv("URL_CITI", "http://localhost:4000/citi/registrarBoleto")
 		}
 	}
-	config.Install(mockMode, devMode, disableLog)
+	config.Install(mockMode, devMode, disableLog, httpOnly)
 }

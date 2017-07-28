@@ -24,7 +24,7 @@ func InstallRestAPI() {
 	}
 	InstallV1(router)
 	router.GET("/boleto", getBoleto)
-	if config.Get().DevMode {
+	if config.Get().HTTPOnly || config.Get().DevMode {
 		router.Run(config.Get().APIPort)
 	} else {
 		err := router.RunTLS(config.Get().APIPort, config.Get().TLSCertPath, config.Get().TLSKeyPath)
@@ -33,7 +33,6 @@ func InstallRestAPI() {
 			os.Exit(-1)
 		}
 	}
-
 }
 
 func checkError(c *gin.Context, err error, l *log.Log) bool {
