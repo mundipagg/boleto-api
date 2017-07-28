@@ -14,6 +14,8 @@ if [[ "$1" != "" ]]; then
 
     cd "$1"
     echo "Creating volume folder"
+    mkdir -p ~/boleto_ssh
+    echo "You need to put your cert.pem and key.pem file in ~/boleto_ssh to enable HTTPS"
     mkdir -p ~/boletodb/upMongo
     mkdir -p ~/boletodb/db
     mkdir -p ~/boletodb/configdb

@@ -1,6 +1,7 @@
 FROM golang:1.8
 
 RUN mkdir -p "/home/mundipagg/"
+RUN mkdir -p "/home/mundipagg/boleto_ssh"
 ADD boleto-api /home/mundipagg/
 ADD wkhtmltox.tar.xz /usr/local/
 RUN chmod +x /home/mundipagg/boleto-api

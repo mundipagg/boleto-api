@@ -3,7 +3,8 @@ services:
   api:
     build: .
     volumes:
-     - ~/boletodb/upMongo:/home/upMongo     
+     - ~/boletodb/upMongo:/home/upMongo
+     - ~/boleto_ssh:/home/mundipagg/boleto_ssh
     ports:
      - "8080:3000"
     environment:
@@ -20,7 +21,9 @@ services:
      - APP_URL=http://localhost:8080/boleto
      - BOLETO_JSON_STORE=/home/upMongo
      - URL_CAIXA=https://des.barramento.caixa.gov.br/sibar/ManutencaoCobrancaBancaria/Boleto/Externo
-     - URL_CITI=https://citigroupsoa.citigroup.com/comercioeletronico/registerboleto/RegisterBoletoSOAP     
+     - URL_CITI=https://citigroupsoa.citigroup.com/comercioeletronico/registerboleto/RegisterBoletoSOAP
+     - TLS_CERT_PATH=/home/mundipagg/boleto_ssh/cert.pem
+     - TLS_KEY_PATH=/home/mundipagg/boleto_ssh/key.pem
   mongodb:
         image: mongo:latest
         container_name: "mongodb"
