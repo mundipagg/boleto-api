@@ -150,7 +150,12 @@ func stringify(boleto models.BoletoRequest) string {
 }
 
 func TestRegisterBoletoRequest(t *testing.T) {
-	go app.Run(true, true, true)
+	param := app.NewParams()
+	param.DevMode = true
+	param.DisableLog = true
+	param.HTTPOnly = true
+	param.MockMode = true
+	go app.Run(param)
 	time.Sleep(10 * time.Second)
 	Convey("deve-se registrar um boleto e retornar as informações de url, linha digitável e código de barras", t, func() {
 
@@ -308,7 +313,12 @@ func TestRegisterBoletoRequest(t *testing.T) {
 }
 
 func BenchmarkRegisterBoleto(b *testing.B) {
-	go app.Run(true, true, true)
+	param := app.NewParams()
+	param.DevMode = true
+	param.DisableLog = true
+	param.HTTPOnly = true
+	param.MockMode = true
+	go app.Run(param)
 	for i := 0; i < b.N; i++ {
 		util.Post("http://localhost:3000/v1/boleto/register", body, nil)
 

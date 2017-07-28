@@ -25,6 +25,9 @@ type Log struct {
 
 //Install instala o "servico" de log do SEQ
 func Install() error {
+	if config.Get().DisableLog {
+		return nil
+	}
 	_logger, err := goseq.GetLogger(config.Get().SEQUrl, config.Get().SEQAPIKey)
 	if err != nil {
 		return err

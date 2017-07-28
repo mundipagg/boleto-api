@@ -58,7 +58,7 @@ func main() {
 
 	if *mockOnly {
 		w := make(chan int)
-		config.Install(true, true, true)
+		config.Install(true, true, true, true)
 		robot.GoRobots()
 		<-w
 	} else {

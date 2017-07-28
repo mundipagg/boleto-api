@@ -12,7 +12,12 @@ import (
 )
 
 func TestRegisterBoletoCiti(t *testing.T) {
-	go app.Run(true, true, true)
+	param := app.NewParams()
+	param.DevMode = true
+	param.DisableLog = true
+	param.HTTPOnly = true
+	param.MockMode = true
+	go app.Run(param)
 	Convey("Deve-se registrar um boleto no Citi", t, func() {
 		resp, st, err := util.Post("http://localhost:3000/v1/boleto/register", getBody(models.Citibank, 200), nil)
 		boleto := util.ParseJSON(resp, new(models.BoletoResponse)).(*models.BoletoResponse)
