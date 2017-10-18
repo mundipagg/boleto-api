@@ -77,8 +77,6 @@ func NewBoletoView(boleto BoletoRequest, response BoletoResponse) BoletoView {
 		CreateDate:    time.Now(),
 	}
 	switch boleto.BankNumber {
-	case Caixa:
-		view.Links = response.Links
 	case Bradesco:
 		view.Links = view.CreateLinks()
 		if len(response.Links) > 0 {
