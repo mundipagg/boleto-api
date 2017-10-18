@@ -10,8 +10,8 @@ Currently, we support the following banks:
 * Banco do Brasil
 * Caixa
 * Citi
-* Santander (coming soon)
-* Bradesco (coming soon)
+* Santander 
+* Bradesco
 * Itaú (coming soon)
 
 The integration order will follow the list above but we may have changes considering our clients demands.
