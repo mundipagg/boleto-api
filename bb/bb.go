@@ -110,8 +110,10 @@ func (b bankBB) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoRespo
 		return *t, nil
 	case models.BoletoResponse:
 		return t, nil
+	case error:
+		return models.BoletoResponse{}, t
 	default:
-		return models.BoletoResponse{}, errors.New("erro")
+		return models.BoletoResponse{}, errors.New("Unexpected Type")
 	}
 
 }
