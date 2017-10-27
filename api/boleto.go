@@ -46,18 +46,16 @@ func registerBoleto(c *gin.Context) {
 		return
 	}
 	st := http.StatusOK
-	if len(resp.Errors) > 0 {
-		if resp.StatusCode > 0 {
-			st = resp.StatusCode
-		} else {
-			st = http.StatusBadRequest
-		}
+
+	if len(resp.Errors) > 0 && resp.StatusCode > 0 {
+		st = resp.StatusCode
+	} else if len(resp.Errors) > 0 && resp.StatusCode <= 0 {
+		st = http.StatusBadRequest
 	} else {
 		boView := models.NewBoletoView(boleto, resp)
 		resp.ID = boView.ID
 		resp.Links = boView.Links
-		errMongo := repo.SaveBoleto(boView)
-		if errMongo != nil {
+		if errMongo := repo.SaveBoleto(boView); errMongo != nil {
 			saveBoletoJSONFile(boView, lg, errMongo)
 		}
 	}
@@ -72,8 +70,7 @@ func saveBoletoJSONFile(boView models.BoletoView, lg *log.Log, err error) {
 		lg.Fatal(boView, "[BOLETO_ONLINE_CONTINGENCIA]"+errOpen.Error())
 	}
 	data, _ := json.Marshal(boView)
-	_, errW := fd.Write(data)
-	if errW != nil {
+	if _, errW := fd.Write(data); errW != nil {
 		lg.Fatal(boView, "[BOLETO_ONLINE_CONTINGENCIA]"+errW.Error())
 	}
 	fd.Close()
@@ -129,10 +126,10 @@ func toPdf(page string) ([]byte, error) {
 	pdfg.NoCollate.Set(false)
 	pdfg.PageSize.Set(wkhtmltopdf.PageSizeA4)
 	pdfg.AddPage(wkhtmltopdf.NewPageReader(strings.NewReader(page)))
-	err = pdfg.Create()
-	if err != nil {
+	if err := pdfg.Create(); err != nil {
 		return nil, err
 	}
+
 	return pdfg.Bytes(), nil
 }
 
