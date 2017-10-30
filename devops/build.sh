@@ -7,7 +7,6 @@ ls -la $PROJECTPATH
 cd $PROJECTPATH
 
 echo "Installing dependencies with glide"
-glide install
 
 echo "Starting build"
 go build  -o ./devops/boleto-api -v

@@ -19,6 +19,8 @@ var Recipient string
 type Log struct {
 	Operation   string
 	Recipient   string
+	RequestKey  string
+	BankName    string
 	NossoNumero uint
 	logger      *goseq.Logger
 }
@@ -122,6 +124,8 @@ func (l Log) defaultProperties(messageType string, content interface{}) goseq.Pr
 	props.AddProperty("Recipient", l.Recipient)
 	props.AddProperty("Operation", l.Operation)
 	props.AddProperty("NossoNumero", l.NossoNumero)
+	props.AddProperty("RequestKey", l.RequestKey)
+	props.AddProperty("BankName", l.BankName)
 	return props
 }
 

@@ -10,8 +10,8 @@ Currently, we support the following banks:
 * Banco do Brasil
 * Caixa
 * Citi
-* Santander (coming soon)
-* Bradesco (coming soon)
+* Santander 
+* Bradesco
 * Itaú (coming soon)
 
 The integration order will follow the list above but we may have changes considering our clients demands.
@@ -297,6 +297,13 @@ Contributing
 -----------------
 
 To contribute, see [CONTRIBUTING](CONTRIBUTING.md)
+
+
+Using Mongo in Dev
+--------------------
+You can use mongo in dev on Docker by using the following command
+
+     % docker run --name mongo-boleto -p 27017:27017 -d mongo
 
 Source Code Layout
 ---

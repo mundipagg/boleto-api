@@ -47,13 +47,13 @@ const registerBoleto = `
  <sch:textoNumeroTituloCliente>000{{padLeft (toString .Agreement.AgreementNumber) "0" 7}}{{padLeft (toString .Title.OurNumber) "0" 10}}</sch:textoNumeroTituloCliente>
  <sch:textoMensagemBloquetoOcorrencia>Pagamento disponível até a data de vencimento</sch:textoMensagemBloquetoOcorrencia>
  <sch:codigoTipoInscricaoPagador>{{docType .Buyer.Document}}</sch:codigoTipoInscricaoPagador>
- <sch:numeroInscricaoPagador>{{.Buyer.Document.Number}}</sch:numeroInscricaoPagador>
- <sch:nomePagador>{{.Buyer.Name}}</sch:nomePagador>
- <sch:textoEnderecoPagador>{{.Buyer.Address.Street}}</sch:textoEnderecoPagador>
+ <sch:numeroInscricaoPagador>{{clearString (truncate .Buyer.Document.Number 15)}}</sch:numeroInscricaoPagador>
+ <sch:nomePagador>{{clearString (truncate .Buyer.Name 60)}}</sch:nomePagador>
+ <sch:textoEnderecoPagador>{{clearString (truncate .Buyer.Address.Street 60)}}</sch:textoEnderecoPagador>
  <sch:numeroCepPagador>{{.Buyer.Address.ZipCode}}</sch:numeroCepPagador>
- <sch:nomeMunicipioPagador>{{.Buyer.Address.City}}</sch:nomeMunicipioPagador>
- <sch:nomeBairroPagador>{{.Buyer.Address.District}}</sch:nomeBairroPagador>
- <sch:siglaUfPagador>{{.Buyer.Address.StateCode}}</sch:siglaUfPagador> 
+ <sch:nomeMunicipioPagador>{{clearString (truncate .Buyer.Address.City 20)}}</sch:nomeMunicipioPagador>
+ <sch:nomeBairroPagador>{{clearString (truncate .Buyer.Address.District 20)}}</sch:nomeBairroPagador>
+ <sch:siglaUfPagador>{{clearString (truncate .Buyer.Address.StateCode 2)}}</sch:siglaUfPagador> 
  <sch:codigoChaveUsuario>1</sch:codigoChaveUsuario>
  <sch:codigoTipoCanalSolicitacao>5</sch:codigoTipoCanalSolicitacao>
  </sch:requisicao>

@@ -7,6 +7,7 @@ import (
 	"github.com/PMoneda/flow"
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/log"
+	"github.com/mundipagg/boleto-api/metrics"
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/tmpl"
 	"github.com/mundipagg/boleto-api/util"
@@ -30,7 +31,6 @@ func New() bankCiti {
 	b.validate.Push(validations.ValidateRecipientDocumentNumber)
 	b.validate.Push(citiValidateAgency)
 	b.validate.Push(citiValidateAccount)
-	b.validate.Push(citiValidateAccountDigit)
 	b.validate.Push(citiValidateWallet)
 	transp, err := util.BuildTLSTransport(config.Get().CertBoletoPathCrt, config.Get().CertBoletoPathKey, config.Get().CertBoletoPathCa)
 	if err != nil {
@@ -46,7 +46,7 @@ func (b bankCiti) Log() *log.Log {
 }
 
 func (b bankCiti) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
-	codebar, digitableLine := generateBar(boleto)
+	timing := metrics.GetTimingMetrics()
 	boleto.Title.OurNumber = calculateOurNumber(boleto)
 	r := flow.NewFlow()
 	serviceURL := config.Get().URLCiti
@@ -55,28 +55,35 @@ func (b bankCiti) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoRes
 	bod := r.From("message://?source=inline", boleto, getRequestCiti(), tmpl.GetFuncMaps())
 	bod.To("logseq://?type=request&url="+serviceURL, b.log)
 	//TODO: change for tls flow connector (waiting for santander)
-	responseCiti, status, err := b.sendRequest(bod.GetBody().(string))
+	var responseCiti string
+	var status int
+	var err error
+	duration := util.Duration(func() {
+		responseCiti, status, err = b.sendRequest(bod.GetBody().(string))
+	})
 	if err != nil {
 		return models.BoletoResponse{}, err
 	}
+	timing.Push("citibank-register-boleto-online", duration.Seconds())
 	bod.To("set://?prop=header", map[string]string{"status": strconv.Itoa(status)})
 	bod.To("set://?prop=body", responseCiti)
+	bod.To("logseq://?type=response&url="+serviceURL, b.log)
 	ch := bod.Choice()
 	ch.When(flow.Header("status").IsEqualTo("200"))
 	ch.To("transform://?format=xml", from, to, tmpl.GetFuncMaps())
 	ch.Otherwise()
 	ch.To("logseq://?type=response&url="+serviceURL, b.log).To("apierro://")
+
 	switch t := bod.GetBody().(type) {
 	case string:
 		response := util.ParseJSON(t, new(models.BoletoResponse)).(*models.BoletoResponse)
-		response.DigitableLine = digitableLine
-		response.BarCodeNumber = codebar
 		return *response, nil
 	case models.BoletoResponse:
 		return t, nil
 	}
 	return models.BoletoResponse{}, models.NewInternalServerError("Erro interno", "MP500")
 }
+
 func (b bankCiti) ProcessBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
 	errs := b.ValidateBoleto(boleto)
 	if len(errs) > 0 {
@@ -104,7 +111,7 @@ func (b bankCiti) GetBankNumber() models.BankNumber {
 }
 
 func calculateOurNumber(boleto *models.BoletoRequest) uint {
-	ourNumberWithDigit := strconv.Itoa(int(boleto.Title.OurNumber)) + mod11(strconv.Itoa(int(boleto.Title.OurNumber)))
+	ourNumberWithDigit := strconv.Itoa(int(boleto.Title.OurNumber)) + util.OurNumberDv(strconv.Itoa(int(boleto.Title.OurNumber)))
 	value, _ := strconv.Atoi(ourNumberWithDigit)
 	return uint(value)
 }

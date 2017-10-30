@@ -3,8 +3,9 @@ package mock
 import (
 	"io/ioutil"
 	"strings"
+	"time"
 
-	gin "gopkg.in/gin-gonic/gin.v1"
+	"github.com/gin-gonic/gin"
 )
 
 func authBB(c *gin.Context) {
@@ -14,6 +15,7 @@ func authBB(c *gin.Context) {
 					"token_type":"Bearer",
 					"refresh_token":"eyJhbGciOiJBMTI4S1ciLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0.4PdGzdqXluMJ67StpSmi5Ds5rWUXiLKvhYvZh_HR8DAjBt361RaGdw.Gcg48k3Omleobjs-c5J_mw.CtxZAiHOf_oA3c4uPKzgGesG6V-Y9QzFhJh8ww262jI-GQL2S6YqWe1ucrJ9oY_hrST05Y1ns7rTZJkGluDBscNtE3mIuv-WkCykHUDlor2gevZjxUApj98mJIKeFqfaeIGnXZpyeQBpPXAcCIELIjUN4CAWm99ed72DCcCWiPbO3v2smSQVLX04ESKqTbnjRyHQLiHGm8jP4PnOFIafdBrnRSfhsqIggJCZYNfIC1aRIrDnTSDiTBdx1vEruLOCFIOv9z4pqySPbImzC3Uxv9UxNDKvEa11TGoVYlnAx62_8d7pFAC8IeDwXNuaRzFklyDWZCMNtFl0pEB1bqh3mN6QdeQE2sfsoMhyif9iXqcFnUJvFAu4Oj981M_Vyh2GW7VTAvs67sw27xvCS1diJZGNLR_O09WEjn529MZGyT_4oWqmlVTb-a6dflFWwdI3DhsusgvT6pK_ja-eIXq5pw.o50PzlpZnNnks17cNsaKog","expires_in":1200
 				}`
+	time.Sleep(500 * time.Millisecond)
 	c.Data(200, "text/json", []byte(tok))
 }
 
@@ -87,6 +89,7 @@ func registerBoletoBB(c *gin.Context) {
 
 	d, _ := ioutil.ReadAll(c.Request.Body)
 	xml := string(d)
+	//time.Sleep(700 * time.Millisecond)
 	if strings.Contains(xml, "<sch:valorOriginalTitulo>2.00</sch:valorOriginalTitulo>") {
 		c.Data(200, "text/xml", []byte(sData))
 	} else {

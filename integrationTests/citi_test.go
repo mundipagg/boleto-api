@@ -2,25 +2,24 @@ package integrationTests
 
 import (
 	"fmt"
+	"strings"
+	"testing"
+
 	"github.com/mundipagg/boleto-api/app"
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/util"
 	. "github.com/smartystreets/goconvey/convey"
-	"strings"
-	"testing"
 )
 
 func TestRegisterBoletoCiti(t *testing.T) {
 	param := app.NewParams()
 	param.DevMode = true
 	param.DisableLog = true
-	param.HTTPOnly = true
 	param.MockMode = true
 	go app.Run(param)
 	Convey("Deve-se registrar um boleto no Citi", t, func() {
 		boletoReq := getModelBody(models.Citibank, 200)
-		boletoReq.Agreement.Account = "088721489"
-		boletoReq.Agreement.AccountDigit = "1"
+		boletoReq.Agreement.Account = "0887214891"
 		boletoReq.Agreement.Wallet = 100
 		req := util.Stringify(boletoReq)
 		resp, st, err := util.Post("http://localhost:3000/v1/boleto/register", req, nil)
@@ -35,7 +34,6 @@ func TestRegisterBoletoCiti(t *testing.T) {
 	Convey("Deve-se validar os campos do agreement", t, func() {
 		boletoReq := getModelBody(models.Citibank, 200)
 		boletoReq.Agreement.Account = "0887214811111"
-		boletoReq.Agreement.AccountDigit = ""
 		boletoReq.Agreement.Wallet = 10
 		req := util.Stringify(boletoReq)
 		resp, st, err := util.Post("http://localhost:3000/v1/boleto/register", req, nil)

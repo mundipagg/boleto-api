@@ -91,7 +91,10 @@ func doRequestTLS(method, url, body string, header map[string]string, transport 
 		Transport: transport,
 	}
 	b := strings.NewReader(body)
-	req, _ := http.NewRequest(method, url, b)
+	req, err := http.NewRequest(method, url, b)
+	if err != nil {
+		return "", 0, err
+	}
 
 	if header != nil {
 		for k, v := range header {

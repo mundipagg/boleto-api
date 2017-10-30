@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	wkhtmltopdf "github.com/SebastiaanKlippert/go-wkhtmltopdf"
+	"github.com/gin-gonic/gin"
 
 	"strings"
 
@@ -19,7 +20,6 @@ import (
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/util"
-	gin "gopkg.in/gin-gonic/gin.v1"
 )
 
 //Regista um boleto em um determinado banco
@@ -33,14 +33,15 @@ func registerBoleto(c *gin.Context) {
 	lg := bank.Log()
 	lg.Operation = "RegisterBoleto"
 	lg.NossoNumero = boleto.Title.OurNumber
-	lg.Recipient = bank.GetBankNumber().BankName()
+	lg.Recipient = boleto.Recipient.Name
+	lg.RequestKey = boleto.RequestKey
+	lg.BankName = bank.GetBankNumber().BankName()
 
 	repo, err := db.GetDB()
 	if checkError(c, err, lg) {
 		return
 	}
 	resp, errR := bank.ProcessBoleto(&boleto)
-
 	if checkError(c, errR, lg) {
 		return
 	}
@@ -104,7 +105,10 @@ func getBoleto(c *gin.Context) {
 		fd.Close()
 	}
 
-	s := boleto.HTML(bleto, format)
+	s, err := boleto.HTML(bleto, format)
+	if checkError(c, err, log.CreateLog()) {
+		return
+	}
 	if format == "html" {
 		c.Header("Content-Type", "text/html; charset=utf-8")
 		c.Writer.WriteString(s)

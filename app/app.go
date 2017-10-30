@@ -5,10 +5,10 @@ import (
 	"os"
 
 	"github.com/PMoneda/flow"
-
 	"github.com/mundipagg/boleto-api/api"
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/log"
+	"github.com/mundipagg/boleto-api/metrics"
 	"github.com/mundipagg/boleto-api/mock"
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/robot"
@@ -20,7 +20,6 @@ type Params struct {
 	DevMode    bool
 	MockMode   bool
 	DisableLog bool
-	HTTPOnly   bool
 }
 
 //NewParams returns new Empty pointer to ExecutionParameters
@@ -30,12 +29,13 @@ func NewParams() *Params {
 
 //Run starts boleto api Application
 func Run(params *Params) {
-	configFlags(params.DevMode, params.MockMode, params.DisableLog, params.HTTPOnly)
+	configFlags(params.DevMode, params.MockMode, params.DisableLog)
 	installflowConnectors()
 	robot.GoRobots()
 	if config.Get().MockMode {
 		go mock.Run()
 	}
+	metrics.Install()
 	installLog()
 	api.InstallRestAPI()
 
@@ -55,8 +55,10 @@ func installflowConnectors() {
 	flow.RegisterConnector("tls", util.TlsConector)
 }
 
-func configFlags(devMode, mockMode, disableLog, httpOnly bool) {
+func configFlags(devMode, mockMode, disableLog bool) {
 	if devMode {
+		os.Setenv("INFLUXDB_HOST", "http://localhost")
+		os.Setenv("INFLUXDB_PORT", "8086")
 		os.Setenv("API_PORT", "3000")
 		os.Setenv("API_VERSION", "0.0.1")
 		os.Setenv("ENVIROMENT", "Development")
@@ -72,20 +74,24 @@ func configFlags(devMode, mockMode, disableLog, httpOnly bool) {
 		os.Setenv("APP_URL", "http://localhost:3000/boleto")
 		os.Setenv("ELASTIC_URL", "http://localhost:9200")
 		os.Setenv("MONGODB_URL", "localhost:27017")
+		os.Setenv("MONGODB_USER", "")
+		os.Setenv("MONGODB_PASSWORD", "")
 		os.Setenv("BOLETO_JSON_STORE", "/home/philippe/boletodb/upMongo")
 		os.Setenv("CERT_BOLETO_CRT", "C:\\cert_boleto_api\\certificate.crt")
 		os.Setenv("CERT_BOLETO_KEY", "C:\\cert_boleto_api\\mundi.key")
 		os.Setenv("CERT_BOLETO_CA", "C:\\cert_boleto_api\\ca-cert.ca")
 		os.Setenv("URL_SANTANDER_TICKET", "https://ymbdlb.santander.com.br/dl-ticket-services/TicketEndpointService")
-		os.Setenv("URL_SANTANDER_REGISTER", "https://ymbcashhml.santander.com.br:443/ymbsrv/CobrancaEndpointService")
+		os.Setenv("URL_SANTANDER_REGISTER", "https://ymbcash.santander.com.br/ymbsrv/CobrancaEndpointService")
+		os.Setenv("URL_BRADESCO", "https://homolog.meiosdepagamentobradesco.com.br/api/transacao")
 		if mockMode {
-			os.Setenv("URL_BB_REGISTER_BOLETO", "http://localhost:4000/registrarBoleto")
-			os.Setenv("URL_BB_TOKEN", "http://localhost:4000/oauth/token")
-			os.Setenv("URL_CAIXA", "http://localhost:4000/caixa/registrarBoleto")
-			os.Setenv("URL_CITI", "http://localhost:4000/citi/registrarBoleto")
-			os.Setenv("URL_SANTANDER_TICKET", "tls://localhost:4000/santander/get-ticket")
-			os.Setenv("URL_SANTANDER_REGISTER", "tls://localhost:4000/santander/register")
+			os.Setenv("URL_BB_REGISTER_BOLETO", "http://localhost:9091/registrarBoleto")
+			os.Setenv("URL_BB_TOKEN", "http://localhost:9091/oauth/token")
+			os.Setenv("URL_CAIXA", "http://localhost:9091/caixa/registrarBoleto")
+			os.Setenv("URL_CITI", "http://localhost:9091/citi/registrarBoleto")
+			os.Setenv("URL_SANTANDER_TICKET", "tls://localhost:9091/santander/get-ticket")
+			os.Setenv("URL_SANTANDER_REGISTER", "tls://localhost:9091/santander/register")
+			os.Setenv("URL_BRADESCO", "http://localhost:9091/bradesco/registrarBoleto")
 		}
 	}
-	config.Install(mockMode, devMode, disableLog, httpOnly)
+	config.Install(mockMode, devMode, disableLog)
 }

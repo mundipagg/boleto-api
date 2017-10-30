@@ -65,10 +65,6 @@ func ShouldImplement(actual interface{}, expectedList ...interface{}) string {
 
 	expectedInterface := expectedType.Elem()
 
-	if actualType == nil {
-		return fmt.Sprintf(shouldHaveImplemented, expectedInterface, actual)
-	}
-
 	if !actualType.Implements(expectedInterface) {
 		return fmt.Sprintf(shouldHaveImplemented, expectedInterface, actualType)
 	}

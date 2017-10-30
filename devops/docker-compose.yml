@@ -4,10 +4,9 @@ services:
     build: .
     volumes:
      - ~/boletodb/upMongo:/home/upMongo
-     - ~/boleto_ssh:/home/mundipagg/boleto_ssh
      - ~/boleto_cert:/home/mundipagg/boleto_cert
     ports:
-     - "8080:3000"
+     - "9000:3000"
     environment:
      - API_PORT=3000
      - API_VERSION=0.0.1
@@ -16,20 +15,24 @@ services:
      - SEQ_API_KEY=xxxxxxxxxxxxx
      - ENABLE_REQUEST_LOG=false
      - ENABLE_PRINT_REQUEST=true
-     - URL_BB_REGISTER_BOLETO=https://cobranca.desenv.bb.com.br:7101/registrarBoleto
-     - URL_BB_TOKEN=https://oauth.desenv.bb.com.br:43000/oauth/token
      - MONGODB_URL=10.0.2.15:27017
+     - MONGODB_USER=user
+     - MONGODB_PASSWORD=pass
      - APP_URL=http://localhost:8080/boleto
      - BOLETO_JSON_STORE=/home/upMongo
-     - URL_CAIXA=https://des.barramento.caixa.gov.br/sibar/ManutencaoCobrancaBancaria/Boleto/Externo
-     - URL_CITI=https://citigroupsoauat.citigroup.com/comercioeletronico/registerboleto/RegisterBoletoSOAP
-     - URL_CITI_BOLETO=https://ebillpayer.uat.brazil.citigroup.com/ebillpayer/jspInformaDadosConsulta.jsp
-     - TLS_CERT_PATH=/home/mundipagg/boleto_ssh/cert.pem
-     - TLS_KEY_PATH=/home/mundipagg/boleto_ssh/key.pem
      - CERT_BOLETO_CRT=/home/mundipagg/boleto_cert/certificate.crt
      - CERT_BOLETO_KEY=/home/mundipagg/boleto_cert/mundi.key
      - CERT_BOLETO_CA=/home/mundipagg/boleto_cert/ca-cert.ca
-
+     - INFLUXDB_HOST=http://localhost
+     - INFLUXDB_PORT=8086
+     - URL_BB_REGISTER_BOLETO=https://cobranca.desenv.bb.com.br:7101/registrarBoleto
+     - URL_BB_TOKEN=https://oauth.desenv.bb.com.br:43000/oauth/token
+     - URL_CAIXA=https://des.barramento.caixa.gov.br/sibar/ManutencaoCobrancaBancaria/Boleto/Externo
+     - URL_CITI=https://citigroupsoauat.citigroup.com/comercioeletronico/registerboleto/RegisterBoletoSOAP
+     - URL_CITI_BOLETO=https://ebillpayer.uat.brazil.citigroup.com/ebillpayer/jspInformaDadosConsulta.jsp
+     - URL_SANTANDER_TICKET=https://ymbdlb.santander.com.br/dl-ticket-services/TicketEndpointService
+     - URL_SANTANDER_REGISTER=https://ymbcashhml.santander.com.br:443/ymbsrv/CobrancaEndpointService
+     - URL_BRADESCO=https://homolog.meiosdepagamentobradesco.com.br/api/transacao
   mongodb:
         image: mongo:latest
         container_name: "mongodb"
@@ -43,3 +46,10 @@ services:
         ports:
             - 27017:27017
         command: mongod --smallfiles --logpath=/dev/null
+  nginx:
+    image: nginx:latest
+    container_name: "proxy"
+    ports:
+      - "443:443"
+    volumes:
+      - ~/boleto_ssh:/etc/nginx

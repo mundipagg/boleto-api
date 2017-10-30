@@ -10,23 +10,31 @@ import (
 
 	"fmt"
 
+	"html"
+
+	"github.com/kennygrant/sanitize"
+	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/util"
 )
 
 var funcMap = template.FuncMap{
 	"today":                  today,
+	"todayCiti":              todayCiti,
 	"brdate":                 brDate,
 	"replace":                replace,
 	"docType":                docType,
 	"trim":                   trim,
 	"padLeft":                padLeft,
+	"clearString":            clearString,
 	"toString":               toString,
 	"fmtDigitableLine":       fmtDigitableLine,
 	"fmtCNPJ":                fmtCNPJ,
 	"fmtCPF":                 fmtCPF,
 	"fmtDoc":                 fmtDoc,
+	"truncate":               truncateString,
 	"fmtNumber":              fmtNumber,
+	"joinSpace":              joinSpace,
 	"brDateWithoutDelimiter": brDateWithoutDelimiter,
 	"enDateWithoutDelimiter": enDateWithoutDelimiter,
 	"fullDate":               fulldate,
@@ -36,17 +44,82 @@ var funcMap = template.FuncMap{
 	"concat":                 concat,
 	"base64":                 base64,
 	"unscape":                unscape,
+	"unescapeHtmlString":     unescapeHtmlString,
+	"trimLeft":               trimLeft,
+	"santanderNSUPrefix":     santanderNSUPrefix,
+	"santanderEnv":           santanderEnv,
+	"formatSingleLine":       formatSingleLine,
+	"diff":                   diff,
+	"mod11dv":                calculateOurNumberMod11,
+	"printIfNotProduction":   printIfNotProduction,
 }
 
 func GetFuncMaps() template.FuncMap {
 	return funcMap
 }
+
+func santanderNSUPrefix(number string) string {
+	if config.Get().DevMode {
+		return "TST" + number
+	}
+	return number
+}
+
+func diff(a string, b string) bool {
+	return a != b
+}
+
+func formatSingleLine(s string) string {
+	s1 := strings.Replace(s, "\r", "", -1)
+	return strings.Replace(s1, "\n", "; ", -1)
+}
+
+func santanderEnv() string {
+	if config.Get().DevMode {
+		return "T"
+	}
+	return "P"
+}
+
 func padLeft(value, char string, total uint) string {
-	return util.PadLeft(value, char, total)
+	s := util.PadLeft(value, char, total)
+	return s
 }
 func unscape(s string) template.HTML {
 	return template.HTML(s)
 }
+
+func unescapeHtmlString(s string) template.HTML {
+	return template.HTML(html.UnescapeString(s))
+}
+
+func trimLeft(s string, caract string) string {
+	return strings.TrimLeft(s, caract)
+}
+
+func truncateString(str string, num int) string {
+	bnoden := str
+	if len(str) > num {
+		bnoden = str[0:num]
+	}
+	return bnoden
+}
+
+func clearString(str string) string {
+	s := sanitize.Accents(str)
+	var buffer bytes.Buffer
+	for _, ch := range s {
+		if ch <= 122 && ch >= 32 {
+			buffer.WriteString(string(ch))
+		}
+	}
+	return buffer.String()
+}
+
+func joinSpace(str ...string) string {
+	return strings.Join(str, " ")
+}
+
 func hasErrorTags(mapValues map[string]string, errorTags ...string) bool {
 	hasError := false
 	for _, v := range errorTags {
@@ -62,6 +135,13 @@ func fmtNumber(n uint64) string {
 	real := n / 100
 	cents := n % 100
 	return fmt.Sprintf("%d,%02d", real, cents)
+}
+
+func printIfNotProduction(obj string) string {
+	if config.IsNotProduction() {
+		return fmt.Sprintf("%s", obj)
+	}
+	return ""
 }
 
 func toFloatStr(n uint64) string {
@@ -82,7 +162,11 @@ func toString(number uint) string {
 }
 
 func today() time.Time {
-	return time.Now()
+	return util.BrNow()
+}
+
+func todayCiti() time.Time {
+	return util.NycNow()
 }
 
 func fulldate(t time.Time) string {
@@ -174,4 +258,10 @@ func concat(s ...string) string {
 
 func base64(s string) string {
 	return util.Base64(s)
+}
+
+func calculateOurNumberMod11(number uint) uint {
+	ourNumberWithDigit := strconv.Itoa(int(number)) + util.OurNumberDv(strconv.Itoa(int(number)))
+	value, _ := strconv.Atoi(ourNumberWithDigit)
+	return uint(value)
 }

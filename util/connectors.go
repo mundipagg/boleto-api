@@ -67,7 +67,7 @@ func TlsConector(e *flow.ExchangeMessage, u flow.URI, params ...interface{}) err
 			var response string
 			var status int
 			var err error
-			if config.Get().DevMode {
+			if config.Get().MockMode {
 				url = strings.Replace(u.GetRaw(), "tls", "http", 1)
 				response, status, err = Post(url, b, e.GetHeaderMap())
 			} else {

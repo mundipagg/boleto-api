@@ -48,7 +48,7 @@ func (t *Title) IsExpireDateValid() error {
 	if err != nil {
 		return NewErrorResponse("MPExpireDate", fmt.Sprintf("Data em um formato inválido, esperamos AAAA-MM-DD e recebemos %s", t.ExpireDate))
 	}
-	n, _ := parseDate(time.Now().Format("2006-01-02"))
+	n, _ := parseDate(util.BrNow().Format("2006-01-02"))
 	t.CreateDate = n
 	t.ExpireDateTime = d
 	if t.CreateDate.After(t.ExpireDateTime) {

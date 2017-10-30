@@ -1,7 +1,6 @@
 package models
 
 import (
-	"html/template"
 	"time"
 
 	"github.com/mundipagg/boleto-api/config"
@@ -18,12 +17,13 @@ import (
 
 // BoletoRequest entidade de entrada para o boleto
 type BoletoRequest struct {
-	Authentication Authentication
-	Agreement      Agreement
-	Title          Title
-	Recipient      Recipient
-	Buyer          Buyer
-	BankNumber     BankNumber
+	Authentication Authentication `json:"authentication"`
+	Agreement      Agreement      `json:"agreement"`
+	Title          Title          `json:"title"`
+	Recipient      Recipient      `json:"recipient"`
+	Buyer          Buyer          `json:"buyer"`
+	BankNumber     BankNumber     `json:"bankNumber"`
+	RequestKey     string         `json:"requestKey,omitempty"`
 }
 
 // BoletoResponse entidade de saída para o boleto
@@ -49,7 +49,6 @@ type BoletoView struct {
 	ID            string
 	UID           string
 	Format        string        `json:"format,omitempty"`
-	BankLogo      template.HTML `json:"bankLogo,omitempty"`
 	Boleto        BoletoRequest `json:"boleto,omitempty"`
 	BankID        BankNumber    `json:"bankId,omitempty"`
 	CreateDate    time.Time     `json:"createDate,omitempty"`
@@ -78,8 +77,11 @@ func NewBoletoView(boleto BoletoRequest, response BoletoResponse) BoletoView {
 		CreateDate:    time.Now(),
 	}
 	switch boleto.BankNumber {
-	case Caixa:
-		view.Links = response.Links
+	case Bradesco:
+		view.Links = view.CreateLinks()
+		if len(response.Links) > 0 {
+			view.Links = append(view.Links, response.Links[0])
+		}
 	default:
 		view.Links = view.CreateLinks()
 	}
@@ -88,15 +90,8 @@ func NewBoletoView(boleto BoletoRequest, response BoletoResponse) BoletoView {
 
 //EncodeURL tranforma o boleto view na forma que será escrito na url
 func (b *BoletoView) EncodeURL(format string) string {
-	var _url string
-	switch b.BankID {
-	case Citibank:
-		citiURL := config.Get().URLCitiBoleto
-		query := "?seuNumero=%s&cpfSacado=%s&cpfCedente=%s"
-		_url = citiURL + fmt.Sprintf(query, b.Boleto.Title.DocumentNumber, b.Boleto.Buyer.Document.Number, b.Boleto.Recipient.Document.Number)
-	default:
-		_url = fmt.Sprintf("%s?fmt=%s&id=%s", config.Get().AppURL, format, b.ID)
-	}
+	_url := fmt.Sprintf("%s?fmt=%s&id=%s", config.Get().AppURL, format, b.ID)
+
 	return _url
 }
 
@@ -159,6 +154,8 @@ func (b BankNumber) BankName() string {
 		return "Caixa"
 	case Bradesco:
 		return "Bradesco"
+	case Citibank:
+		return "Citibank"
 	default:
 		return ""
 	}
@@ -182,6 +179,8 @@ const (
 
 	// Citibank constante do Citi
 	Citibank = 745
+
+	Real = 9
 )
 
 // BoletoErrorConector é um connector flow para criar um objeto de erro
@@ -204,4 +203,9 @@ func BoletoErrorConector(e *flow.ExchangeMessage, u flow.URI, params ...interfac
 	resp.StatusCode = st
 	e.SetBody(resp)
 	return nil
+}
+
+//HasErrors verify if Response has any error
+func (b *BoletoResponse) HasErrors() bool {
+	return b.Errors != nil && len(b.Errors) > 0
 }

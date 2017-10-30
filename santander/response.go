@@ -2,17 +2,16 @@ package santander
 
 var apiResponse = `
 {
-    {{if (hasErrorTags . "errorCode")}}
+    {{if (eq .errorCode "20")}}
         "Errors": [
             {                    
                 "Code": "{{trim .errorCode}}",
-                "Message": "{{trim .errorMessage}}"
+                "Message": "{{trim .message | formatSingleLine}}"
             }
         ]
     {{else}}
         "DigitableLine": "{{fmtDigitableLine (trim .digitableLine)}}",
-        "BarCodeNumber": "{{trim .barcodeNumber}}",
-        "OurNumber":"{{.ourNumber}}"
+        "BarcodeNumber": "{{trim .barcodeNumber}}"        
     {{end}}
 }
 `

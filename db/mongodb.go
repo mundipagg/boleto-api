@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/models"
@@ -14,7 +15,7 @@ type mongoDb struct {
 	m sync.RWMutex
 }
 
-var dbName = "boletoapi"
+var dbName = "Boleto"
 
 //CreateMongo cria uma nova intancia de conexão com o mongodb
 func CreateMongo() (DB, error) {
@@ -25,12 +26,23 @@ func CreateMongo() (DB, error) {
 	return db, nil
 }
 
+func getInfo() *mgo.DialInfo {
+	return &mgo.DialInfo{
+		Addrs:    []string{config.Get().MongoURL},
+		Timeout:  10 * time.Second,
+		Database: "Boleto",
+		Username: config.Get().MongoUser,
+		Password: config.Get().MongoPassword,
+	}
+}
+
 //SaveBoleto salva um boleto no mongoDB
 func (e *mongoDb) SaveBoleto(boleto models.BoletoView) error {
 	var err error
 	e.m.Lock()
 	defer e.m.Unlock()
-	session, err := mgo.Dial(config.Get().MongoURL)
+
+	session, err := mgo.DialWithInfo(getInfo())
 	if err != nil {
 		return models.NewInternalServerError(err.Error(), "Falha ao conectar com o banco de dados")
 	}
@@ -45,7 +57,7 @@ func (e *mongoDb) GetBoletoByID(id string) (models.BoletoView, error) {
 	e.m.Lock()
 	defer e.m.Unlock()
 	result := models.BoletoView{}
-	session, err := mgo.Dial(config.Get().MongoURL)
+	session, err := mgo.DialWithInfo(getInfo())
 	if err != nil {
 		return result, models.NewInternalServerError(err.Error(), "Falha ao conectar com o banco de dados")
 	}

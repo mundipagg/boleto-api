@@ -3,8 +3,7 @@ services:
   api:
     build: .
     volumes:
-     - ~/boletodb/upMongo:/home/upMongo
-     - ~/boleto_ssh:/home/mundipagg/boleto_ssh
+     - ~/boletodb/upMongo:/home/upMongo     
      - ~/boleto_cert:/home/mundipagg/boleto_cert
     ports:
      - "#{CONF_EXPOSEPORT}#:3000"
@@ -19,16 +18,21 @@ services:
      - URL_BB_REGISTER_BOLETO=#{CONF_URL_BB_REGISTER_BOLETO}#
      - URL_BB_TOKEN=#{CONF_URL_BB_TOKEN}#
      - MONGODB_URL=#{CONF_MONGODB_URL}#
+     - MONGODB_USER=#{CONF_MONGODB_USER}#
+     - MONGODB_PASSWORD=#{CONF_MONGODB_PASSWORD}#
+     - INFLUXDB_HOST=#{CONF_INFLUXDB_HOST}#
+     - INFLUXDB_PORT=#{CONF_INFLUXDB_PORT}#
      - APP_URL=#{CONF_APP_URL}#
      - BOLETO_JSON_STORE=#{CONF_BOLETO_JSON_STORE}#
-     - URL_CAIXA=#{CONF_URL_CAIXA}#
-     - URL_CITI=#{CONF_URL_CITI}#
-     - URL_CITI_BOLETO=#{CONF_URL_CITI_BOLETO}#
-     - TLS_CERT_PATH=#{CONF_TLS_CERT_PATH}#
-     - TLS_KEY_PATH=#{CONF_TLS_KEY_PATH}#
      - CERT_BOLETO_CRT=#{CONF_CERT_BOLETO_CRT}#
      - CERT_BOLETO_KEY=#{CONF_CERT_BOLETO_KEY}#
      - CERT_BOLETO_CA=#{CONF_CERT_BOLETO_CA}#
+     - URL_CAIXA=#{CONF_URL_CAIXA}#
+     - URL_CITI=#{CONF_URL_CITI}#
+     - URL_CITI_BOLETO=#{CONF_URL_CITI_BOLETO}#
+     - URL_SANTANDER_TICKET=#{CONF_URL_SANTANDER_TICKET}#
+     - URL_SANTANDER_REGISTER=#{CONF_URL_SANTANDER_REGISTER}#
+     - URL_BRADESCO=#{CONF_URL_BRADESCO}#
   mongodb:
     image: mongo:latest
     container_name: "mongodb"
@@ -42,3 +46,10 @@ services:
     ports:
         - 27017:27017
     command: mongod --smallfiles --logpath=/dev/null
+  nginx:
+    image: nginx:latest
+    container_name: "proxy"
+    ports:
+      - "443:443"
+    volumes:
+      - ~/boleto_ssh:/etc/nginx

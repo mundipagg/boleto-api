@@ -6,8 +6,10 @@ import (
 	"github.com/PMoneda/flow"
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/log"
+	"github.com/mundipagg/boleto-api/metrics"
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/tmpl"
+	"github.com/mundipagg/boleto-api/util"
 
 	"github.com/mundipagg/boleto-api/validations"
 )
@@ -46,12 +48,16 @@ func (b *bankBB) login(boleto *models.BoletoRequest) (string, error) {
 		Error            string `json:"error"`
 		ErrorDescription string `json:"error_description"`
 	}
+	timing := metrics.GetTimingMetrics()
 	r := flow.NewFlow()
 	url := config.Get().URLBBToken
 	from, resp := GetBBAuthLetters()
 	bod := r.From("message://?source=inline", boleto, from, tmpl.GetFuncMaps())
 	r = r.To("logseq://?type=request&url="+url, b.log)
-	bod = bod.To(url, map[string]string{"method": "POST", "insecureSkipVerify": "true"})
+	duration := util.Duration(func() {
+		bod = bod.To(url, map[string]string{"method": "POST", "insecureSkipVerify": "true"})
+	})
+	timing.Push("bb-login-time", duration.Seconds())
 	r = r.To("logseq://?type=response&url="+url, b.log)
 	ch := bod.Choice().When(flow.Header("status").IsEqualTo("200")).To("transform://?format=json", resp, `{{.authToken}}`)
 	ch = ch.Otherwise().To("unmarshall://?format=json", new(errorAuth))
@@ -85,23 +91,29 @@ func (b bankBB) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoRespo
 	r := flow.NewFlow()
 	url := config.Get().URLBBRegisterBoleto
 	from := getRequest()
+	timing := metrics.GetTimingMetrics()
 	r = r.From("message://?source=inline", boleto, from, tmpl.GetFuncMaps())
-	r = r.To("logseq://?type=request&url="+url, b.log)
-	r = r.To(url, map[string]string{"method": "POST", "insecureSkipVerify": "true"})
-	r = r.To("logseq://?type=response&url="+url, b.log)
+	r.To("logseq://?type=request&url="+url, b.log)
+	duration := util.Duration(func() {
+		r.To(url, map[string]string{"method": "POST", "insecureSkipVerify": "true"})
+	})
+	timing.Push("bb-register-boleto-time", duration.Seconds())
+	r.To("logseq://?type=response&url="+url, b.log)
 	ch := r.Choice()
-	ch = ch.When(flow.Header("status").IsEqualTo("200"))
-	ch = ch.To("transform://?format=xml", getResponseBB(), getAPIResponse(), tmpl.GetFuncMaps())
-	ch = ch.To("unmarshall://?format=json", new(models.BoletoResponse))
-	ch = ch.Otherwise()
-	ch = ch.To("logseq://?type=response&url="+url, b.log).To("apierro://")
+	ch.When(flow.Header("status").IsEqualTo("200"))
+	ch.To("transform://?format=xml", getResponseBB(), getAPIResponse(), tmpl.GetFuncMaps())
+	ch.To("unmarshall://?format=json", new(models.BoletoResponse))
+	ch.Otherwise()
+	ch.To("logseq://?type=response&url="+url, b.log).To("apierro://")
 	switch t := r.GetBody().(type) {
 	case *models.BoletoResponse:
 		return *t, nil
 	case models.BoletoResponse:
 		return t, nil
+	case error:
+		return models.BoletoResponse{}, t
 	default:
-		return models.BoletoResponse{}, errors.New("erro")
+		return models.BoletoResponse{}, errors.New("Unexpected Type")
 	}
 
 }

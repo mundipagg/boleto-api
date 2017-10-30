@@ -1,7 +1,7 @@
 package santander
 
 const registerBoleto = `
-## SOAPAction:registraTitulo
+## SOAPAction:create
 ## Content-Type:text/xml
 
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://impl.webservice.ymb.app.bsbr.altec.com/">
@@ -10,10 +10,10 @@ const registerBoleto = `
       <impl:registraTitulo>
          <dto>
             <dtNsu>{{today | brDateWithoutDelimiter }}</dtNsu>
-            <estacao>?</estacao>
-            <nsu>{{.Title.NSU}}</nsu>
+            <estacao>{{.Authentication.Username}}</estacao>
+            <nsu>{{santanderNSUPrefix .Title.DocumentNumber}}</nsu>
             <ticket>{{unscape .Authentication.AuthorizationToken}}</ticket>
-            <tpAmbiente>T</tpAmbiente>
+            <tpAmbiente>{{santanderEnv}}</tpAmbiente>
          </dto>
       </impl:registraTitulo>
    </soapenv:Body>
@@ -25,11 +25,12 @@ const registerSantanderResponse = `
    <soapenv:Body>
       <dlwmin:registraTituloResponse xmlns:dlwmin="http://impl.webservice.ymb.app.bsbr.altec.com/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
          <return xmlns:ns2="http://impl.webservice.ymb.app.bsbr.altec.com/">
-            <descricaoErro>{{errorMessage}}</descricaoErro>
+            <descricaoErro>{{message}}</descricaoErro>
+            <situacao>{{errorCode}}</situacao>
             <titulo>
                <cdBarra>{{barcodeNumber}}</cdBarra>
-               <linDig>{{digitableLine}}</linDig>               
-               <nossoNumero>{{ourNumber}}</nossoNumero>               
+               <linDig>{{digitableLine}}</linDig>
+               <nossoNumero>{{ourNumber}}</nossoNumero>
             </titulo>
          </return>
       </dlwmin:registraTituloResponse>
@@ -46,7 +47,6 @@ const requestTicket = `
    <soapenv:Header/>
    <soapenv:Body>
       <impl:create>
-         <!--Optional:-->
          <TicketRequest>
             <dados>
                 <entry>
@@ -71,31 +71,31 @@ const requestTicket = `
                 </entry>
                 <entry>
                     <key>PAGADOR.NOME</key>
-                    <value>{{.Buyer.Name}}</value>
+                    <value>{{clearString (truncate .Buyer.Name 40)}}</value>
                 </entry>
                 <entry>
                     <key>PAGADOR.ENDER</key>
-                    <value>{{.Buyer.Address.Street}}</value>
+                    <value>{{clearString (truncate .Buyer.Address.Street 40)}}</value>
                 </entry>
                 <entry>
                     <key>PAGADOR.BAIRRO</key>
-                    <value>{{.Buyer.Address.District}}</value>
+                    <value>{{clearString (truncate .Buyer.Address.District 30)}}</value>
                 </entry>
                 <entry>
                     <key>PAGADOR.CIDADE</key>
-                    <value>{{.Buyer.Address.City}}</value>
+                    <value>{{clearString (truncate .Buyer.Address.City 20)}}</value>
                 </entry>
                 <entry>
                     <key>PAGADOR.UF</key>
-                    <value>{{.Buyer.Address.StateCode}}</value>
+                    <value>{{clearString (truncate .Buyer.Address.StateCode 2)}}</value>
                 </entry>
                 <entry>
                     <key>PAGADOR.CEP</key>
-                    <value>{{.Buyer.Address.ZipCode}}</value>
+                    <value>{{clearString (truncate .Buyer.Address.ZipCode 8)}}</value>
                 </entry>
                 <entry>
                     <key>TITULO.NOSSO-NUMERO</key>
-                    <value>{{.Title.OurNumber}}</value>
+                    <value>{{padLeft (toString .Title.OurNumber) "0" 13}}</value>
                 </entry>
                 <entry>
                     <key>TITULO.SEU-NUMERO </key>
@@ -103,11 +103,11 @@ const requestTicket = `
                 </entry>
                 <entry>
                     <key>TITULO.DT-VENCTO</key>
-                    <value>{{brdate .Title.ExpireDateTime}}</value>
+                    <value>{{brDateWithoutDelimiter .Title.ExpireDateTime}}</value>
                 </entry>
                 <entry>
                     <key>TITULO.DT-EMISSAO</key>
-                    <value>{{today | brdate}}</value>
+                    <value>{{today | brDateWithoutDelimiter}}</value>
                 </entry>
                 <entry>
                     <key>TITULO.ESPECIE</key>
@@ -135,10 +135,10 @@ const requestTicket = `
                 </entry>                
                 <entry>
                     <key>MENSAGEM</key>
-                    <value>{{.Title.Instructions}}</value>
+                    <value>{{truncate .Title.Instructions 100}}</value>
                 </entry>
             </dados>
-            <expiracao>100</expiracao>
+            <expiracao>600</expiracao>
             <sistema>YMB</sistema>
          </TicketRequest>
       </impl:create>
@@ -148,10 +148,9 @@ const requestTicket = `
 
 const ticketReponse = `
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
-    <soapenv:Body> 
-        <dlwmin:createResponse xmlns:dlwmin="http://impl.webservice.dl.app.bsbr.altec.com/">
+    <soapenv:Body>
+        <dlwmin:createResponse xmlns:dlwmin="http://impl.webservice.dl.app.bsbr.altec.com/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <TicketResponse>
-            	<message>{{message}}</message>
                 <retCode>{{returnCode}}</retCode>
                 <ticket>{{ticket}}</ticket>
             </TicketResponse>

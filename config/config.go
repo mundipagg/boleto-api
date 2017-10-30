@@ -8,6 +8,8 @@ import (
 
 //Config é a estrutura que tem todas as configurações da aplicação
 type Config struct {
+	InfluxDBHost               string
+	InfluxDBPort               string
 	APIPort                    string
 	Version                    string
 	SEQUrl                     string
@@ -28,15 +30,16 @@ type Config struct {
 	AppURL                     string
 	ElasticURL                 string
 	MongoURL                   string
+	MongoUser                  string
+	MongoPassword              string
 	BoletoJSONFileStore        string
 	DisableLog                 bool
-	TLSCertPath                string
-	TLSKeyPath                 string
 	CertBoletoPathCrt          string
 	CertBoletoPathKey          string
 	CertBoletoPathCa           string
 	URLTicketSantander         string
 	URLRegisterBoletoSantander string
+	URLBradesco                string
 }
 
 var cnf Config
@@ -48,7 +51,7 @@ var mutex sync.Mutex
 func Get() Config {
 	return cnf
 }
-func Install(mockMode, devMode, disableLog, httpOnly bool) {
+func Install(mockMode, devMode, disableLog bool) {
 	atomic.StoreUint64(&running, 0)
 	cnf = Config{
 		APIPort:                    ":" + os.Getenv("API_PORT"),
@@ -70,22 +73,29 @@ func Install(mockMode, devMode, disableLog, httpOnly bool) {
 		ElasticURL:                 os.Getenv("ELASTIC_URL"),
 		DevMode:                    devMode,
 		DisableLog:                 disableLog,
-		HTTPOnly:                   httpOnly,
 		MongoURL:                   os.Getenv("MONGODB_URL"),
+		MongoUser:                  os.Getenv("MONGODB_USER"),
+		MongoPassword:              os.Getenv("MONGODB_PASSWORD"),
 		BoletoJSONFileStore:        os.Getenv("BOLETO_JSON_STORE"),
-		TLSCertPath:                os.Getenv("TLS_CERT_PATH"),
-		TLSKeyPath:                 os.Getenv("TLS_KEY_PATH"),
 		CertBoletoPathCrt:          os.Getenv("CERT_BOLETO_CRT"),
 		CertBoletoPathKey:          os.Getenv("CERT_BOLETO_KEY"),
 		CertBoletoPathCa:           os.Getenv("CERT_BOLETO_CA"),
 		URLTicketSantander:         os.Getenv("URL_SANTANDER_TICKET"),
 		URLRegisterBoletoSantander: os.Getenv("URL_SANTANDER_REGISTER"),
+		URLBradesco:                os.Getenv("URL_BRADESCO"),
+		InfluxDBHost:               os.Getenv("INFLUXDB_HOST"),
+		InfluxDBPort:               os.Getenv("INFLUXDB_PORT"),
 	}
 }
 
 //IsRunning verifica se a aplicação tem que aceitar requisições
 func IsRunning() bool {
 	return atomic.LoadUint64(&running) > 0
+}
+
+//IsNotProduction returns true if application is running in DevMode or MockMode
+func IsNotProduction() bool {
+	return cnf.DevMode || cnf.MockMode
 }
 
 //Stop faz a aplicação parar de receber requisições

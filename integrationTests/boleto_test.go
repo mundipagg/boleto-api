@@ -153,7 +153,6 @@ func TestRegisterBoletoRequest(t *testing.T) {
 	param := app.NewParams()
 	param.DevMode = true
 	param.DisableLog = true
-	param.HTTPOnly = true
 	param.MockMode = true
 	go app.Run(param)
 	time.Sleep(10 * time.Second)
@@ -229,6 +228,7 @@ func TestRegisterBoletoRequest(t *testing.T) {
 				assert(models.BancoDoBrasil)
 				assert(models.Caixa)
 				assert(models.Citibank)
+				assert(models.Santander)
 			})
 
 			Convey("O CPF deve ser válido", func() {
@@ -248,6 +248,7 @@ func TestRegisterBoletoRequest(t *testing.T) {
 				assert(models.BancoDoBrasil)
 				assert(models.Caixa)
 				assert(models.Citibank)
+				assert(models.Santander)
 
 			})
 
@@ -316,7 +317,6 @@ func BenchmarkRegisterBoleto(b *testing.B) {
 	param := app.NewParams()
 	param.DevMode = true
 	param.DisableLog = true
-	param.HTTPOnly = true
 	param.MockMode = true
 	go app.Run(param)
 	for i := 0; i < b.N; i++ {
