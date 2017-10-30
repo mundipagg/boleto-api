@@ -1,5 +1,7 @@
 [![GoDoc](https://godoc.org/github.com/mundipagg/boleto-api?status.svg)](https://godoc.org/github.com/mundipagg/boleto-api)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mundipagg/boleto-api)](https://goreportcard.com/report/github.com/mundipagg/boleto-api)
+[![Build Status](https://travis-ci.org/mundipagg/boleto-api.svg?branch=master)](https://travis-ci.org/mundipagg/boleto-api)
+[![codecov](https://codecov.io/gh/mundipagg/boleto-api/branch/master/graph/badge.svg)](https://codecov.io/gh/mundipagg/boleto-api)
 
 What is the Online Registered "Boleto" API?
 --------------
