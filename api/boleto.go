@@ -3,7 +3,6 @@ package api
 import (
 	"net/http"
 
-	wkhtmltopdf "github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	"github.com/gin-gonic/gin"
 
 	"strings"
@@ -114,26 +113,28 @@ func getBoleto(c *gin.Context) {
 		c.Writer.WriteString(s)
 	} else {
 		c.Header("Content-Type", "application/pdf")
-		buf, _ := toPdf(s)
-		c.Writer.Write(buf)
+		if buf, err := toPdf(s); err != nil {
+			checkError(c, models.NewInternalServerError(err.Error(), "internal error"), log.CreateLog())
+			c.Abort()
+		} else {
+			c.Writer.Write(buf)
+		}
+
 	}
 
 }
 
 func toPdf(page string) ([]byte, error) {
-	pdfg, err := wkhtmltopdf.NewPDFGenerator()
-	if err != nil {
+	url := config.Get().PdfAPIURL
+	payload := strings.NewReader(page)
+	if req, err := http.NewRequest("POST", url, payload); err != nil {
 		return nil, err
-	}
-	pdfg.Dpi.Set(600)
-	pdfg.NoCollate.Set(false)
-	pdfg.PageSize.Set(wkhtmltopdf.PageSizeA4)
-	pdfg.AddPage(wkhtmltopdf.NewPageReader(strings.NewReader(page)))
-	err = pdfg.Create()
-	if err != nil {
+	} else if res, err := http.DefaultClient.Do(req); err != nil {
 		return nil, err
+	} else {
+		defer res.Body.Close()
+		return ioutil.ReadAll(res.Body)
 	}
-	return pdfg.Bytes(), nil
 }
 
 func getBoletoByID(c *gin.Context) {

@@ -11,6 +11,7 @@ type Config struct {
 	InfluxDBHost               string
 	InfluxDBPort               string
 	APIPort                    string
+	PdfAPIURL                  string
 	Version                    string
 	SEQUrl                     string
 	SEQAPIKey                  string
@@ -55,6 +56,7 @@ func Install(mockMode, devMode, disableLog bool) {
 	atomic.StoreUint64(&running, 0)
 	cnf = Config{
 		APIPort:                    ":" + os.Getenv("API_PORT"),
+		PdfAPIURL:                  os.Getenv("PDF_API"),
 		Version:                    os.Getenv("API_VERSION"),
 		SEQUrl:                     os.Getenv("SEQ_URL"),                        //Pegar o SEQ de dev
 		SEQAPIKey:                  os.Getenv("SEQ_API_KEY"),                    //Staging Key:

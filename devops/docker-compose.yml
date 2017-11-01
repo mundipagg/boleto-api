@@ -2,14 +2,12 @@ version: "2"
 services:
   api:
     build: .
-    volumes:
-     - ~/boletodb/upMongo:/home/upMongo
-     - ~/boleto_cert:/home/mundipagg/boleto_cert
     ports:
      - "9000:3000"
     environment:
      - API_PORT=3000
      - API_VERSION=0.0.1
+     - PDF_API=http://10.0.2.15:8089/topdf
      - ENVIRONMENT=Development
      - SEQ_URL=http://example.mundipagg.com
      - SEQ_API_KEY=xxxxxxxxxxxxx
@@ -23,7 +21,7 @@ services:
      - CERT_BOLETO_CRT=/home/mundipagg/boleto_cert/certificate.crt
      - CERT_BOLETO_KEY=/home/mundipagg/boleto_cert/mundi.key
      - CERT_BOLETO_CA=/home/mundipagg/boleto_cert/ca-cert.ca
-     - INFLUXDB_HOST=http://localhost
+     - INFLUXDB_HOST=http://10.0.2.15
      - INFLUXDB_PORT=8086
      - URL_BB_REGISTER_BOLETO=https://cobranca.desenv.bb.com.br:7101/registrarBoleto
      - URL_BB_TOKEN=https://oauth.desenv.bb.com.br:43000/oauth/token
@@ -35,21 +33,12 @@ services:
      - URL_BRADESCO=https://homolog.meiosdepagamentobradesco.com.br/api/transacao
   mongodb:
         image: mongo:latest
-        container_name: "mongodb"
-        environment:
-          - MONGO_DATA_DIR=/data/db
-          - MONGO_LOG_DIR=/dev/null
-        volumes:
-          - ~/boletodb/db:/data/db
-          - ~/boletodb/configdb:/data/configdb
-          - ~/dump_boletodb:/dump/boletoapi
+        container_name: "mongodb"        
         ports:
             - 27017:27017
         command: mongod --smallfiles --logpath=/dev/null
-  nginx:
-    image: nginx:latest
-    container_name: "proxy"
+  pdfapi:
+    image: pmoneda/pdfapi:latest
+    container_name: "pdfapi"
     ports:
-      - "443:443"
-    volumes:
-      - ~/boleto_ssh:/etc/nginx
+        - 8089:8080

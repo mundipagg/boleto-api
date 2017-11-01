@@ -10,6 +10,7 @@ services:
     environment:
      - API_PORT=#{CONF_APIPORT}#
      - API_VERSION=#{CONF_API_VERSION}#
+     - PDF_API=#{CONF_PDF_API}#
      - ENVIRONMENT=#{CONF_ENVIRONMENT}#
      - SEQ_URL=#{CONF_SEQ_URL}#
      - SEQ_API_KEY=#{CONF_SEQ_API_KEY}#
@@ -33,23 +34,9 @@ services:
      - URL_SANTANDER_TICKET=#{CONF_URL_SANTANDER_TICKET}#
      - URL_SANTANDER_REGISTER=#{CONF_URL_SANTANDER_REGISTER}#
      - URL_BRADESCO=#{CONF_URL_BRADESCO}#
-  mongodb:
-    image: mongo:latest
-    container_name: "mongodb"
-    environment:
-      - MONGO_DATA_DIR=/data/db
-      - MONGO_LOG_DIR=/dev/null
-    volumes:
-      - ~/boletodb/db:/data/db
-      - ~/boletodb/configdb:/data/configdb
-      - ~/dump_boletodb:/dump/boletoapi
+  pdfapi:
+    image: pmoneda/pdfapi:latest
+    container_name: "pdfapi"
     ports:
-        - 27017:27017
-    command: mongod --smallfiles --logpath=/dev/null
-  nginx:
-    image: nginx:latest
-    container_name: "proxy"
-    ports:
-      - "443:443"
-    volumes:
-      - ~/boleto_ssh:/etc/nginx
+        - 8089:8080    
+  

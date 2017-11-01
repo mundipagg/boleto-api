@@ -61,6 +61,7 @@ func configFlags(devMode, mockMode, disableLog bool) {
 		os.Setenv("INFLUXDB_PORT", "8086")
 		os.Setenv("API_PORT", "3000")
 		os.Setenv("API_VERSION", "0.0.1")
+		os.Setenv("PDF_API", "http://localhost:8089/topdf")
 		os.Setenv("ENVIROMENT", "Development")
 		os.Setenv("SEQ_URL", "http://localhost:5341")   // http://stglog.mundipagg.com/ 192.168.8.119:5341
 		os.Setenv("SEQ_API_KEY", "4jZzTybZ9bUHtJiPdh6") //4jZzTybZ9bUHtJiPdh6
