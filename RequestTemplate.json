@@ -2,7 +2,7 @@
     "BankNumber": 1,
     "Authentication": {
         "Username": "user",
-        "Password": "pass"
+        "Password": "password"
     },
     "Agreement": {
         "AgreementNumber": 1014051,
