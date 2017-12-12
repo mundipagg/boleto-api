@@ -39,7 +39,7 @@ func (b bankItau) Log() *log.Log {
 func (b bankItau) GetTicket(boleto *models.BoletoRequest) (string, error) {
 	timing := metrics.GetTimingMetrics()
 	pipe := NewFlow()
-	url := config.Get().URLTicketItau
+	url := config.Get().URLItauToken
 	pipe.From("message://?source=inline", boleto, getRequestTicket(), tmpl.GetFuncMaps())
 	pipe.To("logseq://?type=request&url="+url, b.log)
 	duration := util.Duration(func() {
