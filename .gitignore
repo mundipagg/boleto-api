@@ -4,3 +4,4 @@ boleto-api
 debug
 .DS_Store
 .idea/
+coverage.txt
