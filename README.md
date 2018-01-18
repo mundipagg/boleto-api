@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/mundipagg/boleto-api.svg?branch=master)](https://travis-ci.org/mundipagg/boleto-api)
 [![GoDoc](https://godoc.org/github.com/mundipagg/boleto-api?status.svg)](https://godoc.org/github.com/mundipagg/boleto-api)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mundipagg/boleto-api)](https://goreportcard.com/report/github.com/mundipagg/boleto-api)
 
