@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/1a20d9679c1f42aabaef93468fe84a47)](https://www.codacy.com/app/mundipagg/boleto-api?utm_source=github.com&utm_medium=referral&utm_content=mundipagg/boleto-api&utm_campaign=badger)
 [![GoDoc](https://godoc.org/github.com/mundipagg/boleto-api?status.svg)](https://godoc.org/github.com/mundipagg/boleto-api)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mundipagg/boleto-api)](https://goreportcard.com/report/github.com/mundipagg/boleto-api)
 [![CircleCI](https://circleci.com/gh/mundipagg/boleto-api/tree/master.svg?style=svg)](https://circleci.com/gh/mundipagg/boleto-api/tree/master)
