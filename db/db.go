@@ -23,5 +23,8 @@ func GetDB() (DB, error) {
 	if config.Get().MockMode || config.Get().DevMode {
 		return new(mock), nil
 	}
+	if config.Get().EnablePostgres {
+		return CreatePostgreSQL()
+	}
 	return CreateMongo()
 }

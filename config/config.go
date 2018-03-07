@@ -30,6 +30,13 @@ type Config struct {
 	HTTPOnly                      bool
 	AppURL                        string
 	ElasticURL                    string
+	EnablePostgres                bool
+	PostgresHost                  string
+	PostgresPort                  int
+	PostgresUser                  string
+	PostgresPassword              string
+	PostgresDBName                string
+	PostgresSSLMode               string
 	MongoURL                      string
 	MongoUser                     string
 	MongoPassword                 string
@@ -80,6 +87,13 @@ func Install(mockMode, devMode, disableLog bool) {
 		ElasticURL:                    os.Getenv("ELASTIC_URL"),
 		DevMode:                       devMode,
 		DisableLog:                    disableLog,
+		EnablePostgres                 os.Getenv("ENABLE_POSTGRESQL"),
+		PostgresHost                   os.Getenv("POSTGRESQL_HOST"),
+		PostgresPort                   os.Getenv("POSTGRESQL_PORT"),
+		PostgresUser                   os.Getenv("POSTGRESQL_USER"),
+		PostgresPassword               os.Getenv("POSTGRESQL_PASSWORD"),
+		PostgresDBName                 os.Getenv("POSTGRESQL_DB"),
+		PostgresSSLMode                os.Getenv("POSTGRESQL_SSL_MODE"),
 		MongoURL:                      os.Getenv("MONGODB_URL"),
 		MongoUser:                     os.Getenv("MONGODB_USER"),
 		MongoPassword:                 os.Getenv("MONGODB_PASSWORD"),
