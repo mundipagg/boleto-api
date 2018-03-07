@@ -23,7 +23,8 @@ func createConnection() (*sql.DB, error) {
 	conString := fmt.Sprintf(
 		"user=%s password=%s dbname=%s host=%s port=%d sslmode=%s",
 		cfg.PostgresUser, cfg.PostgresPassword, cfg.PostgresDBName, cfg.PostgresHost, cfg.PostgresPort, cfg.PostgresSSLMode)
-	return sql.Open("postgres", conString)
+	db := sql.Open("postgres", conString)
+	return db, db.Ping()
 }
 
 //SaveBoleto salva um boleto no PostgreSQL
@@ -40,7 +41,7 @@ func (e *postgresql) SaveBoleto(boleto models.BoletoView) error {
 //GetBoletoById busca um boleto pelo ID que vem na URL
 func (e *postgresql) GetBoletoByID(id string) (models.BoletoView, error) {
 	var rid, rjson string
-	result := models.BoletoView{}
+	var result BoletoView
 	con, err := createConnection()
 	if err != nil {
 		return result, models.NewInternalServerError(err.Error(), "Falha ao conectar com o banco de dados")
@@ -49,7 +50,7 @@ func (e *postgresql) GetBoletoByID(id string) (models.BoletoView, error) {
 	row := con.QueryRow("SELECT id, boleto FROM boletos WHERE id = $1 ", id)
 	err = row.Scan(&rid, &rjson)
 	if err != nil {
-		return models.BoletoView{}, err
+		return result, err
 	}
 	err = json.Unmarshal([]byte(rjson), &result)
 	return result, err
