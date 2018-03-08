@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	_ "github.com/lib/pq"
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/models"
 )
@@ -13,6 +12,7 @@ import (
 type postgresql struct {
 }
 
+//CreatePostgreSQL cria uma nova intancia de conexão com o PostgreSQL
 func CreatePostgreSQL() (DB, error) {
 	db := new(postgresql)
 	return db, nil
@@ -23,7 +23,10 @@ func createConnection() (*sql.DB, error) {
 	conString := fmt.Sprintf(
 		"user=%s password=%s dbname=%s host=%s port=%d sslmode=%s",
 		cfg.PostgresUser, cfg.PostgresPassword, cfg.PostgresDBName, cfg.PostgresHost, cfg.PostgresPort, cfg.PostgresSSLMode)
-	db := sql.Open("postgres", conString)
+	db, err := sql.Open("postgres", conString)
+	if err != nil {
+		return nil, err
+	}
 	return db, db.Ping()
 }
 
@@ -41,7 +44,7 @@ func (e *postgresql) SaveBoleto(boleto models.BoletoView) error {
 //GetBoletoById busca um boleto pelo ID que vem na URL
 func (e *postgresql) GetBoletoByID(id string) (models.BoletoView, error) {
 	var rid, rjson string
-	var result BoletoView
+	var result models.BoletoView
 	con, err := createConnection()
 	if err != nil {
 		return result, models.NewInternalServerError(err.Error(), "Falha ao conectar com o banco de dados")

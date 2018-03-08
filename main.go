@@ -11,6 +11,7 @@ import (
 
 	"os"
 
+	_ "github.com/lib/pq"
 	"github.com/mundipagg/boleto-api/app"
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/log"
