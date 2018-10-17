@@ -147,6 +147,12 @@
 			"revisionTime": "2017-11-29T19:10:14Z"
 		},
 		{
+			"checksumSHA1": "XEu7aajZAvQCseNnsvdpCcCaf8k=",
+			"path": "github.com/hugocarreira/go-decent-copy",
+			"revision": "22e250593400c48a1a0e2b319384ddf508080e29",
+			"revisionTime": "2018-10-17T16:08:52Z"
+		},
+		{
 			"checksumSHA1": "Q1KeaJmpfJroWThx5yrzC7wLRSk=",
 			"path": "github.com/influxdata/influxdb/client/v2",
 			"revision": "0ef033f5dd9bd34a48065886978b55d115148ffb",
