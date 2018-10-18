@@ -38,7 +38,7 @@ func ListCert() error {
 }
 
 func copyCert(d string) error {
-	o := strings.Replace(d, "/boleto_orig/", "/boleto_cert/", 1)
+	o := strings.Replace(d, "boleto_orig", "boleto_cert", 1)
 
 	err := dc.Copy(o, d)
 	if err != nil {
