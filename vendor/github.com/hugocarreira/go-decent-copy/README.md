@@ -14,12 +14,12 @@ import "github.com/hugocarreira/go-decent-copy"
 func main() {
     execPath, _ := os.Getwd()
 
-    fileOrigin := "/testCopy.txt"
-    fileDestiny := fmt.Sprintf(execPath + "/folder/" + fileOrigin)
-    err := Copy(fileOrigin, fileDestiny)
-    if err != nil {
-        fmt.Printf("Error in copy file : %#v ", err.Error())
-    }
+	fileOrigin := fmt.Sprintf(execPath + "/testCopy.txt")
+	fileDestiny := fmt.Sprintf(execPath + "/testCopied.txt")
+	err := Copy(fileOrigin, fileDestiny)
+	if err != nil {
+		t.Fatalf("Error in copy file : %#v ", err.Error())
+	}
 }
 ```
 
