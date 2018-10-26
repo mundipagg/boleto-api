@@ -84,3 +84,13 @@ func ParseBoleto() gin.HandlerFunc {
 		businessMetrics.PushAndFlush("boleto-total", 1)
 	}
 }
+
+//GetBoleto metrifica a entrada de GET Boleto
+func GetBoleto() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		businessMetrics := metrics.GetBusinessMetrics()
+		fmt := c.Query("fmt")
+		businessMetrics.PushAndFlush("boleto-get-"+fmt, 1)
+		businessMetrics.PushAndFlush("boleto-get-total", 1)
+	}
+}
