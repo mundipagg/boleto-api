@@ -80,6 +80,7 @@ func ParseBoleto() gin.HandlerFunc {
 		resp, _ := c.Get("boletoResponse")
 		l.ResponseApplication(resp, c.Request.URL.RequestURI())
 		tag := bank.GetBankNameIntegration() + "-status"
-		businessMetrics.Push(tag, c.Writer.Status())
+		businessMetrics.PushAndFlush(tag, c.Writer.Status())
+		businessMetrics.PushAndFlush("boleto-total", 1)
 	}
 }
