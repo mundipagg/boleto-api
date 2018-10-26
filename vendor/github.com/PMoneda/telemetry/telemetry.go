@@ -88,7 +88,7 @@ func (t *Telemetry) PushAndFlush(tag string, value interface{}) (err error) {
 	if err != nil {
 		return
 	}
-	err = t.Registry.Flush(tag)
+	err = t.Registry.Flush(t.Root + "." + tag)
 	return
 }
 
@@ -102,32 +102,43 @@ func (t *Telemetry) Flush() (err error) {
 	return
 }
 
-func (t *Telemetry) StartRuntimeTelemetry() {
-	tick := time.Tick(1 * time.Second)
-	for {
-		select {
-		case <-tick:
-			var m runtime.MemStats
-			runtime.ReadMemStats(&m)
-			alloc := float64(m.Alloc) / (1024)
-			totalAlloc := float64(m.TotalAlloc) / (1024)
-			gcRun := float64(m.NumGC)
-			t.Push("memory-alloc", alloc)
-			t.Push("total-memory-alloc", totalAlloc)
-			t.Push("garbage-collector-total-run", gcRun)
-			t.Push("num-goroutines", runtime.NumGoroutine())
-			t.Flush()
+func (t *Telemetry) StartRuntimeTelemetry(useroutine bool) {
+
+	t.Flush()
+
+	if useroutine {
+		tick := time.Tick(1 * time.Second)
+		for {
+			select {
+			case <-tick:
+				var m runtime.MemStats
+				runtime.ReadMemStats(&m)
+				alloc := float64(m.Alloc) / (1024)
+				totalAlloc := float64(m.TotalAlloc) / (1024)
+				gcRun := float64(m.NumGC)
+				t.Push("memory-alloc", alloc)
+				t.Push("total-memory-alloc", totalAlloc)
+				t.Push("garbage-collector-total-run", gcRun)
+				t.Push("num-goroutines", runtime.NumGoroutine())
+				t.Flush()
+			}
 		}
 	}
+
 }
 
-func (t *Telemetry) StartTelemetry() {
-	tick := time.Tick(1 * time.Second)
-	for {
-		select {
-		case <-tick:
-			t.Flush()
+func (t *Telemetry) StartTelemetry(useroutine bool) {
 
+	t.Flush()
+
+	if useroutine {
+		tick := time.Tick(1 * time.Second)
+		for {
+			select {
+			case <-tick:
+				t.Flush()
+
+			}
 		}
 	}
 }
