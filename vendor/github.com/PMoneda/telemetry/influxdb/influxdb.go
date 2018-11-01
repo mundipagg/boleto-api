@@ -10,12 +10,13 @@ import (
 
 //InfluxDB is the interface to Influx instance
 type InfluxDB struct {
-	Port      string
-	Host      string
-	Precision string
-	Client    client.Client
-	Buffer    map[string]client.BatchPoints
-	mutex     sync.Mutex
+	Port        string
+	Host        string
+	Precision   string
+	Consistency string
+	Client      client.Client
+	Buffer      map[string]client.BatchPoints
+	mutex       sync.Mutex
 }
 
 type registryMetaData struct {
@@ -32,7 +33,8 @@ func New(host, port string) *InfluxDB {
 	db := new(InfluxDB)
 	db.Host = host
 	db.Port = port
-	db.Precision = "s"
+	db.Precision = "ns"
+	db.Consistency = "any"
 	db.Buffer = make(map[string]client.BatchPoints)
 	db.Connect()
 	return db
@@ -52,10 +54,10 @@ func (db *InfluxDB) Registry(tag string, value interface{}) (err error) {
 	}
 
 	pt, err := client.NewPoint(meta.Measurement, tags, fields, time.Now())
-	bp.AddPoint(pt)
 	if err != nil {
 		return
 	}
+	bp.AddPoint(pt)
 	return
 }
 func (db *InfluxDB) Flush(tag string) (err error) {
@@ -81,9 +83,10 @@ func (db *InfluxDB) createBatchPoint(tag string) (batch client.BatchPoints, err 
 	defer db.mutex.Unlock()
 	meta := db.parseTag(tag)
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
-		Database:        meta.DB,
-		Precision:       db.Precision,
-		RetentionPolicy: meta.Retention,
+		Database:         meta.DB,
+		Precision:        db.Precision,
+		WriteConsistency: db.Consistency,
+		RetentionPolicy:  meta.Retention,
 	})
 	db.Buffer[meta.DB+"."+meta.Retention] = bp
 	batch = bp
