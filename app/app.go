@@ -58,12 +58,10 @@ func installCertificates() {
 		res, err := util.ListCert()
 		if err != nil {
 			fmt.Println("Copy Cert Fails")
-			l := log.Formatter(err.Error())
-			log.Info(l)
+			log.Info(err.Error())
 			os.Exit(-1)
 		}
-		l := log.Formatter(res)
-		log.Info(l)
+		log.Info(res)
 	}
 }
 
