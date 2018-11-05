@@ -55,13 +55,11 @@ func installLog() {
 
 func installCertificates() {
 	if config.Get().DevMode == false {
-		res, err := util.ListCert()
+		err := util.ListCert()
 		if err != nil {
-			fmt.Println("Copy Cert Fails")
-			log.Info(err.Error())
+			fmt.Println("Copy Certificates Fails")
 			os.Exit(-1)
 		}
-		log.Info(res)
 	}
 }
 
