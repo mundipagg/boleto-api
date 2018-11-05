@@ -82,7 +82,7 @@ func copyCert(certificateDestiny string) (string, error) {
 
 	// return res, nil
 
-	originPath := strings.Replace(certificateDestiny, "boleto_orig", "boleto_cert", 1)
+	originPath := strings.Replace(certificateDestiny, "boleto_cert", "boleto_orig", 1)
 	fmt.Println(originPath)
 
 	err := dc.Copy(originPath, certificateDestiny)
