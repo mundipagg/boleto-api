@@ -44,7 +44,7 @@ func Install() error {
 	return nil
 }
 
-func formatter(message string) string {
+func Formatter(message string) string {
 	return "[{Application}: {Operation}] - {MessageType} " + message
 }
 
@@ -65,7 +65,7 @@ func (l Log) Request(content interface{}, url string, headers map[string]string)
 		props.AddProperty("Headers", headers)
 		props.AddProperty("URL", url)
 		action := strings.Split(url, "/")
-		msg := formatter(fmt.Sprintf("to {BankName} (%s) | {Recipient}", action[len(action)-1]))
+		msg := Formatter(fmt.Sprintf("to {BankName} (%s) | {Recipient}", action[len(action)-1]))
 
 		l.logger.Information(msg, props)
 	})()
@@ -80,7 +80,7 @@ func (l Log) Response(content interface{}, url string) {
 		props := l.defaultProperties("Response", content)
 		props.AddProperty("URL", url)
 		action := strings.Split(url, "/")
-		msg := formatter(fmt.Sprintf("from {BankName} (%s) | {Recipient}", action[len(action)-1]))
+		msg := Formatter(fmt.Sprintf("from {BankName} (%s) | {Recipient}", action[len(action)-1]))
 
 		l.logger.Information(msg, props)
 	})()
@@ -95,7 +95,7 @@ func (l Log) RequestApplication(content interface{}, url string, headers map[str
 		props := l.defaultProperties("Request", content)
 		props.AddProperty("Headers", headers)
 		props.AddProperty("URL", url)
-		msg := formatter("from {IPAddress} | {Recipient}")
+		msg := Formatter("from {IPAddress} | {Recipient}")
 
 		l.logger.Information(msg, props)
 	})()
@@ -109,7 +109,7 @@ func (l Log) ResponseApplication(content interface{}, url string) {
 	go (func() {
 		props := l.defaultProperties("Response", content)
 		props.AddProperty("URL", url)
-		msg := formatter(" {Operation} | {Recipient}")
+		msg := Formatter(" {Operation} | {Recipient}")
 
 		l.logger.Information(msg, props)
 	})()
@@ -137,7 +137,7 @@ func (l Log) Warn(content interface{}, msg string) {
 	}
 	go (func() {
 		props := l.defaultProperties("Warning", content)
-		m := formatter(msg)
+		m := Formatter(msg)
 
 		l.logger.Warning(m, props)
 	})()
@@ -150,7 +150,7 @@ func (l Log) Fatal(content interface{}, msg string) {
 	}
 	go (func() {
 		props := l.defaultProperties("Error", content)
-		m := formatter(msg)
+		m := Formatter(msg)
 
 		l.logger.Fatal(m, props)
 	})()
@@ -158,19 +158,19 @@ func (l Log) Fatal(content interface{}, msg string) {
 
 //InitRobot loga o inicio da execução do robô de recovery
 func (l Log) InitRobot() {
-	msg := formatter("- Starting execution")
+	msg := Formatter("- Starting execution")
 	go logger.Information(msg, defaultRobotProperties("Execute", l.Operation, ""))
 }
 
 //ResumeRobot loga um resumo de Recovery do robô de recovery
 func (l Log) ResumeRobot(key string) {
-	msg := formatter(key)
+	msg := Formatter(key)
 	go logger.Information(msg, defaultRobotProperties("RecoveryBoleto", l.Operation, key))
 }
 
 //EndRobot loga o fim da execução do robô de recovery
 func (l Log) EndRobot() {
-	msg := formatter("- Finishing execution")
+	msg := Formatter("- Finishing execution")
 	go logger.Information(msg, defaultRobotProperties("Finish", l.Operation, ""))
 }
 

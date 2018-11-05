@@ -2,16 +2,15 @@ package util
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
 	"github.com/mundipagg/boleto-api/config"
-
-	dc "github.com/hugocarreira/go-decent-copy"
 )
 
 //ListCert Lista os Certificados necessários e chama o método que faz a cópia
-func ListCert() error {
+func ListCert() (string, error) {
 
 	list := []string{
 		config.Get().CertBoletoPathCrt,
@@ -22,37 +21,62 @@ func ListCert() error {
 	}
 
 	var err error
+	var res string
 
 	for _, v := range list {
 
-		err = copyCert(v)
+		res, err = copyCert(v)
 
 		if err != nil {
-			return err
+			return "", err
 		}
 
 	}
 
-	return err
+	return res, nil
 
 }
 
-func copyCert(d string) error {
-	o := strings.Replace(d, "boleto_orig", "boleto_cert", 1)
+func copyCert(c string) (string, error) {
+	execPath, _ := os.Getwd()
 
-	err := dc.Copy(o, d)
+	f := strings.Split(c, "/")
+
+	fName := f[len(f)-1]
+
+	srcFile, err := os.Open(execPath + "/boleto_orig/" + fName)
 	if err != nil {
 		fmt.Println("Error:", err.Error())
-		return err
+		return "", err
+	}
+	defer srcFile.Close()
+
+	destFile, err := os.Create(c)
+	if err != nil {
+		fmt.Println("Error:", err.Error())
+		return "", err
+	}
+	defer destFile.Close()
+
+	_, err = io.Copy(destFile, srcFile)
+	if err != nil {
+		fmt.Println("Error:", err.Error())
+		return "", err
 	}
 
-	err = os.Chmod(d, 0777)
+	err = destFile.Sync()
 	if err != nil {
 		fmt.Println("Error: ", err.Error())
-		return err
+		return "", err
 	}
 
-	fmt.Println("Cert Copy Sucessful: ", d)
+	err = os.Chmod(c, 0777)
+	if err != nil {
+		fmt.Println("Error: ", err.Error())
+		return "", err
+	}
 
-	return err
+	res := fmt.Sprintf("Certificate Copy Sucessful: %s", c)
+
+	return res, nil
 }
