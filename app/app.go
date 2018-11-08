@@ -35,9 +35,9 @@ func Run(params *Params) {
 		go mock.Run("9091")
 	}
 
-	installCertificates()
-
 	installLog()
+
+	installCertificates()
 
 	go robot.RecoveryRobot(config.Get().RecoveryRobotExecutionEnabled)
 
@@ -56,9 +56,8 @@ func installLog() {
 func installCertificates() {
 	if config.Get().DevMode == false {
 		err := util.ListCert()
-
 		if err != nil {
-			fmt.Println("Copy Cert Fails")
+			fmt.Println("Copy Certificates Fails")
 			os.Exit(-1)
 		}
 	}
