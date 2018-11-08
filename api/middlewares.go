@@ -90,7 +90,11 @@ func GetBoleto() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		businessMetrics := metrics.GetBusinessMetrics()
 		fmt := c.Query("fmt")
-		businessMetrics.PushAndFlush("boleto-get-"+fmt, 1)
+		if fmt == "html" {
+			businessMetrics.PushAndFlush("boleto-get-html", 1)
+		} else if fmt == "pdf" {
+			businessMetrics.PushAndFlush("boleto-get-pdf", 1)
+		}
 		businessMetrics.PushAndFlush("boleto-get-total", 1)
 	}
 }
