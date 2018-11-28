@@ -315,6 +315,12 @@
 			"revisionTime": "2018-08-11T06:31:47Z"
 		},
 		{
+			"checksumSHA1": "dq4CEE59GfRD0wuUoAYHI58SA2Y=",
+			"path": "github.com/tdewolff/parse/json",
+			"revision": "dd9676af8dd934a61082c5b3038e79626847fa32",
+			"revisionTime": "2018-08-11T06:31:47Z"
+		},
+		{
 			"checksumSHA1": "uXYLno7ESwO7lRH+A1+f4BS0AHc=",
 			"path": "github.com/tdewolff/parse/strconv",
 			"revision": "dd9676af8dd934a61082c5b3038e79626847fa32",
