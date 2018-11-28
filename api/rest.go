@@ -21,7 +21,7 @@ func InstallRestAPI() {
 	}
 	InstallV1(router)
 	router.StaticFile("/favicon.ico", "./boleto/favicon.ico")
-	router.GET("/boleto", GetBoleto(), getBoleto)
+	router.GET("/boleto", getBoleto)
 	router.GET("/boleto/confirmation", confirmation)
 	router.POST("/boleto/confirmation", confirmation)
 	router.Run(config.Get().APIPort)

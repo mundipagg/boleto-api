@@ -1,6 +1,6 @@
 package integrationTests
 
-import (
+import (	
 	"math/rand"
 	"strconv"
 	"strings"
@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/mundipagg/boleto-api/app"
+	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/util"
 )
@@ -161,7 +162,7 @@ func TestRegisterBoletoRequest(t *testing.T) {
 	time.Sleep(10 * time.Second)
 	Convey("deve-se registrar um boleto e retornar as informações de url, linha digitável e código de barras", t, func() {
 
-		response, st, err := util.Post("http://localhost:3000/v1/boleto/register", getBody(models.BancoDoBrasil, 200), nil)
+		response, st, err := util.Post("http://localhost:3000/v1/boleto/register", getBody(models.BancoDoBrasil, 200), config.Get().TimeoutDefault, map[string]string{"Content-Type": "application/json"})		
 		So(err, ShouldEqual, nil)
 		So(st, ShouldEqual, 200)
 		boleto := models.BoletoResponse{}
@@ -169,7 +170,7 @@ func TestRegisterBoletoRequest(t *testing.T) {
 		So(errJSON, ShouldEqual, nil)
 		Convey("Se o boleto foi registrado então ele tem que está disponível no formato HTML", func() {
 			So(len(boleto.Links), ShouldBeGreaterThan, 0)
-			html, st, err := util.Get(boleto.Links[0].Href, "", nil)
+			html, st, err := util.Get(boleto.Links[0].Href, "", config.Get().TimeoutDefault, nil)
 			So(err, ShouldEqual, nil)
 			So(st, ShouldEqual, 200)
 			htmlFromBoleto := strings.Contains(html, boleto.DigitableLine)
@@ -178,7 +179,7 @@ func TestRegisterBoletoRequest(t *testing.T) {
 	})
 
 	Convey("Deve-se retornar a lista de erros ocorridos durante o registro", t, func() {
-		response, st, err := util.Post("http://localhost:3000/v1/boleto/register", getBody(models.BancoDoBrasil, 301), nil)
+		response, st, err := util.Post("http://localhost:3000/v1/boleto/register", getBody(models.BancoDoBrasil, 301), config.Get().TimeoutDefault, map[string]string{"Content-Type": "application/json"})
 		So(err, ShouldEqual, nil)
 		So(st, ShouldEqual, 400)
 		boleto := models.BoletoResponse{}
@@ -188,7 +189,7 @@ func TestRegisterBoletoRequest(t *testing.T) {
 		Convey("Deve-se retornar erro quando passar um Nosso Número inválido", func() {
 			m := getModelBody(models.BancoDoBrasil, 200)
 			m.Title.OurNumber = 999999999999
-			response, st, err := util.Post("http://localhost:3000/v1/boleto/register", stringify(m), nil)
+			response, st, err := util.Post("http://localhost:3000/v1/boleto/register", stringify(m), config.Get().TimeoutDefault, map[string]string{"Content-Type": "application/json"})
 			So(err, ShouldEqual, nil)
 			So(st, ShouldEqual, 400)
 			boleto := models.BoletoResponse{}
@@ -203,7 +204,7 @@ func TestRegisterBoletoRequest(t *testing.T) {
 				assert := func(bank models.BankNumber) {
 					m := getModelBody(bank, 200)
 					m.Agreement.Account = ""
-					response, st, err := util.Post("http://localhost:3000/v1/boleto/register", stringify(m), nil)
+					response, st, err := util.Post("http://localhost:3000/v1/boleto/register", stringify(m), config.Get().TimeoutDefault, map[string]string{"Content-Type": "application/json"})
 					So(err, ShouldEqual, nil)
 					So(st, ShouldEqual, 400)
 					boleto := models.BoletoResponse{}
@@ -220,7 +221,7 @@ func TestRegisterBoletoRequest(t *testing.T) {
 				assert := func(bank models.BankNumber) {
 					m := getModelBody(bank, 200)
 					m.Buyer.Document.Type = "FAIL"
-					response, st, err := util.Post("http://localhost:3000/v1/boleto/register", stringify(m), nil)
+					response, st, err := util.Post("http://localhost:3000/v1/boleto/register", stringify(m), config.Get().TimeoutDefault, map[string]string{"Content-Type": "application/json"})
 					So(err, ShouldEqual, nil)
 					So(st, ShouldEqual, 400)
 					boleto := models.BoletoResponse{}
@@ -241,7 +242,7 @@ func TestRegisterBoletoRequest(t *testing.T) {
 					m := getModelBody(models.BancoDoBrasil, 200)
 					m.Buyer.Document.Type = "CPF"
 					m.Buyer.Document.Number = "ASDA"
-					response, st, err := util.Post("http://localhost:3000/v1/boleto/register", stringify(m), nil)
+					response, st, err := util.Post("http://localhost:3000/v1/boleto/register", stringify(m), config.Get().TimeoutDefault, map[string]string{"Content-Type": "application/json"})
 					So(err, ShouldEqual, nil)
 					So(st, ShouldEqual, 400)
 					boleto := models.BoletoResponse{}
@@ -264,7 +265,7 @@ func TestRegisterBoletoRequest(t *testing.T) {
 	Convey("Quando um boleto não existir na base de dados", t, func() {
 
 		Convey("A mensagem de retorno deverá ser um JSON de Erros com Message: Not Found", func() {
-			resp, _, err := util.Get("http://localhost:3000/boleto?fmt=html&id=90230843492384", getBody(models.Caixa, 200), nil)
+			resp, _, err := util.Get("http://localhost:3000/boleto?fmt=html&id=90230843492384", getBody(models.Caixa, 200), config.Get().TimeoutDefault, nil)
 			So(err, ShouldBeNil)
 			So(resp, ShouldContainSubstring, "{\"errors\":[{\"code\":\"MP404\",\"message\":\"Not Found\"}]}")
 		})
@@ -272,7 +273,7 @@ func TestRegisterBoletoRequest(t *testing.T) {
 	})
 
 	Convey("Deve-se retornar um objeto de erro quando não registra um boleto na Caixa", t, func() {
-		response, st, err := util.Post("http://localhost:3000/v1/boleto/register", getBody(models.Caixa, 300), nil)
+		response, st, err := util.Post("http://localhost:3000/v1/boleto/register", getBody(models.Caixa, 300), config.Get().TimeoutDefault, map[string]string{"Content-Type": "application/json"})
 		So(err, ShouldBeNil)
 		So(st, ShouldEqual, 400)
 		boleto := models.BoletoResponse{}
@@ -283,7 +284,7 @@ func TestRegisterBoletoRequest(t *testing.T) {
 
 	Convey("Quando o serviço da caixa estiver offline", t, func() {
 		Convey("Deve-se retornar o status 504", func() {
-			resp, st, _ := util.Post("http://localhost:3000/v1/boleto/register", getBody(models.Caixa, 504), nil)
+			resp, st, _ := util.Post("http://localhost:3000/v1/boleto/register", getBody(models.Caixa, 504), config.Get().TimeoutDefault, map[string]string{"Content-Type": "application/json"})
 			So(st, ShouldEqual, 504)
 			So(strings.Contains(resp, "MP504"), ShouldBeTrue)
 		})
@@ -298,7 +299,7 @@ func BenchmarkRegisterBoleto(b *testing.B) {
 	param.MockMode = true
 	go app.Run(param)
 	for i := 0; i < b.N; i++ {
-		util.Post("http://localhost:3000/v1/boleto/register", body, nil)
+		util.Post("http://localhost:3000/v1/boleto/register", body, config.Get().TimeoutDefault, map[string]string{"Content-Type": "application/json"})
 
 	}
 }

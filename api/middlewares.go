@@ -80,17 +80,7 @@ func ParseBoleto() gin.HandlerFunc {
 		resp, _ := c.Get("boletoResponse")
 		l.ResponseApplication(resp, c.Request.URL.RequestURI())
 		tag := bank.GetBankNameIntegration() + "-status"
-		businessMetrics.PushAndFlush(tag, c.Writer.Status())
-		businessMetrics.PushAndFlush("boleto-register-total", 1)
-	}
-}
+		businessMetrics.Push(tag, c.Writer.Status())
 
-//GetBoleto metrifica a entrada de GET Boleto
-func GetBoleto() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		businessMetrics := metrics.GetBusinessMetrics()
-		fmt := c.Query("fmt")
-		businessMetrics.PushAndFlush("boleto-get-"+fmt, 1)
-		businessMetrics.PushAndFlush("boleto-get-total", 1)
 	}
 }
