@@ -8,7 +8,7 @@ var business *Telemetry
 func InstallBusinessMetrics(cnf registry.Config) {
 	value := Database("boleto-api").RetentionPolicy("business").Measurement("boletos").Tag("host").Value("host0")
 	business = BuildTelemetryContext(cnf, Context(value))
-	business.StartTelemetry(false)
+	go business.StartTelemetry(true)
 }
 
 func GetBusinessMetrics() *Telemetry {

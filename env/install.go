@@ -40,6 +40,9 @@ func ConfigMock(port string) {
 	os.Setenv("RECOVERYROBOT_EXECUTION_IN_MINUTES", "2")
 	os.Setenv("SEQ_URL", "http://localhost:5341")
 	os.Setenv("SEQ_API_KEY", "4jZzTybZ9bUHtJiPdh6")
+	os.Setenv("TIMEOUT_REGISTER", "30")
+	os.Setenv("TIMEOUT_TOKEN", "20")
+	os.Setenv("TIMEOUT_DEFAULT", "50")
 	config.Install(true, true, true)
 }
 
