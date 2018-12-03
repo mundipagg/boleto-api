@@ -59,6 +59,8 @@ type Config struct {
 	TimeoutRegister                 string
 	TimeoutToken                    string
 	TimeoutDefault                  string
+	URLPfisaToken                   string
+	URLPfisaRegister                string
 }
 
 var cnf Config
@@ -124,6 +126,8 @@ func Install(mockMode, devMode, disableLog bool) {
 		TimeoutRegister:                 os.Getenv("TIMEOUT_REGISTER"),
 		TimeoutToken:                    os.Getenv("TIMEOUT_TOKEN"),
 		TimeoutDefault:                  os.Getenv("TIMEOUT_DEFAULT"),
+		URLPfisaToken:                   os.Getenv("URL_PFISA_TOKEN"),
+		URLPfisaRegister:                os.Getenv("URL_PFISA_REGISTER"),
 	}
 }
 
