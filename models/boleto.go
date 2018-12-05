@@ -145,7 +145,7 @@ func (b BankNumber) GetBoletoBankNumberAndDigit() string {
 		return "341-7"
 	case Bradesco:
 		return "237-2"
-	case Pfisa:
+	case Pefisa:
 		return "174-X"
 	default:
 		return ""
@@ -173,8 +173,8 @@ const (
 	//Real constante do REal
 	Real = 9
 
-	// Pfisa constante do Pfisa
-	Pfisa = 174
+	// Pefisa constante do Pefisa
+	Pefisa = 174
 )
 
 // BoletoErrorConector é um connector flow para criar um objeto de erro

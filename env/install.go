@@ -29,8 +29,8 @@ func ConfigMock(port string) {
 	os.Setenv("URL_ITAU_TICKET", "http://localhost:"+port+"/itau/gerarToken")
 	os.Setenv("URL_ITAU_REGISTER", "http://localhost:"+port+"/itau/registrarBoleto")
 	os.Setenv("URL_BRADESCO_NET_EMPRESA", "http://localhost:"+port+"/bradesconetempresa/registrarBoleto")
-	os.Setenv("URL_PFISA_TOKEN", "http://localhost:"+port+"/pfisa/gerarToken")
-	os.Setenv("URL_PFISA_REGISTER", "http://localhost:"+port+"/pfisa/registrarBoleto")
+	os.Setenv("URL_PEFISA_TOKEN", "http://localhost:"+port+"/pefisa/gerarToken")
+	os.Setenv("URL_PEFISA_REGISTER", "http://localhost:"+port+"/pefisa/registrarBoleto")
 	os.Setenv("MONGODB_URL", "localhost:27017")
 	os.Setenv("MONGODB_USER", "")
 	os.Setenv("MONGODB_PASSWORD", "")
@@ -93,8 +93,8 @@ func configFlags(devMode, mockMode, disableLog bool) {
 		os.Setenv("TIMEOUT_REGISTER", "30")
 		os.Setenv("TIMEOUT_TOKEN", "20")
 		os.Setenv("TIMEOUT_DEFAULT", "50")
-		os.Setenv("URL_PFISA_TOKEN", "http://psdo-hom.pernambucanas.com.br:81/sdcobr/api/oauth/token?grant_type=client_credentials")
-		os.Setenv("URL_PFISA_REGISTER", "http://psdo-hom.pernambucanas.com.br:81/sdcobr/api/v2/titulos")
+		os.Setenv("URL_PEFISA_TOKEN", "http://psdo-hom.pernambucanas.com.br:81/sdcobr/api/oauth/token")
+		os.Setenv("URL_PEFISA_REGISTER", "http://psdo-hom.pernambucanas.com.br:81/sdcobr/api/v2/titulos")
 	}
 	config.Install(mockMode, devMode, disableLog)
 }

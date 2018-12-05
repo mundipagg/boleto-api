@@ -2,9 +2,9 @@ package bank
 
 import (
 	"github.com/mundipagg/boleto-api/models"
-	"github.com/mundipagg/boleto-api/pfisa"
+	"github.com/mundipagg/boleto-api/pefisa"
 )
 
-func getIntegrationPfisa(boleto models.BoletoRequest) (Bank, error) {
-	return pfisa.New(), nil
+func getIntegrationPefisa(boleto models.BoletoRequest) (Bank, error) {
+	return pefisa.New(), nil
 }
