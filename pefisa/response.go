@@ -27,12 +27,8 @@ const boletoResponsePefisa = `
 
 const boletoResponseErrorPefisa = `
 {
-	"error": [
-		{
-			"code": "{{errorCode}}",
-			"message": "{{errorMessage}}"
-		}
-	]
+	"code": "{{errorCode}}",
+	"message": "{{errorMessage}}"
 }
 `
 

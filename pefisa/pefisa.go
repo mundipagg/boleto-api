@@ -2,6 +2,7 @@ package pefisa
 
 import (
 	"errors"
+	"strconv"
 
 	. "github.com/PMoneda/flow"
 	"github.com/mundipagg/boleto-api/config"
@@ -10,7 +11,7 @@ import (
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/tmpl"
 	"github.com/mundipagg/boleto-api/util"
-	//"github.com/mundipagg/boleto-api/validations"
+	"github.com/mundipagg/boleto-api/validations"
 )
 
 type bankPefisa struct {
@@ -78,12 +79,27 @@ func (b bankPefisa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoR
 	exec := NewFlow().From("message://?source=inline", boleto, getRequestPefisa(), tmpl.GetFuncMaps())
 	exec.To("logseq://?type=request&url="+pefisaURL, b.log)
 
+	var response string
+	var status int
+	var err error
 	duration := util.Duration(func() {
-		exec.To(pefisaURL, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutRegister})
+		response, status, err = b.sendRequest(exec.GetBody().(string))
 	})
-	timing.Push("pefisa-register-boleto-time", duration.Seconds())
+	if err != nil {
+		return models.BoletoResponse{}, err
+	}
 
+	timing.Push("pefisa-register-boleto-time", duration.Seconds())
+	exec.To("set://?prop=header", map[string]string{"status": strconv.Itoa(status)})
+	exec.To("set://?prop=body", response)
 	exec.To("logseq://?type=response&url="+pefisaURL, b.log)
+
+	if status == 200 {
+		exec.To("set://?prop=body", response)
+	} else {
+		dataError := util.ParseJSON(response, new(models.ArrayDataError)).(*models.ArrayDataError)
+		exec.To("set://?prop=body", util.Stringify(dataError.Error[0]))
+	}
 
 	ch := exec.Choice()
 	ch.When(Header("status").IsEqualTo("200"))
@@ -98,9 +114,7 @@ func (b bankPefisa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoR
 	ch.To("logseq://?type=response&url="+pefisaURL, b.log).To("apierro://")
 
 	switch t := exec.GetBody().(type) {
-
 	case *models.BoletoResponse:
-
 		return *t, nil
 	case error:
 		return models.BoletoResponse{}, t
@@ -135,4 +149,9 @@ func (b bankPefisa) GetBankNumber() models.BankNumber {
 
 func (b bankPefisa) GetBankNameIntegration() string {
 	return "Pefisa"
+}
+
+func (b bankPefisa) sendRequest(body string) (string, int, error) {
+	serviceURL := config.Get().URLPefisaRegister
+	return util.Post(serviceURL, body, config.Get().TimeoutDefault, map[string]string{"Soapaction": "RegisterBoleto"})
 }

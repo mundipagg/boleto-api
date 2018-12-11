@@ -146,7 +146,7 @@ func (b BankNumber) GetBoletoBankNumberAndDigit() string {
 	case Bradesco:
 		return "237-2"
 	case Pefisa:
-		return "174-X"
+		return "174"
 	default:
 		return ""
 	}

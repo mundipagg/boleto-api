@@ -31,6 +31,8 @@ func GetConfig(boleto models.BoletoRequest) ConfigBank {
 		return configCaixa(boleto)
 	case models.Itau:
 		return configItau(boleto)
+	case models.Pefisa:
+		return configPefisa(boleto)
 	default:
 		return configBB(boleto)
 	}
@@ -54,6 +56,10 @@ func configSantander(boleto models.BoletoRequest) ConfigBank {
 
 func configItau(boleto models.BoletoRequest) ConfigBank {
 	return ConfigBank{Logo: template.HTML(LogoItau), EspecieDoc: "DM", Aceite: "N", Quantidade: "N", ValorCotacao: "", Moeda: "R$"}
+}
+
+func configPefisa(boleto models.BoletoRequest) ConfigBank {
+	return ConfigBank{Logo: template.HTML(LogoPefisa), EspecieDoc: "DM", Aceite: "N", Quantidade: "", ValorCotacao: "", Moeda: "R$"}
 }
 
 func configBradesco(boleto models.BoletoRequest) ConfigBank {
