@@ -153,5 +153,5 @@ func (b bankPefisa) GetBankNameIntegration() string {
 
 func (b bankPefisa) sendRequest(body string) (string, int, error) {
 	serviceURL := config.Get().URLPefisaRegister
-	return util.Post(serviceURL, body, config.Get().TimeoutDefault, map[string]string{"Soapaction": "RegisterBoleto"})
+	return util.Post(serviceURL, body, config.Get().TimeoutRegister, map[string]string{"Soapaction": "RegisterBoleto"})
 }
