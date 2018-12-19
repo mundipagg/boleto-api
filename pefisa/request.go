@@ -1,12 +1,12 @@
 package pefisa
 
 const registerPefisa = `
-## Authorization: Bearer {{.Authentication.AuthorizationToken}}
-## Content-Type: application/json
+## Authorization:Bearer {{.Authentication.AuthorizationToken}}
+## Content-Type:application/json
 {
     "idBeneficiario": {{.Agreement.AgreementNumber}},
     "carteira": {{.Agreement.Wallet}},
-    "nossoNumero": "{{padLeft (toString .Title.OurNumber) "0" 20}}",
+    "nossoNumero": "{{padLeft (toString .Title.OurNumber) "0" 10}}",
     "seuNumero": "{{truncate .Title.DocumentNumber 10}}",    
     "tipoTitulo": 1,
     "valorTitulo": "{{.Title.AmountInCents}}",
