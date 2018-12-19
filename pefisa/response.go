@@ -25,10 +25,17 @@ const boletoResponsePefisa = `
 }
 `
 
-const boletoResponseErrorPefisa = `
+const boletoResponseErrorPefisaArray = `
 {
 	"code": "{{errorCode}}",
 	"message": "{{errorMessage}}"
+}
+`
+
+const boletoResponseErrorPefisa = `
+{
+	"error": "{{errorCode}}",
+	"error_description": "{{errorMessage}}"
 }
 `
 
@@ -38,6 +45,10 @@ func getResponsePefisa() string {
 
 func getAPIResponsePefisa() string {
 	return registerBoletoResponsePefisa
+}
+
+func getResponseErrorPefisaArray() string {
+	return boletoResponseErrorPefisaArray
 }
 
 func getResponseErrorPefisa() string {

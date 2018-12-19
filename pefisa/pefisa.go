@@ -83,7 +83,7 @@ func (b bankPefisa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoR
 	var status int
 	var err error
 	duration := util.Duration(func() {
-		response, status, err = b.sendRequest(exec.GetBody().(string))
+		response, status, err = b.sendRequest(exec.GetBody().(string), boleto.Authentication.AuthorizationToken)
 	})
 	if err != nil {
 		return models.BoletoResponse{}, err
@@ -94,7 +94,7 @@ func (b bankPefisa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoR
 	exec.To("set://?prop=body", response)
 	exec.To("logseq://?type=response&url="+pefisaURL, b.log)
 
-	if status == 200 {
+	if status == 200 || status == 401 {
 		exec.To("set://?prop=body", response)
 	} else {
 		dataError := util.ParseJSON(response, new(models.ArrayDataError)).(*models.ArrayDataError)
@@ -107,6 +107,10 @@ func (b bankPefisa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoR
 	ch.To("unmarshall://?format=json", new(models.BoletoResponse))
 
 	ch.When(Header("status").IsEqualTo("400"))
+	ch.To("transform://?format=json", getResponseErrorPefisaArray(), getAPIResponsePefisa(), tmpl.GetFuncMaps())
+	ch.To("unmarshall://?format=json", new(models.BoletoResponse))
+
+	ch.When(Header("status").IsEqualTo("401"))
 	ch.To("transform://?format=json", getResponseErrorPefisa(), getAPIResponsePefisa(), tmpl.GetFuncMaps())
 	ch.To("unmarshall://?format=json", new(models.BoletoResponse))
 
@@ -151,7 +155,9 @@ func (b bankPefisa) GetBankNameIntegration() string {
 	return "Pefisa"
 }
 
-func (b bankPefisa) sendRequest(body string) (string, int, error) {
+func (b bankPefisa) sendRequest(body string, token string) (string, int, error) {
 	serviceURL := config.Get().URLPefisaRegister
-	return util.Post(serviceURL, body, config.Get().TimeoutRegister, map[string]string{"Soapaction": "RegisterBoleto"})
+
+	h := map[string]string{"Authorization": "Bearer " + token, "Content-Type": "application/json"}
+	return util.Post(serviceURL, body, config.Get().TimeoutRegister, h)
 }

@@ -93,8 +93,8 @@ func configFlags(devMode, mockMode, disableLog bool) {
 		os.Setenv("TIMEOUT_REGISTER", "30")
 		os.Setenv("TIMEOUT_TOKEN", "20")
 		os.Setenv("TIMEOUT_DEFAULT", "50")
-		os.Setenv("URL_PEFISA_TOKEN", "http://psdo-hom.pernambucanas.com.br:81/sdcobr/api/oauth/token")
-		os.Setenv("URL_PEFISA_REGISTER", "http://psdo-hom.pernambucanas.com.br:81/sdcobr/api/v2/titulos")
+		os.Setenv("URL_PEFISA_TOKEN", "https://psdo-hom.pernambucanas.com.br:444/sdcobr/api/oauth/token")
+		os.Setenv("URL_PEFISA_REGISTER", "https://psdo-hom.pernambucanas.com.br:444/sdcobr/api/v2/titulos")
 	}
 	config.Install(mockMode, devMode, disableLog)
 }
