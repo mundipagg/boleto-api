@@ -227,7 +227,9 @@ const boletoFormDefault = `
                     <br/>
                     <p class="content right" id="agreement_agency_account">
                         {{.View.Boleto.Agreement.Agency}} / {{if eq .View.BankNumber "033-7"}}
-                            {{.View.Boleto.Agreement.AgreementNumber}}                                                
+                            {{.View.Boleto.Agreement.AgreementNumber}}                                                                                            
+                        {{else if eq .View.BankNumber "174"}}
+                            {{.View.Boleto.Agreement.AgreementNumber}}
                         {{else}}
                             {{.View.Boleto.Agreement.Account}}
                         {{end}}

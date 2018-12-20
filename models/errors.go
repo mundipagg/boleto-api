@@ -6,6 +6,11 @@ type IErrorResponse interface {
 	ErrorCode() string
 }
 
+// DataError objeto de erro
+type ArrayDataError struct {
+	Error []ErrorResponse `json:"error"`
+}
+
 // ErrorResponse objeto de erro
 type ErrorResponse struct {
 	Code    string `json:"code,omitempty"`
