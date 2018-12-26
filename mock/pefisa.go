@@ -51,8 +51,21 @@ func registerPefisa(c *gin.Context) {
 		} ]
 	}`
 
-	if strings.Contains(string(b), `"valorTitulo": "200"`) {
+	const respErrorTitleExist = `
+	{
+		"error": [
+			{
+				"code": "COB-2186",
+				"message": "Já existe um título em aberto cadastrado com o cedente \"267\", seu numero \"021045640\", data de vencimento \"30/01/2019\", valor \"2\" e emitente \"211\". ",
+				"action": "Altere um dos dados."
+			}
+		]
+	}`
+
+	if strings.Contains(string(b), `"valorTitulo": "2.00"`) {
 		c.Data(200, "application/json", []byte(resp))
+	} else if strings.Contains(string(b), `"valorTitulo": "3.00"`) {
+		c.Data(400, "application/json", []byte(respErrorTitleExist))
 	} else {
 		c.Data(400, "application/json", []byte(respError))
 	}

@@ -1,6 +1,6 @@
 package boleto
 
-const templateBoletoDefault = `
+const templateBoletoPefisa = `
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -178,7 +178,7 @@ const templateBoletoDefault = `
 
 `
 
-const boletoFormDefault = `
+const boletoFormPefisa = `
 {{define "boletoForm"}}
 <div class="document">
         <table cellspacing="0" cellpadding="0">
@@ -226,11 +226,7 @@ const boletoFormDefault = `
                     <br/>
                     <br/>
                     <p class="content right" id="agreement_agency_account">
-                        {{.View.Boleto.Agreement.Agency}} / {{if eq .View.BankNumber "033-7"}}
-                            {{.View.Boleto.Agreement.AgreementNumber}}                                                                                            
-                        {{else}}
-                            {{.View.Boleto.Agreement.Account}}
-                        {{end}}
+                        {{.View.Boleto.Agreement.Agency}} / {{.View.Boleto.Agreement.AgreementNumber}}
                     </p>
                 </td>
             </tr>
@@ -389,6 +385,6 @@ const boletoFormDefault = `
 	{{end}}
 `
 
-func getTemplateDefault() (string, string) {
-	return templateBoletoDefault, boletoFormDefault
+func getTemplatePefisa() (string, string) {
+	return templateBoletoPefisa, boletoFormPefisa
 }

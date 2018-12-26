@@ -3,6 +3,7 @@ package pefisa
 import (
 	"errors"
 	"strconv"
+	s "strings"
 
 	. "github.com/PMoneda/flow"
 	"github.com/mundipagg/boleto-api/config"
@@ -98,7 +99,7 @@ func (b bankPefisa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoR
 		exec.To("set://?prop=body", response)
 	} else {
 		dataError := util.ParseJSON(response, new(models.ArrayDataError)).(*models.ArrayDataError)
-		exec.To("set://?prop=body", util.Stringify(dataError.Error[0]))
+		exec.To("set://?prop=body", s.Replace(util.Stringify(dataError.Error[0]), "\\\"", "", -1))
 	}
 
 	ch := exec.Choice()

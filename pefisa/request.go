@@ -9,7 +9,7 @@ const registerPefisa = `
     "nossoNumero": "{{padLeft (toString .Title.OurNumber) "0" 10}}",
     "seuNumero": "{{truncate .Title.DocumentNumber 10}}",    
     "tipoTitulo": 1,
-    "valorTitulo": "{{.Title.AmountInCents}}",
+    "valorTitulo": "{{toFloatStr .Title.AmountInCents}}",
     "dataDocumento": "{{enDate (today) "-"}}",
 	"dataVencimento": "{{.Title.ExpireDate}}",
 	"usoEmpresa": "A",
