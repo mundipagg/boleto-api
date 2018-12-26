@@ -61,6 +61,8 @@ func getTemplateBank(bankNumber int, wallet int) (string, string) {
 		return getTemplateItau()
 	case models.Bradesco:
 		return getTemplatePerWallet(wallet)
+	case models.Pefisa:
+		return getTemplatePefisa()
 	default:
 		return getTemplateDefault()
 	}
