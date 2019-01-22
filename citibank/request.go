@@ -42,7 +42,7 @@ const registerBoletoCiti = `
             <GrpClPgdAdr>
                <DbtrAdrTp>{{clearString (truncate (joinSpace .Buyer.Address.Street .Buyer.Address.Number .Buyer.Address.Complement) 40)}}</DbtrAdrTp>
                <DbtrCtrySubDvsn>{{clearString (truncate .Buyer.Address.StateCode 2)}}</DbtrCtrySubDvsn>
-               <DbtrPstCd>{{clearString (truncate .Buyer.Address.ZipCode 8)}}</DbtrPstCd>
+               <DbtrPstCd>{{truncate (extractNumbers .Buyer.Address.ZipCode) 8}}</DbtrPstCd>
                <DbtrTwnNm>{{clearString (truncate .Buyer.Address.City 15)}}</DbtrTwnNm>
             </GrpClPgdAdr>
          </GrpClPgd>
