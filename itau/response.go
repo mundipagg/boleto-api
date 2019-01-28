@@ -1,7 +1,7 @@
 package itau
 
 const registerBoletoResponseItau = `{
-    {{if (hasErrorTags . "errorCode")}}
+    {{if (hasErrorTags . "errorCode") | (hasErrorTags . "errorMessage")}}
         "Errors": [
             {                    
                 "Code": "{{trim .errorCode}}",
