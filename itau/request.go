@@ -19,15 +19,15 @@ const registerItau = `
         "conta_beneficiario": "{{padLeft .Agreement.Account "0" 7}}",
         "digito_verificador_conta_beneficiario": "{{.Agreement.AccountDigit}}"
     },
-    "identificador_titulo_empresa": "{{truncate .Recipient.Name 25}}",
+    "identificador_titulo_empresa": "{{unescapeHtmlString (truncate .Recipient.Name 25)}}",
     "uso_banco": "",
     "titulo_aceite": "S",
     "pagador": {
         "cpf_cnpj_pagador": "{{extractNumbers .Buyer.Document.Number}}",
-        "nome_pagador": "{{truncate .Buyer.Name 30}}",
-        "logradouro_pagador": "{{truncate (concat .Buyer.Address.Street " " .Buyer.Address.Number " " .Buyer.Address.Complement) 40 }}",        
-        "bairro_pagador": "{{truncate .Buyer.Address.District 15}}",
-        "cidade_pagador": "{{truncate .Buyer.Address.City 20}}",
+        "nome_pagador": "{{unescapeHtmlString (truncate .Buyer.Name 30)}}",
+        "logradouro_pagador": "{{unescapeHtmlString (truncate (concat .Buyer.Address.Street " " .Buyer.Address.Number " " .Buyer.Address.Complement) 40) }}",        
+        "bairro_pagador": "{{unescapeHtmlString (truncate .Buyer.Address.District 15)}}",
+        "cidade_pagador": "{{unescapeHtmlString (truncate .Buyer.Address.City 20)}}",
         "uf_pagador": "{{truncate .Buyer.Address.StateCode 2}}",
         "cep_pagador": "{{truncate (extractNumbers .Buyer.Address.ZipCode) 8}}",
         "grupo_email_pagador": [
