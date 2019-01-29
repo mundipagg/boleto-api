@@ -2,7 +2,7 @@ package pefisa
 
 const registerBoletoResponsePefisa = `
 {
-    {{if (hasErrorTags . "errorCode") | (hasErrorTags . "errorMessage"}}
+    {{if (hasErrorTags . "errorCode") | (hasErrorTags . "errorMessage")}}
         "Errors": [
             {
                 "Code": "{{trim .errorCode}}",
