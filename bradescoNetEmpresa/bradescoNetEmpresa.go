@@ -1,6 +1,7 @@
 package bradescoNetEmpresa
 
 import (
+	"strconv"
 	"errors"
 	"fmt"
 	"html"
@@ -58,47 +59,42 @@ func (b bankBradescoNetEmpresa) Log() *log.Log {
 
 func (b bankBradescoNetEmpresa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
 	timing := metrics.GetTimingMetrics()
-	r := flow.NewFlow()
 	serviceURL := config.Get().URLBradescoNetEmpresa
-	xmlResponse := getResponseBradescoNetEmpresaXml()
-	jsonReponse := getResponseBradescoNetEmpresaJson()
-	from := getResponseBradescoNetEmpresa()
-	to := getAPIResponseBradescoNetEmpresa()
 
-	bod := r.From("message://?source=inline", boleto, getRequestBradescoNetEmpresa(), tmpl.GetFuncMaps())
-	bod.To("logseq://?type=request&url="+serviceURL, b.log)
+	bod := flow.NewFlow().From("message://?source=inline", boleto, getRequestBradescoNetEmpresa(), tmpl.GetFuncMaps())
+	errCert := signRequest(bod)
+	
+	if errCert != nil {
+		return models.BoletoResponse{}, errCert
+	}
+	
+	b.log.RequestCustom(bod.GetBody().(string), bod.GetHeader(), map[string]string{"URL" : serviceURL})
+	
+	var response string
+	var status int
+	var err error
 
-	err := signRequest(bod)
+	duration := util.Duration(func() {
+		response, status, err = util.Post(serviceURL, bod.GetBody().(string), config.Get().TimeoutRegister, bod.GetHeader())
+	})
+
+	timing.Push("bradesco-netempresa-register-boleto-online", duration.Seconds())
+	b.log.ResponseCustom(response, map[string]string{"ContentStatusCode": strconv.Itoa(status), "URL" : serviceURL, "Duration" : util.ConvertDuration(duration)})
+
 	if err != nil {
 		return models.BoletoResponse{}, err
 	}
 
-	duration := util.Duration(func() {
-		bod.To(serviceURL, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutDefault})
-	})
+	bodyResult := tmpl.TransformFromXML(response, getResponseBradescoNetEmpresaXml(), getResponseBradescoNetEmpresaJson(), nil)
+	bodyJson := html.UnescapeString(fmt.Sprintf("%v", bodyResult))
 
-	timing.Push("bradesco-netempresa-register-boleto-online", duration.Seconds())
-	bod.To("logseq://?type=response&url="+serviceURL, b.log)
+	var result interface{}
 
-	bod.To("transform://?format=xml", xmlResponse, jsonReponse)
-	bodyTransform := fmt.Sprintf("%v", bod.GetBody())
-	bodyJson := html.UnescapeString(bodyTransform)
-	bod.To("set://?prop=body", bodyJson)
-
-	ch := bod.Choice()
-
-	if header := bod.GetHeader(); header["status"] == "200" {
-		ch.When(flow.Header("status").IsEqualTo("200"))
-	} else {
-		ch.When(flow.Header("status").IsEqualTo("500"))
+	if status == 200 || status == 500 {
+		result = tmpl.TransformFromJSON(bodyJson, getResponseBradescoNetEmpresa(), getAPIResponseBradescoNetEmpresa(), new(models.BoletoResponse))
 	}
 
-	ch.To("transform://?format=json", from, to, tmpl.GetFuncMaps())
-	ch.To("unmarshall://?format=json", new(models.BoletoResponse))
-	ch.Otherwise()
-	ch.To("logseq://?type=response&url="+serviceURL, b.log).To("apierro://")
-
-	switch t := bod.GetBody().(type) {
+	switch t := result.(type) {
 	case *models.BoletoResponse:
 		if !t.HasErrors() {
 			t.BarCodeNumber = getBarcode(*boleto).toString()
@@ -106,11 +102,12 @@ func (b bankBradescoNetEmpresa) RegisterBoleto(boleto *models.BoletoRequest) (mo
 		return *t, nil
 	case error:
 		return models.BoletoResponse{}, t
+	default:
+		return models.BoletoResponse{}, models.NewInternalServerError("MP500", "Internal error")
 	}
-	return models.BoletoResponse{}, models.NewInternalServerError("MP500", "Internal error")
 }
 
-func signRequest(bod *flow.Flow) error {
+func signRequest(bod *flow.Flow) (error) {
 
 	if !config.Get().MockMode {
 		bodyToSign := fmt.Sprintf("%v", bod.GetBody())
@@ -120,7 +117,6 @@ func signRequest(bod *flow.Flow) error {
 		}
 		bod.To("set://?prop=body", signedRequest)
 	}
-
 	return nil
 }
 

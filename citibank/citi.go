@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/PMoneda/flow"
+	. "github.com/PMoneda/flow"
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/metrics"
@@ -48,40 +48,40 @@ func (b bankCiti) Log() *log.Log {
 func (b bankCiti) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
 	timing := metrics.GetTimingMetrics()
 	boleto.Title.OurNumber = calculateOurNumber(boleto)
-	r := flow.NewFlow()
 	serviceURL := config.Get().URLCiti
-	from := getResponseCiti()
-	to := getAPIResponseCiti()
-	bod := r.From("message://?source=inline", boleto, getRequestCiti(), tmpl.GetFuncMaps())
-	bod.To("logseq://?type=request&url="+serviceURL, b.log)
-	//TODO: change for tls flow connector (waiting for santander)
-	var responseCiti string
+	
+	bod := NewFlow().From("message://?source=inline", boleto, getRequestCiti(), tmpl.GetFuncMaps())
+	b.log.RequestCustom(bod.GetBody().(string), bod.GetHeader(), map[string]string{"URL" : serviceURL})
+
+	var response string
 	var status int
 	var err error
+
 	duration := util.Duration(func() {
-		responseCiti, status, err = b.sendRequest(bod.GetBody().(string))
+		response, status, err = b.sendRequest(bod.GetBody().(string))
 	})
+
+	timing.Push("citibank-register-boleto-online", duration.Seconds())
+	b.log.ResponseCustom(response, map[string]string{"ContentStatusCode": strconv.Itoa(status), "URL" : serviceURL, "Duration" : util.ConvertDuration(duration)})
+
 	if err != nil {
 		return models.BoletoResponse{}, err
 	}
-	timing.Push("citibank-register-boleto-online", duration.Seconds())
-	bod.To("set://?prop=header", map[string]string{"status": strconv.Itoa(status)})
-	bod.To("set://?prop=body", responseCiti)
-	bod.To("logseq://?type=response&url="+serviceURL, b.log)
-	ch := bod.Choice()
-	ch.When(flow.Header("status").IsEqualTo("200"))
-	ch.To("transform://?format=xml", from, to, tmpl.GetFuncMaps())
-	ch.Otherwise()
-	ch.To("logseq://?type=response&url="+serviceURL, b.log).To("apierro://")
 
-	switch t := bod.GetBody().(type) {
-	case string:
-		response := util.ParseJSON(t, new(models.BoletoResponse)).(*models.BoletoResponse)
-		return *response, nil
-	case models.BoletoResponse:
-		return t, nil
+	var result interface{}
+
+	if status == 200 {
+		result = tmpl.TransformFromXML(response, getResponseCiti(), getAPIResponseCiti(), new(models.BoletoResponse))
 	}
-	return models.BoletoResponse{}, models.NewInternalServerError("MP500", "Internal error")
+
+	switch t := result.(type) {
+	case *models.BoletoResponse:
+		return *t, nil
+	case error:
+		return models.BoletoResponse{}, t
+	default:
+		return models.BoletoResponse{}, models.NewInternalServerError("MP500", "Internal error")
+	}
 }
 
 func (b bankCiti) ProcessBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {

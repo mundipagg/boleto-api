@@ -4,7 +4,6 @@ import (
 	"errors"
 	"strconv"
 	s "strings"
-
 	. "github.com/PMoneda/flow"
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/log"
@@ -45,86 +44,86 @@ func (b bankPefisa) GetToken(boleto *models.BoletoRequest) (string, error) {
 	url := config.Get().URLPefisaToken
 
 	pipe.From("message://?source=inline", boleto, getRequestToken(), tmpl.GetFuncMaps())
-	pipe.To("logseq://?type=request&url="+url, b.log)
+	b.log.RequestCustom(pipe.GetBody().(string), pipe.GetHeader(), map[string]string{"URL" : url, "Operation":"GenerateToken"})
+	
+	var response string
+	var status int
+	var err error
 
 	duration := util.Duration(func() {
-		pipe.To(url, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutToken})
+		response, status, err = util.Post(url, pipe.GetBody().(string), config.Get().TimeoutToken, pipe.GetHeader())
 	})
+
 	timing.Push("pefisa-get-token-boleto-time", duration.Seconds())
-	pipe.To("logseq://?type=response&url="+url, b.log)
-	ch := pipe.Choice()
-	ch.When(Header("status").IsEqualTo("200"))
-	ch.To("transform://?format=json", getTokenResponse(), `{{.access_token}}`, tmpl.GetFuncMaps())
+	b.log.ResponseCustom(response, map[string]string{"ContentStatusCode": strconv.Itoa(status), "URL" : url, "Duration" : util.ConvertDuration(duration), "Operation" : "GenerateToken"})
 
-	ch.When(Header("status").IsEqualTo("401"))
-	ch.To("transform://?format=json", getTokenErrorResponse(), `{{.error_description}}`, tmpl.GetFuncMaps())
-	ch.To("set://?prop=body", errors.New(pipe.GetBody().(string)))
+	if err != nil {
+		return "", err
+	}
 
-	ch.Otherwise()
-	ch.To("logseq://?type=request&url="+url, b.log).To("print://?msg=${body}").To("set://?prop=body", errors.New("integration error"))
-	switch t := pipe.GetBody().(type) {
+	var result interface{}
+
+	if status == 200 {
+		result = tmpl.TransformFromJSON(response, getTokenResponse(), `{{.access_token}}`, nil)
+	}else if status == 401 {
+		errResult := tmpl.TransformFromJSON(response, getTokenErrorResponse(), `{{.errorMessage}}`, nil)
+		result = models.NewErrorResponse("401", errResult.(string));
+	}
+	
+	switch t := result.(type) {
 	case string:
-
 		return t, nil
 	case error:
 		return "", t
+	default:
+		return "", errors.New("Integration error")
 	}
-	return "", nil
-
 }
 
 func (b bankPefisa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
 	timing := metrics.GetTimingMetrics()
 	pefisaURL := config.Get().URLPefisaRegister
-
+	
 	exec := NewFlow().From("message://?source=inline", boleto, getRequestPefisa(), tmpl.GetFuncMaps())
-	exec.To("logseq://?type=request&url="+pefisaURL, b.log)
+	b.log.RequestCustom(exec.GetBody().(string), nil, map[string]string{"URL" : pefisaURL})
 
 	var response string
 	var status int
 	var err error
+
 	duration := util.Duration(func() {
-		response, status, err = b.sendRequest(exec.GetBody().(string), boleto.Authentication.AuthorizationToken)
+		headers := map[string]string{"Authorization": "Bearer " + boleto.Authentication.AuthorizationToken, "Content-Type": "application/json"}
+		response, status, err = util.Post(pefisaURL, exec.GetBody().(string), config.Get().TimeoutRegister, headers)
 	})
+
+	timing.Push("pefisa-register-boleto-time", duration.Seconds())
+	b.log.ResponseCustom(response, map[string]string{"ContentStatusCode": strconv.Itoa(status), "URL" : pefisaURL, "Duration" : util.ConvertDuration(duration)})
+
 	if err != nil {
 		return models.BoletoResponse{}, err
 	}
 
-	timing.Push("pefisa-register-boleto-time", duration.Seconds())
-	exec.To("set://?prop=header", map[string]string{"status": strconv.Itoa(status)})
-	exec.To("set://?prop=body", response)
-	exec.To("logseq://?type=response&url="+pefisaURL, b.log)
+	var result interface{}
 
-	if status == 200 || status == 401 {
-		exec.To("set://?prop=body", response)
-	} else {
+	if status == 200 {
+		result = tmpl.TransformFromJSON(response, getResponsePefisa(), getAPIResponsePefisa(), new(models.BoletoResponse))
+	}else if status == 401 {
+		result = tmpl.TransformFromJSON(response, getResponseErrorPefisa(), getAPIResponsePefisa(), new(models.BoletoResponse))
+	}else if status == 400 {
 		dataError := util.ParseJSON(response, new(models.ArrayDataError)).(*models.ArrayDataError)
-		exec.To("set://?prop=body", s.Replace(util.Stringify(dataError.Error[0]), "\\\"", "", -1))
+		newBody := s.Replace(util.Stringify(dataError.Error[0]), "\\\"", "", -1)
+
+		result = tmpl.TransformFromJSON(newBody, getResponseErrorPefisaArray(), getAPIResponsePefisa(), new(models.BoletoResponse))
 	}
 
-	ch := exec.Choice()
-	ch.When(Header("status").IsEqualTo("200"))
-	ch.To("transform://?format=json", getResponsePefisa(), getAPIResponsePefisa(), tmpl.GetFuncMaps())
-	ch.To("unmarshall://?format=json", new(models.BoletoResponse))
-
-	ch.When(Header("status").IsEqualTo("400"))
-	ch.To("transform://?format=json", getResponseErrorPefisaArray(), getAPIResponsePefisa(), tmpl.GetFuncMaps())
-	ch.To("unmarshall://?format=json", new(models.BoletoResponse))
-
-	ch.When(Header("status").IsEqualTo("401"))
-	ch.To("transform://?format=json", getResponseErrorPefisa(), getAPIResponsePefisa(), tmpl.GetFuncMaps())
-	ch.To("unmarshall://?format=json", new(models.BoletoResponse))
-
-	ch.Otherwise()
-	ch.To("logseq://?type=response&url="+pefisaURL, b.log).To("apierro://")
-
-	switch t := exec.GetBody().(type) {
+	switch t := result.(type) {
 	case *models.BoletoResponse:
 		return *t, nil
 	case error:
 		return models.BoletoResponse{}, t
+	default:
+		return models.BoletoResponse{}, models.NewInternalServerError("MP500", "Internal error")
 	}
-	return models.BoletoResponse{}, models.NewInternalServerError("MP500", "Internal error")
 }
 
 func (b bankPefisa) ProcessBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
@@ -140,7 +139,6 @@ func (b bankPefisa) ProcessBoleto(boleto *models.BoletoRequest) (models.BoletoRe
 	}
 
 	return b.RegisterBoleto(boleto)
-
 }
 
 func (b bankPefisa) ValidateBoleto(boleto *models.BoletoRequest) models.Errors {
@@ -156,9 +154,3 @@ func (b bankPefisa) GetBankNameIntegration() string {
 	return "Pefisa"
 }
 
-func (b bankPefisa) sendRequest(body string, token string) (string, int, error) {
-	serviceURL := config.Get().URLPefisaRegister
-
-	h := map[string]string{"Authorization": "Bearer " + token, "Content-Type": "application/json"}
-	return util.Post(serviceURL, body, config.Get().TimeoutRegister, h)
-}

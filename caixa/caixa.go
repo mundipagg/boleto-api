@@ -1,6 +1,7 @@
 package caixa
 
 import (
+	"strconv"
 	"fmt"
 
 	"github.com/PMoneda/flow"
@@ -38,33 +39,43 @@ func (b bankCaixa) Log() *log.Log {
 	return b.log
 }
 func (b bankCaixa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
+	
 	timing := metrics.GetTimingMetrics()
 	r := flow.NewFlow()
 	urlCaixa := config.Get().URLCaixaRegisterBoleto
-	from := getResponseCaixa()
-	to := getAPIResponseCaixa()
 
 	bod := r.From("message://?source=inline", boleto, getRequestCaixa(), tmpl.GetFuncMaps())
-	bod = bod.To("logseq://?type=request&url="+urlCaixa, b.log)
-	duration := util.Duration(func() {
-		bod = bod.To(urlCaixa, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutDefault})
-	})
-	timing.Push("caixa-register-time", duration.Seconds())
-	bod = bod.To("logseq://?type=response&url="+urlCaixa, b.log)
-	ch := bod.Choice()
-	ch = ch.When(flow.Header("status").IsEqualTo("200"))
-	ch = ch.To("transform://?format=xml", from, to, tmpl.GetFuncMaps())
-	ch = ch.Otherwise()
-	ch = ch.To("logseq://?type=response&url="+urlCaixa, b.log).To("apierro://")
+	b.log.RequestCustom(bod.GetBody().(string), nil, map[string]string{"URL" : urlCaixa})
 
-	switch t := bod.GetBody().(type) {
-	case string:
-		response := util.ParseJSON(t, new(models.BoletoResponse)).(*models.BoletoResponse)
-		return *response, nil
-	case models.BoletoResponse:
-		return t, nil
+	var response string
+	var status int
+	var err error
+
+	duration := util.Duration(func() {
+		response, status, err = util.Post(urlCaixa, bod.GetBody().(string), config.Get().TimeoutRegister, bod.GetHeader())
+	})
+
+	timing.Push("caixa-register-time", duration.Seconds())
+	b.log.ResponseCustom(response, map[string]string{"ContentStatusCode": strconv.Itoa(status), "URL" : urlCaixa, "Duration" : util.ConvertDuration(duration)})
+
+	if err != nil {
+		return models.BoletoResponse{}, err
 	}
-	return models.BoletoResponse{}, models.NewInternalServerError("MP500", "Internal error")
+	
+	var result interface{}
+
+	if status == 200 {
+		result = tmpl.TransformFromXML(response, getResponseCaixa(), getAPIResponseCaixa(), new(models.BoletoResponse))
+	}
+
+	switch t := result.(type) {
+	case *models.BoletoResponse:
+		return *t, nil
+	case error:
+		return models.BoletoResponse{}, t
+	default:
+		return models.BoletoResponse{}, models.NewInternalServerError("MP500", "Internal error")
+	}
 }
 func (b bankCaixa) ProcessBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
 	errs := b.ValidateBoleto(boleto)

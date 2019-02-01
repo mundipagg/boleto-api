@@ -64,8 +64,24 @@ func (l Log) Request(content interface{}, url string, headers map[string]string)
 		props := l.defaultProperties("Request", content)
 		props.AddProperty("Headers", headers)
 		props.AddProperty("URL", url)
-		action := strings.Split(url, "/")
-		msg := formatter(fmt.Sprintf("to {BankName} (%s) | {Recipient}", action[len(action)-1]))
+		msg := formatter(fmt.Sprintf("to {BankName} | {Operation}"))
+
+		l.logger.Information(msg, props)
+	})()
+}
+
+// Request loga o request para algum banco
+func (l Log) RequestCustom(content interface{}, headers map[string]string, custom map[string]string) {
+	if config.Get().DisableLog {
+		return
+	}
+	go (func() {
+		props := l.defaultProperties("Request", content)
+		props.AddProperty("Headers", headers)
+		for key, value := range custom {
+			props.AddProperty(key, value)
+		}
+		msg := formatter(fmt.Sprintf("to {BankName} | {Operation}"))
 
 		l.logger.Information(msg, props)
 	})()
@@ -81,6 +97,23 @@ func (l Log) Response(content interface{}, url string) {
 		props.AddProperty("URL", url)
 		action := strings.Split(url, "/")
 		msg := formatter(fmt.Sprintf("from {BankName} (%s) | {Recipient}", action[len(action)-1]))
+
+		l.logger.Information(msg, props)
+	})()
+}
+
+func (l Log) ResponseCustom(content interface{}, custom map[string]string) {
+	if config.Get().DisableLog {
+		return
+	}
+	go (func() {
+		props := l.defaultProperties("Response", content)
+		for key, value := range custom {
+			props.AddProperty(key, value)
+		}
+		// props.AddProperty("URL", url)
+		// action := strings.Split(url, "/")
+		msg := formatter(fmt.Sprintf("from {BankName} ({Duration}) | {Operation}"))
 
 		l.logger.Information(msg, props)
 	})()
@@ -107,7 +140,7 @@ func (l Log) ResponseApplication(content interface{}, url string) {
 		return
 	}
 	go (func() {
-		props := l.defaultProperties("Response", content)
+		props := l.defaultProperties("Result", content)
 		props.AddProperty("URL", url)
 		msg := formatter(" {Operation} | {Recipient}")
 

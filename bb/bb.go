@@ -1,6 +1,7 @@
 package bb
 
 import (
+	"strconv"
 	"errors"
 
 	"github.com/PMoneda/flow"
@@ -48,20 +49,38 @@ func (b *bankBB) login(boleto *models.BoletoRequest) (string, error) {
 		Error            string `json:"error"`
 		ErrorDescription string `json:"error_description"`
 	}
+
 	timing := metrics.GetTimingMetrics()
 	r := flow.NewFlow()
 	url := config.Get().URLBBToken
 	from, resp := GetBBAuthLetters()
+
 	bod := r.From("message://?source=inline", boleto, from, tmpl.GetFuncMaps())
-	r = r.To("logseq://?type=request&url="+url, b.log)
+	b.log.RequestCustom(bod.GetBody().(string), bod.GetHeader(), map[string]string{"URL" : url, "Operation" : "GenerateToken"})
+
+	var response string
+	var status int
+	var err error
+
 	duration := util.Duration(func() {
-		bod = bod.To(url, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutToken})
+		response, status, err = util.Post(url, bod.GetBody().(string), config.Get().TimeoutRegister, bod.GetHeader())
 	})
+
 	timing.Push("bb-login-time", duration.Seconds())
-	r = r.To("logseq://?type=response&url="+url, b.log)
-	ch := bod.Choice().When(flow.Header("status").IsEqualTo("200")).To("transform://?format=json", resp, `{{.authToken}}`)
-	ch = ch.Otherwise().To("unmarshall://?format=json", new(errorAuth))
-	result := bod.GetBody()
+	b.log.ResponseCustom(response, map[string]string{"ContentStatusCode": strconv.Itoa(status), "URL" : url, "Duration" : util.ConvertDuration(duration), "Operation" : "GenerateToken"})
+
+	if err != nil {
+		return "", err
+	}
+
+	var result interface{}
+
+	if status == 200 {
+		result = tmpl.TransformFromJSON(response, resp, `{{.authToken}}`, nil)
+	}else{
+		result = new(errorAuth)
+	}
+
 	switch t := result.(type) {
 	case string:
 		return t, nil
@@ -88,28 +107,36 @@ func (b bankBB) ProcessBoleto(boleto *models.BoletoRequest) (models.BoletoRespon
 }
 
 func (b bankBB) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
-	r := flow.NewFlow()
 	url := config.Get().URLBBRegisterBoleto
-	from := getRequest()
 	timing := metrics.GetTimingMetrics()
-	r = r.From("message://?source=inline", boleto, from, tmpl.GetFuncMaps())
-	r.To("logseq://?type=request&url="+url, b.log)
+
+	r := flow.NewFlow().From("message://?source=inline", boleto, getRequest(), tmpl.GetFuncMaps())
+	b.log.RequestCustom(r.GetBody().(string), r.GetHeader(), map[string]string{"URL" : url})
+
+	var response string
+	var status int
+	var err error
+
 	duration := util.Duration(func() {
-		r.To(url, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutRegister})
+		response, status, err = util.Post(url, r.GetBody().(string), config.Get().TimeoutToken, r.GetHeader())
 	})
+
+	if err != nil {
+		return models.BoletoResponse{}, err
+	}
+
+	var result interface{}
+
 	timing.Push("bb-register-boleto-time", duration.Seconds())
-	r.To("logseq://?type=response&url="+url, b.log)
-	ch := r.Choice()
-	ch.When(flow.Header("status").IsEqualTo("200"))
-	ch.To("transform://?format=xml", getResponseBB(), getAPIResponse(), tmpl.GetFuncMaps())
-	ch.To("unmarshall://?format=json", new(models.BoletoResponse))
-	ch.Otherwise()
-	ch.To("logseq://?type=response&url="+url, b.log).To("apierro://")
-	switch t := r.GetBody().(type) {
+	b.log.ResponseCustom(response, map[string]string{"ContentStatusCode": strconv.Itoa(status), "URL" : url, "Duration" : util.ConvertDuration(duration)})
+
+	if status == 200 {
+		result = tmpl.TransformFromXML(response, getResponseBB(), getAPIResponse(), new(models.BoletoResponse))
+	}
+
+	switch t := result.(type) {
 	case *models.BoletoResponse:
 		return *t, nil
-	case models.BoletoResponse:
-		return t, nil
 	case error:
 		return models.BoletoResponse{}, t
 	default:

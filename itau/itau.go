@@ -1,6 +1,7 @@
 package itau
 
 import (
+	"strconv"
 	"errors"
 	"strings"
 
@@ -39,80 +40,96 @@ func (b bankItau) Log() *log.Log {
 }
 
 func (b bankItau) GetTicket(boleto *models.BoletoRequest) (string, error) {
+
 	timing := metrics.GetTimingMetrics()
 	pipe := NewFlow()
 	url := config.Get().URLTicketItau
+	
 	pipe.From("message://?source=inline", boleto, getRequestTicket(), tmpl.GetFuncMaps())
-	pipe.To("logseq://?type=request&url="+url, b.log)
+	b.log.RequestCustom(pipe.GetBody().(string), pipe.GetHeader(), map[string]string{"URL" : url, "Operation":"GenerateToken"})
+	
+	var response string
+	var status int
+	var err error
+
 	duration := util.Duration(func() {
-		pipe.To(url, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutToken})
+		response, status, err = util.Post(url, pipe.GetBody().(string), config.Get().TimeoutToken, pipe.GetHeader())
 	})
+	
 	timing.Push("itau-get-ticket-boleto-time", duration.Seconds())
-	pipe.To("logseq://?type=response&url="+url, b.log)
-	ch := pipe.Choice()
-	ch.When(Header("status").IsEqualTo("200"))
-	ch.To("transform://?format=json", getTicketResponse(), `{{.access_token}}`, tmpl.GetFuncMaps())
-	ch.When(Header("status").IsEqualTo("400"))
-	ch.To("transform://?format=json", getTicketResponse(), `{{.errorMessage}}`, tmpl.GetFuncMaps())
-	ch.To("set://?prop=body", errors.New(pipe.GetBody().(string)))
-	ch.When(Header("status").IsEqualTo("403"))
-	ch.To("set://?prop=body", errors.New("403 Forbidden"))
-	ch.When(Header("status").IsEqualTo("500"))
-	ch.To("transform://?format=json", getTicketErrorResponse(), `{{.errorMessage}}`, tmpl.GetFuncMaps())
-	ch.To("set://?prop=body", errors.New(pipe.GetBody().(string)))
-	ch.Otherwise()
-	ch.To("logseq://?type=request&url="+url, b.log).To("print://?msg=${body}").To("set://?prop=body", errors.New("integration error"))
-	switch t := pipe.GetBody().(type) {
+	b.log.ResponseCustom(response, map[string]string{"ContentStatusCode": strconv.Itoa(status), "URL" : url, "Duration" : util.ConvertDuration(duration), "Operation" : "GenerateToken"})
+
+	if err != nil {
+		return "", err
+	}
+
+	var result interface{}
+
+	if status == 200 {
+		result = tmpl.TransformFromJSON(response, getTicketResponse(), `{{.access_token}}`, nil)
+	}else if status == 400{
+		errResult := tmpl.TransformFromJSON(response, getTicketResponse(), `{{.errorMessage}}`, nil)
+		result = errors.New(errResult.(string))
+	}else if status == 403{
+		result = errors.New("403 Forbidden")
+	}else if status == 500{
+		errResult := tmpl.TransformFromJSON(response, getTicketErrorResponse(), `{{.errorMessage}}`, nil)
+		result = errors.New(errResult.(string))
+	}
+
+	switch t := result.(type) {
 	case string:
 		return t, nil
 	case error:
 		return "", t
+	default:
+		return "", errors.New("Integration error")
 	}
-	return "", nil
 }
 
 func (b bankItau) RegisterBoleto(input *models.BoletoRequest) (models.BoletoResponse, error) {
 	timing := metrics.GetTimingMetrics()
 	itauURL := config.Get().URLRegisterBoletoItau
-	fromResponse := getResponseItau()
-	fromResponseError := getResponseErrorItau()
-	toAPI := getAPIResponseItau()
-	inputTemplate := getRequestItau()
-	exec := NewFlow().From("message://?source=inline", input, inputTemplate, tmpl.GetFuncMaps())
-	exec.To("logseq://?type=request&url="+itauURL, b.log)
+
+	exec := NewFlow().From("message://?source=inline", input, getRequestItau(), tmpl.GetFuncMaps())
+	b.log.RequestCustom(exec.GetBody().(string), exec.GetHeader(), map[string]string{"URL" : itauURL})
+
+	var response string
+	var status int
+	var err error
+
 	duration := util.Duration(func() {
-		exec.To(itauURL, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutRegister})
+		response, status, err = util.Post(itauURL, exec.GetBody().(string), config.Get().TimeoutRegister, exec.GetHeader())
 	})
+
 	timing.Push("itau-register-boleto-time", duration.Seconds())
-	exec.To("logseq://?type=response&url="+itauURL, b.log)
+	b.log.ResponseCustom(response, map[string]string{"ContentStatusCode": strconv.Itoa(status), "URL" : itauURL, "Duration" : util.ConvertDuration(duration)})
 
-	ch := exec.Choice()
-	ch.When(Header("status").IsEqualTo("200"))
-	ch.To("transform://?format=json", fromResponse, toAPI, tmpl.GetFuncMaps())
-	ch.To("unmarshall://?format=json", new(models.BoletoResponse))
-
-	headerMap := exec.GetHeader()
-
-	if status, exist := headerMap["Content-Type"]; exist && strings.Contains(status, "text/html") {
-		exec.To("set://?prop=body", `{"codigo":"501","mensagem":"Error"}`)
-		ch.When(Header("Content-Type").IsEqualTo(status))
-		ch.To("transform://?format=json", fromResponseError, toAPI, tmpl.GetFuncMaps())
-	} else if status, exist = headerMap["status"]; exist && status != "200" {
-		ch.When(Header("status").IsEqualTo(status))
-		ch.To("transform://?format=json", fromResponseError, toAPI, tmpl.GetFuncMaps())
-		ch.To("unmarshall://?format=json", new(models.BoletoResponse))
+	if err != nil {
+		return models.BoletoResponse{}, err
 	}
 
-	ch.Otherwise()
-	ch.To("logseq://?type=response&url="+itauURL, b.log).To("apierro://")
+	var result interface{}
+	
+	if status == 200 {
+		result = tmpl.TransformFromJSON(response, getResponseItau(), getAPIResponseItau(), new(models.BoletoResponse))
+	} else if strings.Contains(response, "text/html"){
+		result = models.NewHTTPNotFound("404", "Page not found")
+	} else if status == 400 {
+		errResult := tmpl.TransformFromJSON(response, getResponseErrorItau(), `{{.errorMessage}}`, nil)
+		result = models.NewErrorResponse("400", errResult.(string));
+	} else {
+		result = tmpl.TransformFromJSON(response, getResponseErrorItau(), getAPIResponseItau(), new(models.BoletoResponse))
+	}
 
-	switch t := exec.GetBody().(type) {
+	switch t := result.(type) {
 	case *models.BoletoResponse:
 		return *t, nil
 	case error:
 		return models.BoletoResponse{}, t
+	default:
+		return models.BoletoResponse{}, models.NewInternalServerError("MP500", "Internal error")
 	}
-	return models.BoletoResponse{}, models.NewInternalServerError("MP500", "Internal error")
 }
 
 func (b bankItau) ProcessBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {

@@ -1,6 +1,7 @@
 package bradescoShopFacil
 
 import (
+	"strconv"
 	"errors"
 	"fmt"
 	"time"
@@ -58,27 +59,33 @@ func (b bankBradescoShopFacil) Log() *log.Log {
 
 func (b bankBradescoShopFacil) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
 	timing := metrics.GetTimingMetrics()
-	r := flow.NewFlow()
 	serviceURL := config.Get().URLBradescoShopFacil
-	from := getResponseBradescoShopFacil()
-	to := getAPIResponseBradescoShopFacil()
-	bod := r.From("message://?source=inline", boleto, getRequestBradescoShopFacil(), tmpl.GetFuncMaps())
-	bod.To("logseq://?type=request&url="+serviceURL, b.log)
+
+	bod := flow.NewFlow().From("message://?source=inline", boleto, getRequestBradescoShopFacil(), tmpl.GetFuncMaps())
+	b.log.RequestCustom(bod.GetBody().(string), bod.GetHeader(), map[string]string{"URL" : serviceURL})
+
+	var response string
+	var status int
+	var err error
+
 	duration := util.Duration(func() {
-		bod.To(serviceURL, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutDefault})
+		response, status, err = util.Post(serviceURL, bod.GetBody().(string), config.Get().TimeoutRegister, bod.GetHeader())
 	})
+	
 	timing.Push("bradesco-shopfacil-register-boleto-online", duration.Seconds())
-	bod.To("logseq://?type=response&url="+serviceURL, b.log)
-	ch := bod.Choice()
-	ch.When(flow.Header("status").IsEqualTo("201"))
-	ch.To("transform://?format=json", from, to, tmpl.GetFuncMaps())
-	ch.To("unmarshall://?format=json", new(models.BoletoResponse))
-	ch.When(flow.Header("status").IsEqualTo("200"))
-	ch.To("transform://?format=json", from, to, tmpl.GetFuncMaps())
-	ch.To("unmarshall://?format=json", new(models.BoletoResponse))
-	ch.Otherwise()
-	ch.To("logseq://?type=response&url="+serviceURL, b.log).To("apierro://")
-	switch t := bod.GetBody().(type) {
+	b.log.ResponseCustom(response, map[string]string{"ContentStatusCode": strconv.Itoa(status), "URL" : serviceURL, "Duration" : util.ConvertDuration(duration)})
+
+	if err != nil {
+		return models.BoletoResponse{}, err
+	}
+
+	var result interface{}
+
+	if status == 201 || status == 200{
+		result = tmpl.TransformFromJSON(response, getResponseBradescoShopFacil(), getAPIResponseBradescoShopFacil(), new(models.BoletoResponse))
+	} 
+
+	switch t := result.(type) {
 	case *models.BoletoResponse:
 		if !t.HasErrors() {
 			t.BarCodeNumber = getBarcode(*boleto).toString()
@@ -86,8 +93,9 @@ func (b bankBradescoShopFacil) RegisterBoleto(boleto *models.BoletoRequest) (mod
 		return *t, nil
 	case error:
 		return models.BoletoResponse{}, t
+	default:
+		return models.BoletoResponse{}, models.NewInternalServerError("MP500", "Internal error")
 	}
-	return models.BoletoResponse{}, models.NewInternalServerError("MP500", "Internal error")
 }
 
 func (b bankBradescoShopFacil) ProcessBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {

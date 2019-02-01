@@ -1,9 +1,9 @@
 package util
 
 import (
+	"fmt"
 	"strconv"
 	"time"
-
 	"github.com/mundipagg/boleto-api/log"
 )
 
@@ -43,4 +43,15 @@ func GetDurationTimeoutRequest(t string) time.Duration {
 	tTime, _ := strconv.Atoi(t)
 	tOut := time.Duration(tTime)
 	return tOut
+}
+
+func ConvertDuration(dur time.Duration) string {
+	h := dur / time.Hour
+	dur -= h * time.Hour
+    m := dur / time.Minute
+    dur -= m * time.Minute
+    s := dur / time.Second
+    dur -= s * time.Second
+    ms := dur / time.Millisecond
+    return fmt.Sprintf("%02d:%02d:%02d.%03d",h,m,s,ms)
 }
