@@ -7,27 +7,27 @@ const registerBradescoShopFacil = `
     "merchant_id": "{{.Authentication.Username}}",
     "meio_pagamento": "300",
     "pedido": {
-        "numero": "{{.Title.DocumentNumber}}",
+        "numero": "{{escape .Title.DocumentNumber}}",
         "valor": {{.Title.AmountInCents}},
         "descricao": ""
     },
     "comprador": {
-        "nome": "{{.Buyer.Name}}",
-        "documento": "{{.Buyer.Document.Number}}",
+        "nome": "{{escape .Buyer.Name}}",
+        "documento": "{{escape .Buyer.Document.Number}}",
         "endereco": {
             "cep": "{{extractNumbers .Buyer.Address.ZipCode}}",
-            "logradouro": "{{.Buyer.Address.Street}}",
-            "numero": "{{.Buyer.Address.Number}}",
-            "complemento": "{{.Buyer.Address.Complement}}",
-            "bairro": "{{.Buyer.Address.District}}",
-            "cidade": "{{.Buyer.Address.City}}",
-            "uf": "{{.Buyer.Address.StateCode}}"
+            "logradouro": "{{escape .Buyer.Address.Street}}",
+            "numero": "{{escape .Buyer.Address.Number}}",
+            "complemento": "{{escape .Buyer.Address.Complement}}",
+            "bairro": "{{escape .Buyer.Address.District}}",
+            "cidade": "{{escape .Buyer.Address.City}}",
+            "uf": "{{escape .Buyer.Address.StateCode}}"
         },
         "ip": "",
         "user_agent": ""
     },
     "boleto": {
-        "beneficiario": "{{.Recipient.Name}}",
+        "beneficiario": "{{escape .Recipient.Name}}",
         "carteira": "{{.Agreement.Wallet}}",
         "nosso_numero": "{{padLeft (toString .Title.OurNumber) "0" 11}}",
         "data_emissao": "{{enDate today "-"}}",
@@ -37,7 +37,7 @@ const registerBradescoShopFacil = `
         "mensagem_cabecalho": "",
         "tipo_renderizacao": "1",
         "instrucoes": {
-            "instrucao_linha_1": "{{.Title.Instructions}}"
+            "instrucao_linha_1": "{{escape .Title.Instructions}}"
         },
         "registro": {
             "agencia_pagador": "",
