@@ -120,7 +120,7 @@ func truncateString(str string, num int) string {
 	if len(str) > num {
 		bnoden = str[0:num]
 	}
-	return bnoden
+	return string([]rune(bnoden))
 }
 
 func clearString(str string) string {
