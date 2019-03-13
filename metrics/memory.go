@@ -2,7 +2,12 @@ package metrics
 
 import (
 	"runtime"
+	"strings"
 )
+
+var sizeKB float64 = 1 << (10 * 1)
+var sizeMB float64 = 1 << (10 * 2)
+var sizeGB float64 = 1 << (10 * 3)
 
 type MemoryReport struct {
 	Goroutines     int     `json:"goroutines"`
@@ -15,19 +20,31 @@ type MemoryReport struct {
 	MemoryUnit     string  `json:"memoryUnit"`
 }
 
-const megabyte = 1048576.0
-
-func GetMemoryReport() MemoryReport {
+func GetMemoryReport(u string) MemoryReport {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
+
+	var unit float64
+
+	switch strings.ToUpper(u) {
+	case "GB":
+		unit = sizeGB
+		break
+	case "KB":
+		unit = sizeKB
+	default:
+		u = "MB"
+		unit = sizeMB
+	}
+
 	return MemoryReport{
 		Goroutines:     runtime.NumGoroutine(),
-		HeapAllocated:  float64(m.HeapSys-m.HeapReleased) / megabyte,
-		HeapInUse:      float64(m.HeapInuse) / megabyte,
-		StackAllocated: float64(m.StackSys) / megabyte,
-		StackInUse:     float64(m.StackInuse) / megabyte,
-		TotalAllocated: float64(m.HeapSys+m.StackSys-m.HeapReleased) / megabyte,
-		TotalInUse:     float64(m.HeapInuse+m.StackInuse) / megabyte,
-		MemoryUnit:     "MB",
+		HeapAllocated:  float64(m.HeapSys-m.HeapReleased) / unit,
+		HeapInUse:      float64(m.HeapInuse) / unit,
+		StackAllocated: float64(m.StackSys) / unit,
+		StackInUse:     float64(m.StackInuse) / unit,
+		TotalAllocated: float64(m.HeapSys+m.StackSys-m.HeapReleased) / unit,
+		TotalInUse:     float64(m.HeapInuse+m.StackInuse) / unit,
+		MemoryUnit:     strings.ToUpper(u),
 	}
 }
