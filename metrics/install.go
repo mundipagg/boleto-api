@@ -6,10 +6,12 @@ import (
 )
 
 func Install() {
-	cnf := registry.Config{}
-	cnf.Host = config.Get().InfluxDBHost
-	cnf.Port = config.Get().InfluxDBPort
-	InstallRuntime(cnf)
-	InstallTimingMetrics(cnf)
-	InstallBusinessMetrics(cnf)
+	if config.Get().EnableMetrics {
+		cnf := registry.Config{}
+		cnf.Host = config.Get().InfluxDBHost
+		cnf.Port = config.Get().InfluxDBPort
+		InstallRuntime(cnf)
+		InstallTimingMetrics(cnf)
+		InstallBusinessMetrics(cnf)
+	}
 }

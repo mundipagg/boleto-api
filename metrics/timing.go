@@ -3,6 +3,7 @@ package metrics
 import (
 	. "github.com/PMoneda/telemetry"
 	"github.com/PMoneda/telemetry/registry"
+	"github.com/mundipagg/boleto-api/config"
 )
 
 var timing *Telemetry
@@ -15,4 +16,10 @@ func InstallTimingMetrics(cnf registry.Config) {
 
 func GetTimingMetrics() *Telemetry {
 	return timing
+}
+
+func PushTimingMetric(tag string, value interface{}) {
+	if config.Get().EnableMetrics {
+		GetTimingMetrics().Push(tag, value)
+	}
 }
