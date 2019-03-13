@@ -6,13 +6,14 @@ import (
 	"html"
 	"time"
 
+	"github.com/mundipagg/boleto-api/metrics"
+
 	"github.com/mundipagg/boleto-api/tmpl"
 	"github.com/mundipagg/boleto-api/util"
 
 	"github.com/PMoneda/flow"
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/log"
-	"github.com/mundipagg/boleto-api/metrics"
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/validations"
 )
@@ -57,7 +58,7 @@ func (b bankBradescoNetEmpresa) Log() *log.Log {
 }
 
 func (b bankBradescoNetEmpresa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
-	timing := metrics.GetTimingMetrics()
+
 	r := flow.NewFlow()
 	serviceURL := config.Get().URLBradescoNetEmpresa
 	xmlResponse := getResponseBradescoNetEmpresaXml()
@@ -77,7 +78,7 @@ func (b bankBradescoNetEmpresa) RegisterBoleto(boleto *models.BoletoRequest) (mo
 		bod.To(serviceURL, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutDefault})
 	})
 
-	timing.Push("bradesco-netempresa-register-boleto-online", duration.Seconds())
+	metrics.PushTimingMetric("bradesco-netempresa-register-boleto-online", duration.Seconds())
 	bod.To("logseq://?type=response&url="+serviceURL, b.log)
 
 	bod.To("transform://?format=xml", xmlResponse, jsonReponse)

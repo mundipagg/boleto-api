@@ -46,7 +46,7 @@ func (b bankCiti) Log() *log.Log {
 }
 
 func (b bankCiti) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
-	timing := metrics.GetTimingMetrics()
+
 	boleto.Title.OurNumber = calculateOurNumber(boleto)
 	r := flow.NewFlow()
 	serviceURL := config.Get().URLCiti
@@ -64,7 +64,7 @@ func (b bankCiti) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoRes
 	if err != nil {
 		return models.BoletoResponse{}, err
 	}
-	timing.Push("citibank-register-boleto-online", duration.Seconds())
+	metrics.PushTimingMetric("citibank-register-boleto-online", duration.Seconds())
 	bod.To("set://?prop=header", map[string]string{"status": strconv.Itoa(status)})
 	bod.To("set://?prop=body", responseCiti)
 	bod.To("logseq://?type=response&url="+serviceURL, b.log)

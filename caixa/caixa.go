@@ -3,11 +3,12 @@ package caixa
 import (
 	"fmt"
 
+	"github.com/mundipagg/boleto-api/metrics"
+
 	"github.com/PMoneda/flow"
 
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/log"
-	"github.com/mundipagg/boleto-api/metrics"
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/tmpl"
 	"github.com/mundipagg/boleto-api/util"
@@ -38,7 +39,7 @@ func (b bankCaixa) Log() *log.Log {
 	return b.log
 }
 func (b bankCaixa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
-	timing := metrics.GetTimingMetrics()
+
 	r := flow.NewFlow()
 	urlCaixa := config.Get().URLCaixaRegisterBoleto
 	from := getResponseCaixa()
@@ -49,7 +50,7 @@ func (b bankCaixa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoRe
 	duration := util.Duration(func() {
 		bod = bod.To(urlCaixa, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutDefault})
 	})
-	timing.Push("caixa-register-time", duration.Seconds())
+	metrics.PushTimingMetric("caixa-register-time", duration.Seconds())
 	bod = bod.To("logseq://?type=response&url="+urlCaixa, b.log)
 	ch := bod.Choice()
 	ch = ch.When(flow.Header("status").IsEqualTo("200"))
