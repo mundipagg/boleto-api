@@ -1,80 +1,80 @@
 version: '2'
 
 services:
-  # boleto-api:
-  #   build: 
-  #     context: ..
-  #     dockerfile: ./devops/Dockerfile      
-  #   volumes:
-  #     - $GOPATH/src/github.com/mundipagg/volumes-boletoapi/boleto_json_store/:/home/mundipagg/upMongo
-  #     - $GOPATH/src/github.com/mundipagg/volumes-boletoapi/cert_boleto_api/:/home/mundipagg/boleto_cert/
-  #   ports:
-  #     - "3000:3000"
-  #   links:
-  #     - pdfapi
-  #     - mongodb
-  #     - seq
-  #     - influxdb
-    
-  pdfapi:
-    image: "pmoneda/pdfapi"
-    ports:
-      - "7070:8080"
-    
-  mongodb:
-    image: "bitnami/mongodb"
-    volumes:
-      - $GOPATH/src/github.com/mundipagg/volumes-boletoapi/mongodb-boleto:/bitnami
-    ports: 
-      - "27017:27017"
-
-  seq:
-    image: "datalust/seq:latest"
-    ports:
-      - "5341:5341"
-      - "8070:80"
-    volumes:
-      - $GOPATH/src/github.com/mundipagg/volumes-boletoapi/seq_boleto/:/data
-    environment:
-      - ACCEPT_EULA=Y
+    boleto-api:
+        build: 
+          context: ..
+          dockerfile: ./devops/Dockerfile      
+        volumes:
+          - $gopath/src/github.com/mundipagg/volumes-boletoapi/boleto_json_store/:/home/mundipagg/upmongo
+          - $gopath/src/github.com/mundipagg/volumes-boletoapi/cert_boleto_api/:/home/mundipagg/boleto_cert/
+        ports:
+          - "3000:3000"
+        links:
+          - pdfapi
+          - mongodb
+          - seq
+          - influxdb
   
-  redis:
-    image: "bitnami/redis:latest"
-    ports:
-      - "6379:6379"
-    environment:
-      - REDIS_PASSWORD=123456
-    volumes:
-      - $GOPATH/src/github.com/mundipagg/volumes-boletoapi/redis-boleto:/bitnami/redis/data
+    pdfapi:
+        image: "pmoneda/pdfapi"
+        ports:
+          - "7070:8080"
 
-  influxdb:
-    image: influxdb:latest
-    container_name: influxdb
-    volumes:
-      - $GOPATH/src/github.com/mundipagg/volumes-boletoapi/influxdb-boleto/influxdb/influxdb-lib:/var/lib/influxdb
-    ports:
-      - 8086:8086
+    mongodb:
+        image: "bitnami/mongodb"
+        volumes:
+          - $GOPATH/src/github.com/mundipagg/volumes-boletoapi/mongodb-boleto:/bitnami
+        ports: 
+          - "27017:27017"
 
-  grafana:
-    image: grafana/grafana:latest
-    volumes:
-      - $GOPATH/src/github.com/mundipagg/volumes-boletoapi/influxdb-boleto/grafana/grafana-lib:/var/lib/grafana
-      - $GOPATH/src/github.com/mundipagg/volumes-boletoapi/influxdb-boleto/grafana/grafana-log:/var/log/grafana
-    links:
-      - influxdb:influxdb
-    ports:
-      - 3030:3000
-    links:
-      - influxdb
-    
-  chronograf:
-    image: chronograf:latest
-    volumes:
-      - $GOPATH/src/github.com/mundipagg/volumes-boletoapi/influxdb-boleto/chronograf:/var/lib/chronograf
-    ports:
-      - "8888:8888"
-    links:
-      - influxdb
+    seq:
+        image: "datalust/seq:latest"
+        ports:
+          - "5341:5341"
+          - "8070:80"
+        volumes:
+          - $GOPATH/src/github.com/mundipagg/volumes-boletoapi/seq_boleto/:/data
+        environment:
+          - ACCEPT_EULA=Y
+
+    redis:
+        image: "bitnami/redis:latest"
+        ports:
+          - "6379:6379"
+        environment:
+          - REDIS_PASSWORD=123456
+        volumes:
+          - $GOPATH/src/github.com/mundipagg/volumes-boletoapi/redis-boleto:/bitnami/redis/data
+
+    influxdb:
+        image: influxdb:latest
+        container_name: influxdb
+        volumes:
+          - $GOPATH/src/github.com/mundipagg/volumes-boletoapi/influxdb-boleto/influxdb/influxdb-lib:/var/lib/influxdb
+        ports:
+          - 8086:8086
+
+    grafana:
+        image: grafana/grafana:latest
+        volumes:
+          - $GOPATH/src/github.com/mundipagg/volumes-boletoapi/influxdb-boleto/grafana/grafana-lib:/var/lib/grafana
+          - $GOPATH/src/github.com/mundipagg/volumes-boletoapi/influxdb-boleto/grafana/grafana-log:/var/log/grafana
+        links:
+          - influxdb:influxdb
+        ports:
+          - 3030:3000
+        links:
+          - influxdb
+
+    chronograf:
+        image: chronograf:latest
+        volumes:
+          - $GOPATH/src/github.com/mundipagg/volumes-boletoapi/influxdb-boleto/chronograf:/var/lib/chronograf
+        ports:
+          - "8888:8888"
+        links:
+          - influxdb
 
     
         

@@ -16,7 +16,7 @@ COPY --from=build-env ./deploy/ .
 RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 
 ENV GOROOT="/home/mundipagg/"
-ENV INFLUXDB_HOST="http://localhost"
+ENV INFLUXDB_HOST="http://influxdb"
 ENV INFLUXDB_PORT="8086"
 ENV PDF_API="http://localhost:7070/topdf"
 ENV API_PORT="3000"
@@ -54,7 +54,7 @@ ENV URL_BRADESCO_NET_EMPRESA="https://cobranca.bradesconetempresa.b.br/ibpjregis
 ENV TIMEOUT_REGISTER="30"
 ENV TIMEOUT_TOKEN="20"
 ENV TIMEOUT_DEFAULT="50"
-
+ENV ENABLE_METRICS="true"
 
 ENTRYPOINT ["/home/mundipagg/boleto-api"]
 EXPOSE 3000
