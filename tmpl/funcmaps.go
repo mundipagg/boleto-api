@@ -120,6 +120,7 @@ func truncateString(str string, num int) string {
 	if len(str) > num {
 		bnoden = str[0:num]
 	}
+	//Support extended ASCII
 	return string([]rune(bnoden))
 }
 
