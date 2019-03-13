@@ -59,8 +59,9 @@ type Config struct {
 	TimeoutRegister                 string
 	TimeoutToken                    string
 	TimeoutDefault                  string
-	URLPefisaToken                   string
-	URLPefisaRegister                string
+	URLPefisaToken                  string
+	URLPefisaRegister               string
+	EnableMetrics                   bool
 }
 
 var cnf Config
@@ -126,8 +127,9 @@ func Install(mockMode, devMode, disableLog bool) {
 		TimeoutRegister:                 os.Getenv("TIMEOUT_REGISTER"),
 		TimeoutToken:                    os.Getenv("TIMEOUT_TOKEN"),
 		TimeoutDefault:                  os.Getenv("TIMEOUT_DEFAULT"),
-		URLPefisaToken:                   os.Getenv("URL_PEFISA_TOKEN"),
-		URLPefisaRegister:                os.Getenv("URL_PEFISA_REGISTER"),
+		URLPefisaToken:                  os.Getenv("URL_PEFISA_TOKEN"),
+		URLPefisaRegister:               os.Getenv("URL_PEFISA_REGISTER"),
+		EnableMetrics:                   os.Getenv("ENABLE_METRICS") == "true",
 	}
 }
 
