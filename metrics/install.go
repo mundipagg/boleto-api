@@ -5,6 +5,7 @@ import (
 	"github.com/mundipagg/boleto-api/config"
 )
 
+//Install Inicia telemetria
 func Install() {
 	if config.Get().EnableMetrics {
 		cnf := registry.Config{}

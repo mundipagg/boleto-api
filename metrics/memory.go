@@ -9,6 +9,7 @@ var sizeKB float64 = 1 << (10 * 1)
 var sizeMB float64 = 1 << (10 * 2)
 var sizeGB float64 = 1 << (10 * 3)
 
+//MemoryReport Contrato de Memory Check
 type MemoryReport struct {
 	Goroutines     int     `json:"goroutines"`
 	HeapAllocated  float64 `json:"heapAllocated"`
@@ -20,6 +21,7 @@ type MemoryReport struct {
 	MemoryUnit     string  `json:"memoryUnit"`
 }
 
+//GetMemoryReport Obtém dados de Memory Check
 func GetMemoryReport(u string) MemoryReport {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
