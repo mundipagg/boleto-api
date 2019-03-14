@@ -164,3 +164,12 @@ func TestDVOurNumberMod11BradescoShopFacil(t *testing.T) {
 		So(dvEqualEight, ShouldEqual, "8")
 	})
 }
+
+func TestEscape(t *testing.T){
+	escapedText :=  escape("KM 5,00\t")
+	Convey("O texto deve ser escapado", t, func() {
+		So(escapedText, ShouldEqual, "KM 5,00\\t")
+	})
+}
+
+

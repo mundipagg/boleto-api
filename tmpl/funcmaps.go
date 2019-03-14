@@ -66,6 +66,7 @@ var funcMap = template.FuncMap{
 	"mod11BradescoShopFacilDv": mod11BradescoShopFacilDv,
 	"bsonMongoToString":        bsonMongoToString,
 	"truncateManyFields":       truncateManyFields,
+	"escape": escape,
 }
 
 func GetFuncMaps() template.FuncMap {
@@ -119,7 +120,8 @@ func truncateString(str string, num int) string {
 	if len(str) > num {
 		bnoden = str[0:num]
 	}
-	return bnoden
+	//Support extended ASCII
+	return string([]rune(bnoden))
 }
 
 func clearString(str string) string {
@@ -377,4 +379,9 @@ func truncateManyFields(num int, values ...string) string{
 	}
 	str := strings.Trim(buf.String()," ")
 	return truncateString(str, num)
+}
+
+func escape(field string) string{
+	quote := strconv.Quote(field)
+	return quote[1:len(quote) -1]
 }
