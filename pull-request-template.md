@@ -42,6 +42,7 @@ Utilize código e/ou imagens (prints) para ilustrar seus teste.
 
 ## Checklist
 
+- [ ] Associei corretamente a Tarefa do Board ao Pull Request.
 - [ ] Meu código segue as diretrizes desse projeto.
 - [ ] Eu revisei meu próprio código.
 - [ ] Eu comentei meu código em áreas particulares de difícil compreensão.
@@ -50,4 +51,4 @@ Utilize código e/ou imagens (prints) para ilustrar seus teste.
 - [ ] Eu adicionei testes que provam que minha correção é efetiva ou que a nova feature funciona.
 - [ ] Testes novos e existentes passam localmente com minhas alterações. 
 - [ ] Testes novos e existentes passam em staging com minhas alterações. 
-- [ ] Qualquer dependência dessa alteração já foi mergeada e publicada.
+- [ ] Qualquer dependência dessa alteração já foi realizada (deploy, configuração em todos os ambientes, etc).
