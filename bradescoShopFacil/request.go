@@ -7,27 +7,27 @@ const registerBradescoShopFacil = `
     "merchant_id": "{{.Authentication.Username}}",
     "meio_pagamento": "300",
     "pedido": {
-        "numero": "{{escape .Title.DocumentNumber}}",
+        "numero": "{{escapeStringOnJson .Title.DocumentNumber}}",
         "valor": {{.Title.AmountInCents}},
         "descricao": ""
     },
     "comprador": {
-        "nome": "{{escape .Buyer.Name}}",
-        "documento": "{{escape .Buyer.Document.Number}}",
+        "nome": "{{escapeStringOnJson .Buyer.Name}}",
+        "documento": "{{escapeStringOnJson .Buyer.Document.Number}}",
         "endereco": {
             "cep": "{{extractNumbers .Buyer.Address.ZipCode}}",
-            "logradouro": "{{escape .Buyer.Address.Street}}",
-            "numero": "{{escape .Buyer.Address.Number}}",
-            "complemento": "{{escape .Buyer.Address.Complement}}",
-            "bairro": "{{escape .Buyer.Address.District}}",
-            "cidade": "{{escape .Buyer.Address.City}}",
-            "uf": "{{escape .Buyer.Address.StateCode}}"
+            "logradouro": "{{escapeStringOnJson .Buyer.Address.Street}}",
+            "numero": "{{escapeStringOnJson .Buyer.Address.Number}}",
+            "complemento": "{{escapeStringOnJson .Buyer.Address.Complement}}",
+            "bairro": "{{escapeStringOnJson .Buyer.Address.District}}",
+            "cidade": "{{escapeStringOnJson .Buyer.Address.City}}",
+            "uf": "{{escapeStringOnJson .Buyer.Address.StateCode}}"
         },
         "ip": "",
         "user_agent": ""
     },
     "boleto": {
-        "beneficiario": "{{escape .Recipient.Name}}",
+        "beneficiario": "{{escapeStringOnJson .Recipient.Name}}",
         "carteira": "{{.Agreement.Wallet}}",
         "nosso_numero": "{{padLeft (toString .Title.OurNumber) "0" 11}}",
         "data_emissao": "{{enDate today "-"}}",
@@ -37,7 +37,7 @@ const registerBradescoShopFacil = `
         "mensagem_cabecalho": "",
         "tipo_renderizacao": "1",
         "instrucoes": {
-            "instrucao_linha_1": "{{escape .Title.Instructions}}"
+            "instrucao_linha_1": "{{escapeStringOnJson .Title.Instructions}}"
         },
         "registro": {
             "agencia_pagador": "",
