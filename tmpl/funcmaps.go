@@ -383,8 +383,6 @@ func truncateManyFields(num int, values ...string) string{
 
 func escapeStringOnJson(field string) string{
 	field = strings.Replace(field, "\b", "", -1)
-	return regexp.MustCompile(`[\t\f\r\\]`).ReplaceAllStringFunc(field, func(s string) string {
-		return strings.Trim(strconv.Quote(s), "\"")
-	})
+	return regexp.MustCompile(`[\t\f\r\\]`).ReplaceAllString(field,"")
 }
 
