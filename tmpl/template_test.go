@@ -166,9 +166,9 @@ func TestDVOurNumberMod11BradescoShopFacil(t *testing.T) {
 }
 
 func TestEscape(t *testing.T){
-	escapedText :=  escape("KM 5,00\t")
+	escapedText :=  escapeStringOnJson("KM 5,00 \t \f \r \b")
 	Convey("O texto deve ser escapado", t, func() {
-		So(escapedText, ShouldEqual, "KM 5,00\\t")
+		So(escapedText, ShouldEqual, "KM 5,00    ")
 	})
 }
 

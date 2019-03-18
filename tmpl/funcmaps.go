@@ -66,7 +66,7 @@ var funcMap = template.FuncMap{
 	"mod11BradescoShopFacilDv": mod11BradescoShopFacilDv,
 	"bsonMongoToString":        bsonMongoToString,
 	"truncateManyFields":       truncateManyFields,
-	"escape": escape,
+	"escapeStringOnJson": escapeStringOnJson,
 }
 
 func GetFuncMaps() template.FuncMap {
@@ -381,7 +381,8 @@ func truncateManyFields(num int, values ...string) string{
 	return truncateString(str, num)
 }
 
-func escape(field string) string{
-	quote := strconv.Quote(field)
-	return quote[1:len(quote) -1]
+func escapeStringOnJson(field string) string{
+	field = strings.Replace(field, "\b", "", -1)
+	return regexp.MustCompile(`[\t\f\r\\]`).ReplaceAllString(field,"")
 }
+
