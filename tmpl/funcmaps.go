@@ -67,6 +67,7 @@ var funcMap = template.FuncMap{
 	"bsonMongoToString":        bsonMongoToString,
 	"truncateManyFields":       truncateManyFields,
 	"escapeStringOnJson": escapeStringOnJson,
+	"removeSpecialCharacter": removeSpecialCharacter,
 }
 
 func GetFuncMaps() template.FuncMap {
@@ -116,8 +117,9 @@ func trimLeft(s string, caract string) string {
 }
 
 func truncateString(str string, num int) string {
-	bnoden := str
-	if len(str) > num {
+	bnoden := removeSpecialCharacter(str)
+
+	if len(bnoden) > num {
 		bnoden = str[0:num]
 	}
 	//Support extended ASCII
@@ -386,3 +388,6 @@ func escapeStringOnJson(field string) string{
 	return regexp.MustCompile(`[\t\f\r\\]`).ReplaceAllString(field,"")
 }
 
+func removeSpecialCharacter(str string) string {
+	return regexp.MustCompile("[^a-zA-Z0-9ÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕáéíóúàèìòùâêîôûãõç\\s]+").ReplaceAllString(str, "")
+}
