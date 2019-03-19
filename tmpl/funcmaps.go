@@ -389,5 +389,5 @@ func escapeStringOnJson(field string) string{
 }
 
 func removeSpecialCharacter(str string) string {
-	return regexp.MustCompile("[^a-zA-Z0-9ÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕáéíóúàèìòùâêîôûãõç\\s]+").ReplaceAllString(str, "")
+	return regexp.MustCompile("[^a-zA-Z0-9ÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕáéíóúàèìòùâêîôûãõç,.\\-\\s]+").ReplaceAllString(str, "")
 }

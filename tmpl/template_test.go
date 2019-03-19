@@ -173,9 +173,9 @@ func TestEscape(t *testing.T){
 }
 
 func TestRemoveCharacterSpecial(t *testing.T){
-	text := removeSpecialCharacter("Texto com \"carácter\" especial * ' ")
+	text := removeSpecialCharacter("Texto com \"carácter\" especial * ' -")
 	Convey("Os caracteres especiais devem ser removidos", t, func() {
-		So(text, ShouldEqual, "Texto com carácter especial   ")
+		So(text, ShouldEqual, "Texto com carácter especial   -")
 	})
 }
 
