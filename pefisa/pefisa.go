@@ -40,7 +40,6 @@ func (b bankPefisa) Log() *log.Log {
 
 func (b bankPefisa) GetToken(boleto *models.BoletoRequest) (string, error) {
 
-	timing := metrics.GetTimingMetrics()
 	pipe := NewFlow()
 	url := config.Get().URLPefisaToken
 
@@ -50,7 +49,7 @@ func (b bankPefisa) GetToken(boleto *models.BoletoRequest) (string, error) {
 	duration := util.Duration(func() {
 		pipe.To(url, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutToken})
 	})
-	timing.Push("pefisa-get-token-boleto-time", duration.Seconds())
+	metrics.PushTimingMetric("pefisa-get-token-boleto-time", duration.Seconds())
 	pipe.To("logseq://?type=response&url="+url, b.log)
 	ch := pipe.Choice()
 	ch.When(Header("status").IsEqualTo("200"))
@@ -74,7 +73,6 @@ func (b bankPefisa) GetToken(boleto *models.BoletoRequest) (string, error) {
 }
 
 func (b bankPefisa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
-	timing := metrics.GetTimingMetrics()
 	pefisaURL := config.Get().URLPefisaRegister
 
 	exec := NewFlow().From("message://?source=inline", boleto, getRequestPefisa(), tmpl.GetFuncMaps())
@@ -90,7 +88,7 @@ func (b bankPefisa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoR
 		return models.BoletoResponse{}, err
 	}
 
-	timing.Push("pefisa-register-boleto-time", duration.Seconds())
+	metrics.PushTimingMetric("pefisa-register-boleto-time", duration.Seconds())
 	exec.To("set://?prop=header", map[string]string{"status": strconv.Itoa(status)})
 	exec.To("set://?prop=body", response)
 	exec.To("logseq://?type=response&url="+pefisaURL, b.log)

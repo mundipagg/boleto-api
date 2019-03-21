@@ -50,7 +50,6 @@ func (b bankSantander) Log() *log.Log {
 	return b.log
 }
 func (b bankSantander) GetTicket(boleto *models.BoletoRequest) (string, error) {
-	timing := metrics.GetTimingMetrics()
 	boleto.Title.OurNumber = calculateOurNumber(boleto)
 	pipe := NewFlow()
 	url := config.Get().URLTicketSantander
@@ -60,7 +59,7 @@ func (b bankSantander) GetTicket(boleto *models.BoletoRequest) (string, error) {
 	duration := util.Duration(func() {
 		pipe.To(tlsURL, b.transport, map[string]string{"timeout": config.Get().TimeoutToken})
 	})
-	timing.Push("santander-get-ticket-boleto-time", duration.Seconds())
+	metrics.PushTimingMetric("santander-get-ticket-boleto-time", duration.Seconds())
 	pipe.To("logseq://?type=response&url="+url, b.log)
 	ch := pipe.Choice()
 	ch.When(Header("status").IsEqualTo("200"))
@@ -82,7 +81,6 @@ func (b bankSantander) GetTicket(boleto *models.BoletoRequest) (string, error) {
 }
 
 func (b bankSantander) RegisterBoleto(input *models.BoletoRequest) (models.BoletoResponse, error) {
-	timing := metrics.GetTimingMetrics()
 	serviceURL := config.Get().URLRegisterBoletoSantander
 	fromResponse := getResponseSantander()
 	toAPI := getAPIResponseSantander()
@@ -94,7 +92,7 @@ func (b bankSantander) RegisterBoleto(input *models.BoletoRequest) (models.Bolet
 	duration := util.Duration(func() {
 		exec.To(santanderURL, b.transport, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutRegister})
 	})
-	timing.Push("santander-register-boleto-time", duration.Seconds())
+	metrics.PushTimingMetric("santander-register-boleto-time", duration.Seconds())
 	exec.To("logseq://?type=response&url="+serviceURL, b.log)
 	ch := exec.Choice()
 	ch.When(Header("status").IsEqualTo("200"))

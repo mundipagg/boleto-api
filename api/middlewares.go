@@ -37,20 +37,20 @@ func timingMetrics() gin.HandlerFunc {
 		end := time.Now()
 		total := end.Sub(start)
 		s := float64(total.Seconds())
-		metrics.GetTimingMetrics().Push("request-time", s)
+		metrics.PushTimingMetric("request-time", s)
 	}
 }
 
 //ParseBoleto trata a entrada de boleto em todos os requests
 func ParseBoleto() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		businessMetrics := metrics.GetBusinessMetrics()
+
 		boleto := models.BoletoRequest{}
 		errBind := c.BindJSON(&boleto)
 		if errBind != nil {
 			e := models.NewFormatError(errBind.Error())
 			checkError(c, e, log.CreateLog())
-			businessMetrics.Push("json_error", 1)
+			metrics.PushBusinessMetric("json_error", 1)
 			return
 		}
 		bank, err := bank.Get(boleto)
@@ -64,7 +64,7 @@ func ParseBoleto() gin.HandlerFunc {
 		if errFmt != nil {
 			e := models.NewFormatError(errFmt.Error())
 			checkError(c, e, log.CreateLog())
-			businessMetrics.Push(bank.GetBankNameIntegration()+"-bad-request", 1)
+			metrics.PushBusinessMetric(bank.GetBankNameIntegration()+"-bad-request", 1)
 			return
 		}
 		l := log.CreateLog()
@@ -80,7 +80,7 @@ func ParseBoleto() gin.HandlerFunc {
 		resp, _ := c.Get("boletoResponse")
 		l.ResponseApplication(resp, c.Request.URL.RequestURI())
 		tag := bank.GetBankNameIntegration() + "-status"
-		businessMetrics.Push(tag, c.Writer.Status())
+		metrics.PushBusinessMetric(tag, c.Writer.Status())
 
 	}
 }
