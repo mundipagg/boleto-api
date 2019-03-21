@@ -14,9 +14,9 @@ Por favor, inclua um resumo da alteração e qual problema foi corrigido ou feat
 ## Testes
 
 Por favor, descreva os testes que você executou para verificar suas alterações. Forneça instruções necessárias para que seja possível reproduzir os testes e evidências de suas execuções com sucesso.
-Se possível, anexe na tarefa a coleção de requisições executadas no teste. (Nesse caso marque o check abaixo)
+Se possível, anexe na tarefa a coleção de requisições executadas no teste. (Nesse caso adicione o link abaixo)
 
-- [ ] Coleção do Postman com testes executados está anexado na tarefa.
+### Coleção de Testes [Download](https://www.getpostman.com/collections/83ff1739e979805b1ff6)
 
 ### Teste A
 
