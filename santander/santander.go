@@ -51,6 +51,7 @@ func (b bankSantander) Log() *log.Log {
 }
 func (b bankSantander) GetTicket(boleto *models.BoletoRequest) (string, error) {
 	boleto.Title.OurNumber = calculateOurNumber(boleto)
+	boleto.Title.BoletoType = b.GetBoletoType(boleto)
 	pipe := NewFlow()
 	url := config.Get().URLTicketSantander
 	tlsURL := strings.Replace(config.Get().URLTicketSantander, "https", "tls", 1)
@@ -86,6 +87,7 @@ func (b bankSantander) RegisterBoleto(input *models.BoletoRequest) (models.Bolet
 	toAPI := getAPIResponseSantander()
 	inputTemplate := getRequestSantander()
 	santanderURL := strings.Replace(serviceURL, "https", "tls", 1)
+	input.Title.BoletoType = b.GetBoletoType(input)
 
 	exec := NewFlow().From("message://?source=inline", input, inputTemplate, tmpl.GetFuncMaps())
 	exec.To("logseq://?type=request&url="+serviceURL, b.log)
@@ -138,4 +140,36 @@ func calculateOurNumber(boleto *models.BoletoRequest) uint {
 
 func (b bankSantander) GetBankNameIntegration() string {
 	return "Santander"
+}
+
+func (b bankSantander) GetBoletoType(boleto *models.BoletoRequest) string {
+	if len(boleto.Title.BoletoType) > 0 {
+		switch strings.ToLower(boleto.Title.BoletoType) {
+		case "duplicatamercantil":
+			return "01"
+		case "duplicatadeservico":
+			return "04"
+		case "notapromissoria":
+			return "12"
+		case "notapromissoriarural":
+			return "13"
+		case "recibo":
+			return "17"
+		case "apolicedeseguro":
+			return "20"
+		case "cartaodecredito":
+			return "31"
+		case "boletodeproposta":
+			return "32"
+		case "cheque":
+			return "97"
+		case "notapromissoriadireta":
+			return "98"
+		case "outros":
+			return "99"				
+		default:
+			return "02"
+		}
+	}
+	return "02"
 }
