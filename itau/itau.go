@@ -76,6 +76,8 @@ func (b bankItau) RegisterBoleto(input *models.BoletoRequest) (models.BoletoResp
 	fromResponseError := getResponseErrorItau()
 	toAPI := getAPIResponseItau()
 	inputTemplate := getRequestItau()
+
+	input.Title.BoletoType = b.GetBoletoType(input)
 	exec := NewFlow().From("message://?source=inline", input, inputTemplate, tmpl.GetFuncMaps())
 	exec.To("logseq://?type=request&url="+itauURL, b.log)
 	duration := util.Duration(func() {
@@ -137,4 +139,44 @@ func (b bankItau) GetBankNumber() models.BankNumber {
 
 func (b bankItau) GetBankNameIntegration() string {
 	return "Itau"
+}
+
+func (b bankItau) GetBoletoType(boleto *models.BoletoRequest) string {
+	if len(boleto.Title.BoletoType) > 0 {
+		switch strings.ToLower(boleto.Title.BoletoType) {
+		case "duplicatamercantil":
+			return "01"
+		case "notapromissoria":
+			return "02"
+		case "notadeseguro":
+			return "03"
+		case "mensalidadeescolar":
+			return "04"
+		case "recibo":
+			return "05"
+		case "contrato":
+			return "06"
+		case "cosseguros":
+			return "07"
+		case "duplicatadeservico":
+			return "08"
+		case "letradecambio":
+			return "09"
+		case "notadedebitos":
+			return "13"
+		case "documentodedivida":
+			return "15"
+		case "encargoscondominiais":
+			return "16"
+		case "prestacaodeservicos":
+			return "17"
+		case "boletodeproposta":
+			return "18"
+		case "diversos":
+			return "99"				
+		default:
+			return "01"
+		}
+	}
+	return "01"
 }
