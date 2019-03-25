@@ -1,0 +1,20 @@
+{
+    "codes": [
+        "CD01",
+        "CD02",
+        "MT01",
+        "MT02",
+        "MT03",
+        "MT04",
+        "QA08",
+        "QA09",
+        "QA14",
+        "QA15",
+        "SC01",
+        "SC02",
+        "SC04",
+        "SC05"
+    ],
+    "ignore": false,
+    "version_json": "https://mundipagg.github.io/mundi-maturity/maturity-v1.js"
+}
