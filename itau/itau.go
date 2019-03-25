@@ -141,42 +141,29 @@ func (b bankItau) GetBankNameIntegration() string {
 	return "Itau"
 }
 
+func itauBoletoTypes() map[string]string {
+	m := make(map[string]string)
+
+	m["DM"] = "01"  //Duplicata Mercantil
+	m["NP"] = "02"  //Nota Promissória
+	m["RC"] = "05"  //Recibo
+	m["DS"] = "08"  //Duplicata de serviços
+	m["BP"] = "18"  //Boleto de proposta
+	m["OUT"] = "99" //Outros
+
+	return m
+}
+
 func (b bankItau) GetBoletoType(boleto *models.BoletoRequest) string {
-	if len(boleto.Title.BoletoType) > 0 {
-		switch strings.ToLower(boleto.Title.BoletoType) {
-		case "duplicatamercantil":
-			return "01"
-		case "notapromissoria":
-			return "02"
-		case "notadeseguro":
-			return "03"
-		case "mensalidadeescolar":
-			return "04"
-		case "recibo":
-			return "05"
-		case "contrato":
-			return "06"
-		case "cosseguros":
-			return "07"
-		case "duplicatadeservico":
-			return "08"
-		case "letradecambio":
-			return "09"
-		case "notadedebitos":
-			return "13"
-		case "documentodedivida":
-			return "15"
-		case "encargoscondominiais":
-			return "16"
-		case "prestacaodeservicos":
-			return "17"
-		case "boletodeproposta":
-			return "18"
-		case "diversos":
-			return "99"				
-		default:
-			return "01"
-		}
+	if len(boleto.Title.BoletoType) < 1 {
+		return "01"
 	}
-	return "01"
+	bt := itauBoletoTypes()
+
+	if bt[strings.ToUpper(boleto.Title.BoletoType)] == "" {
+		return "01"
+	} else {
+		return bt[strings.ToUpper(boleto.Title.BoletoType)]
+	}
+
 }

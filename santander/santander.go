@@ -141,34 +141,29 @@ func (b bankSantander) GetBankNameIntegration() string {
 	return "Santander"
 }
 
+func satanderBoletoTypes() map[string]string {
+	m := make(map[string]string)
+
+	m["DM"] = "02"  //Duplicata Mercantil
+	m["DS"] = "04"  //Duplicata de serviço
+	m["NP"] = "12"  //Nota promissória
+	m["RC"] = "17"  //Recibo
+	m["BP"] = "32"  //Boleto de proposta
+	m["CH"] = "97"  //Cheque
+	m["OUT"] = "99" //Outros
+
+	return m
+}
+
 func (b bankSantander) GetBoletoType(boleto *models.BoletoRequest) string {
-	if len(boleto.Title.BoletoType) > 0 {
-		switch strings.ToLower(boleto.Title.BoletoType) {
-		case "duplicatamercantil":
-			return "01"
-		case "duplicatadeservico":
-			return "04"
-		case "notapromissoria":
-			return "12"
-		case "notapromissoriarural":
-			return "13"
-		case "recibo":
-			return "17"
-		case "apolicedeseguro":
-			return "20"
-		case "cartaodecredito":
-			return "31"
-		case "boletodeproposta":
-			return "32"
-		case "cheque":
-			return "97"
-		case "notapromissoriadireta":
-			return "98"
-		case "outros":
-			return "99"				
-		default:
-			return "02"
-		}
+	if len(boleto.Title.BoletoType) < 1 {
+		return "02"
 	}
-	return "02"
+	bt := satanderBoletoTypes()
+
+	if bt[strings.ToUpper(boleto.Title.BoletoType)] == "" {
+		return "02"
+	} else {
+		return bt[strings.ToUpper(boleto.Title.BoletoType)]
+	}
 }

@@ -179,76 +179,30 @@ func dateDueFactor(dateDue time.Time) (string, error) {
 	return fmt.Sprintf("%04d", factor), nil
 }
 
+func bradescoNetEmpresaBoletoTypes() map[string]string {
+	m := make(map[string]string)
+
+	m["CH"] = "01"  //Cheque
+	m["DM"] = "02"  //Duplicata Mercantil
+	m["DS"] = "04"  //Duplicata de serviços
+	m["NP"] = "12"  //Nota promissória
+	m["RC"] = "17"  //Recibo
+	m["BP"] = "32"  //Boleto de proposta
+	m["OUT"] = "99" //Outros
+
+	return m
+}
+
 func (b bankBradescoNetEmpresa) GetBoletoType(boleto *models.BoletoRequest) string {
-	if len(boleto.Title.BoletoType) > 0 {
-		switch strings.ToLower(boleto.Title.BoletoType) {
-		case "cheque":
-			return "01"
-		case "duplicatamercantil":
-			return "02"
-		case "duplicatamercantilporindicacao":
-			return "03"
-		case "duplicatadeservico":
-			return "04"
-		case "duplicatadeservicoporindicacao":
-			return "05"
-		case "duplicatarural":
-			return "06"
-		case "letradecambio":
-			return "07"
-		case "notadecreditocomercial":
-			return "08"
-		case "notadecreditoexportacao":
-			return "09"
-		case "notadecreditoindustrial":
-			return "10"
-		case "notadecreditorural":
-			return "11"
-		case "notapromissoria":
-			return "12"
-		case "notapromissoriarural":
-			return "13"
-		case "triplicatamercantil":
-			return "14"
-		case "triplicatadeservico":
-			return "15"
-		case "notadeservico":
-			return "16"
-		case "recibo":
-			return "17"
-		case "fatura":
-			return "18"
-		case "notadedebito":
-			return "19"
-		case "apolicedeseguro":
-			return "20"
-		case "mensalidadeescolar":
-			return "21"
-		case "parceladeconsorcio":
-			return "22"
-		case "documentodevida":
-			return "23"
-		case "ceduladecreditobancario":
-			return "24"
-		case "financiamento":
-			return "25"
-		case "rateiodedespesas":
-			return "26"
-		case "duplicataruralindicacao":
-			return "27"
-		case "encargoscondominiais":
-			return "28"
-		case "encargoscondominiaisporindicacao":
-			return "29"
-		case "cartaodecredito":
-			return "31"
-		case "boletodeproposta":
-			return "32"
-		case "outros":
-			return "99"
-		default:
-			return "02"
-		}
+	if len(boleto.Title.BoletoType) < 1 {
+		return "02"
 	}
-	return "02"
+	bt := bradescoNetEmpresaBoletoTypes()
+
+	if bt[strings.ToUpper(boleto.Title.BoletoType)] == "" {
+		return "02"
+	} else {
+		return bt[strings.ToUpper(boleto.Title.BoletoType)]
+	}
+
 }

@@ -3,8 +3,8 @@ package bradescoShopFacil
 import (
 	"errors"
 	"fmt"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/mundipagg/boleto-api/metrics"
 
@@ -144,32 +144,28 @@ func (b bankBradescoShopFacil) GetBankNameIntegration() string {
 	return "BradescoShopFacil"
 }
 
+func bradescoShopFacilBoletoTypes() map[string]string {
+	m := make(map[string]string)
+
+	m["DM"] = "01"  //Duplicata Mercantil
+	m["NP"] = "02"  //Nota promissória
+	m["RC"] = "05"  //Recibo
+	m["DS"] = "12"  //Duplicata de serviço
+	m["BP"] = "30"  //Boleto de proposta
+	m["OUT"] = "99" //Outros
+
+	return m
+}
+
 func (b bankBradescoShopFacil) GetBoletoType(boleto *models.BoletoRequest) string {
-	if len(boleto.Title.BoletoType) > 0 {
-		switch strings.ToLower(boleto.Title.BoletoType) {
-		case "duplicata":
-			return "01"
-		case "notapromissoria":
-			return "02"
-		case "notadeseguro":
-			return "03"
-		case "cobrancaseriada":
-			return "04"
-		case "recibo":
-			return "05"
-		case "letradecambio":
-			return "10"
-		case "notadedebito":
-			return "11"
-		case "duplicatadeservico":
-			return "12"		
-		case "boletodeproposta":
-			return "18"
-		case "outros":
-			return "99"				
-		default:
-			return "01"
-		}
+	if len(boleto.Title.BoletoType) < 1 {
+		return "01"
 	}
-	return "01"
+	bt := bradescoShopFacilBoletoTypes()
+
+	if bt[strings.ToUpper(boleto.Title.BoletoType)] == "" {
+		return "01"
+	} else {
+		return bt[strings.ToUpper(boleto.Title.BoletoType)]
+	}
 }
