@@ -30,6 +30,7 @@ func New() bankItau {
 	b.validate.Push(validations.ValidateRecipientDocumentNumber)
 	b.validate.Push(itauValidateAccount)
 	b.validate.Push(itauValidateAgency)
+	b.validate.Push(itauBoletoTypeValidate)
 	return b
 }
 

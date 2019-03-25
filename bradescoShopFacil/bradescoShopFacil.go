@@ -50,6 +50,7 @@ func New() bankBradescoShopFacil {
 	b.validate.Push(bradescoShopFacilValidateWallet)
 	b.validate.Push(bradescoShopFacilValidateAuth)
 	b.validate.Push(bradescoShopFacilValidateAgreement)
+	b.validate.Push(bradescoShopFacilBoletoTypeValidate)
 	return b
 }
 
