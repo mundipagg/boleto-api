@@ -87,7 +87,6 @@ func (b bankSantander) RegisterBoleto(input *models.BoletoRequest) (models.Bolet
 	toAPI := getAPIResponseSantander()
 	inputTemplate := getRequestSantander()
 	santanderURL := strings.Replace(serviceURL, "https", "tls", 1)
-	input.Title.BoletoType = b.GetBoletoType(input)
 
 	exec := NewFlow().From("message://?source=inline", input, inputTemplate, tmpl.GetFuncMaps())
 	exec.To("logseq://?type=request&url="+serviceURL, b.log)

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"time"
+	"strings"
 
 	"github.com/mundipagg/boleto-api/metrics"
 
@@ -58,6 +59,7 @@ func (b bankBradescoShopFacil) Log() *log.Log {
 }
 
 func (b bankBradescoShopFacil) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
+	boleto.Title.BoletoType = b.GetBoletoType(boleto)
 	r := flow.NewFlow()
 	serviceURL := config.Get().URLBradescoShopFacil
 	from := getResponseBradescoShopFacil()
@@ -140,4 +142,34 @@ func dateDueFactor(dateDue time.Time) (string, error) {
 
 func (b bankBradescoShopFacil) GetBankNameIntegration() string {
 	return "BradescoShopFacil"
+}
+
+func (b bankBradescoShopFacil) GetBoletoType(boleto *models.BoletoRequest) string {
+	if len(boleto.Title.BoletoType) > 0 {
+		switch strings.ToLower(boleto.Title.BoletoType) {
+		case "duplicata":
+			return "01"
+		case "notapromissoria":
+			return "02"
+		case "notadeseguro":
+			return "03"
+		case "cobrancaseriada":
+			return "04"
+		case "recibo":
+			return "05"
+		case "letradecambio":
+			return "10"
+		case "notadedebito":
+			return "11"
+		case "duplicatadeservico":
+			return "12"		
+		case "boletodeproposta":
+			return "18"
+		case "outros":
+			return "99"				
+		default:
+			return "01"
+		}
+	}
+	return "01"
 }
