@@ -75,6 +75,8 @@ func (b bankPefisa) GetToken(boleto *models.BoletoRequest) (string, error) {
 func (b bankPefisa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
 	pefisaURL := config.Get().URLPefisaRegister
 
+	boleto.Title.BoletoType = b.GetBoletoType(boleto)
+
 	exec := NewFlow().From("message://?source=inline", boleto, getRequestPefisa(), tmpl.GetFuncMaps())
 	exec.To("logseq://?type=request&url="+pefisaURL, b.log)
 
@@ -159,4 +161,31 @@ func (b bankPefisa) sendRequest(body string, token string) (string, int, error) 
 
 	h := map[string]string{"Authorization": "Bearer " + token, "Content-Type": "application/json"}
 	return util.Post(serviceURL, body, config.Get().TimeoutRegister, h)
+}
+
+func pefisaBoletoTypes() map[string]string {
+	m := make(map[string]string)
+
+	m["DM"] = "1"  //Duplicata Mercantil
+	m["DS"] = "2"  //Duplicata de serviços
+	m["NP"] = "3"  //Nota promissória
+	m["SE"] = "4"  //Seguro
+	m["CH"] = "10"  //Cheque
+	m["OUT"] = "99" //Outros
+
+	return m
+}
+
+func (b bankPefisa) GetBoletoType(boleto *models.BoletoRequest) string {
+	if len(boleto.Title.BoletoType) < 1 {
+		return "1"
+	}
+	bt := pefisaBoletoTypes()
+
+	if bt[s.ToUpper(boleto.Title.BoletoType)] == "" {
+		return "1"
+	} else {
+		return bt[s.ToUpper(boleto.Title.BoletoType)]
+	}
+
 }
