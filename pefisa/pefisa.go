@@ -30,6 +30,7 @@ func New() bankPefisa {
 	b.validate.Push(validations.ValidateExpireDate)
 	b.validate.Push(validations.ValidateBuyerDocumentNumber)
 	b.validate.Push(validations.ValidateRecipientDocumentNumber)
+	b.validate.Push(pefisaBoletoTypeValidate)
 
 	return b
 }
@@ -166,10 +167,10 @@ func (b bankPefisa) sendRequest(body string, token string) (string, int, error) 
 func pefisaBoletoTypes() map[string]string {
 	m := make(map[string]string)
 
-	m["DM"] = "1"  //Duplicata Mercantil
-	m["DS"] = "2"  //Duplicata de serviços
-	m["NP"] = "3"  //Nota promissória
-	m["SE"] = "4"  //Seguro
+	m["DM"] = "1"   //Duplicata Mercantil
+	m["DS"] = "2"   //Duplicata de serviços
+	m["NP"] = "3"   //Nota promissória
+	m["SE"] = "4"   //Seguro
 	m["CH"] = "10"  //Cheque
 	m["OUT"] = "99" //Outros
 
