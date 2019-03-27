@@ -1,3 +1,5 @@
+[![mundipagg maturity](http://maturityapp.herokuapp.com/maturity.php?project=mundipagg/boleto-api&command=badge_image)](http://maturityapp.herokuapp.com/index.html?project=mundipagg/boleto-api)
+
 [![GoDoc](https://godoc.org/github.com/mundipagg/boleto-api?status.svg)](https://godoc.org/github.com/mundipagg/boleto-api)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mundipagg/boleto-api)](https://goreportcard.com/report/github.com/mundipagg/boleto-api)
 
