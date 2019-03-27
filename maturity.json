@@ -12,9 +12,12 @@
         "QA15",
         "SC01",
         "SC02",
+        "SC03",
         "SC04",
         "SC05"
     ],
     "ignore": false,
-    "version_json": "https://mundipagg.github.io/mundi-maturity/maturity-v1.js"
+    "version_json": "https://mundipagg.github.io/mundi-maturity/maturity-v1.js",
+    "include": true,
+    "private": false
 }
