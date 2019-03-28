@@ -50,9 +50,10 @@ func New() bankSantander {
 func (b bankSantander) Log() *log.Log {
 	return b.log
 }
+
 func (b bankSantander) GetTicket(boleto *models.BoletoRequest) (string, error) {
 	boleto.Title.OurNumber = calculateOurNumber(boleto)
-	boleto.Title.BoletoType = b.GetBoletoType(boleto)
+	boleto.Title.BoletoType, boleto.Title.BoletoTypeCode = getBoletoType(boleto)
 	pipe := NewFlow()
 	url := config.Get().URLTicketSantander
 	tlsURL := strings.Replace(config.Get().URLTicketSantander, "https", "tls", 1)
@@ -149,22 +150,22 @@ func satanderBoletoTypes() map[string]string {
 	m["DS"] = "04"  //Duplicata de serviço
 	m["NP"] = "12"  //Nota promissória
 	m["RC"] = "17"  //Recibo
-	m["BP"] = "32"  //Boleto de proposta
+	m["BDP"] = "32" //Boleto de proposta
 	m["CH"] = "97"  //Cheque
 	m["OUT"] = "99" //Outros
 
 	return m
 }
 
-func (b bankSantander) GetBoletoType(boleto *models.BoletoRequest) string {
+func getBoletoType(boleto *models.BoletoRequest) (bt string, btc string) {
 	if len(boleto.Title.BoletoType) < 1 {
-		return "02"
+		return "DM", "02"
 	}
-	bt := satanderBoletoTypes()
+	btm := satanderBoletoTypes()
 
-	if bt[strings.ToUpper(boleto.Title.BoletoType)] == "" {
-		return "02"
-	} else {
-		return bt[strings.ToUpper(boleto.Title.BoletoType)]
+	if btm[strings.ToUpper(boleto.Title.BoletoType)] == "" {
+		return "DM", "02"
 	}
+
+	return boleto.Title.BoletoType, btm[strings.ToUpper(boleto.Title.BoletoType)]
 }
