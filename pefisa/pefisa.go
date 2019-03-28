@@ -3,7 +3,7 @@ package pefisa
 import (
 	"errors"
 	"strconv"
-	s "strings"
+	"strings"
 
 	. "github.com/PMoneda/flow"
 	"github.com/mundipagg/boleto-api/config"
@@ -76,7 +76,7 @@ func (b bankPefisa) GetToken(boleto *models.BoletoRequest) (string, error) {
 func (b bankPefisa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
 	pefisaURL := config.Get().URLPefisaRegister
 
-	boleto.Title.BoletoType = b.GetBoletoType(boleto)
+	boleto.Title.BoletoType, boleto.Title.BoletoTypeCode = getBoletoType(boleto)
 
 	exec := NewFlow().From("message://?source=inline", boleto, getRequestPefisa(), tmpl.GetFuncMaps())
 	exec.To("logseq://?type=request&url="+pefisaURL, b.log)
@@ -100,7 +100,7 @@ func (b bankPefisa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoR
 		exec.To("set://?prop=body", response)
 	} else {
 		dataError := util.ParseJSON(response, new(models.ArrayDataError)).(*models.ArrayDataError)
-		exec.To("set://?prop=body", s.Replace(util.Stringify(dataError.Error[0]), "\\\"", "", -1))
+		exec.To("set://?prop=body", strings.Replace(util.Stringify(dataError.Error[0]), "\\\"", "", -1))
 	}
 
 	ch := exec.Choice()
@@ -177,16 +177,15 @@ func pefisaBoletoTypes() map[string]string {
 	return m
 }
 
-func (b bankPefisa) GetBoletoType(boleto *models.BoletoRequest) string {
+func getBoletoType(boleto *models.BoletoRequest) (bt string, btc string) {
 	if len(boleto.Title.BoletoType) < 1 {
-		return "1"
+		return "DM", "1"
 	}
-	bt := pefisaBoletoTypes()
+	btm := pefisaBoletoTypes()
 
-	if bt[s.ToUpper(boleto.Title.BoletoType)] == "" {
-		return "1"
-	} else {
-		return bt[s.ToUpper(boleto.Title.BoletoType)]
+	if btm[strings.ToUpper(boleto.Title.BoletoType)] == "" {
+		return "DM", "1"
 	}
 
+	return boleto.Title.BoletoType, btm[strings.ToUpper(boleto.Title.BoletoType)]
 }
