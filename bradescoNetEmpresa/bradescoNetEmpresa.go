@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"html"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/mundipagg/boleto-api/metrics"
 
@@ -61,7 +61,7 @@ func (b bankBradescoNetEmpresa) Log() *log.Log {
 
 func (b bankBradescoNetEmpresa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
 
-	boleto.Title.BoletoType = b.GetBoletoType(boleto)
+	boleto.Title.BoletoType, boleto.Title.BoletoTypeCode = getBoletoType(boleto)
 	r := flow.NewFlow()
 	serviceURL := config.Get().URLBradescoNetEmpresa
 	xmlResponse := getResponseBradescoNetEmpresaXml()
@@ -114,20 +114,6 @@ func (b bankBradescoNetEmpresa) RegisterBoleto(boleto *models.BoletoRequest) (mo
 	return models.BoletoResponse{}, models.NewInternalServerError("MP500", "Internal error")
 }
 
-func signRequest(bod *flow.Flow) error {
-
-	if !config.Get().MockMode {
-		bodyToSign := fmt.Sprintf("%v", bod.GetBody())
-		signedRequest, err := util.SignRequest(bodyToSign)
-		if err != nil {
-			return err
-		}
-		bod.To("set://?prop=body", signedRequest)
-	}
-
-	return nil
-}
-
 func (b bankBradescoNetEmpresa) ProcessBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
 	errs := b.ValidateBoleto(boleto)
 	if len(errs) > 0 {
@@ -146,6 +132,20 @@ func (b bankBradescoNetEmpresa) GetBankNumber() models.BankNumber {
 
 func (b bankBradescoNetEmpresa) GetBankNameIntegration() string {
 	return "BradescoNetEmpresa"
+}
+
+func signRequest(bod *flow.Flow) error {
+
+	if !config.Get().MockMode {
+		bodyToSign := fmt.Sprintf("%v", bod.GetBody())
+		signedRequest, err := util.SignRequest(bodyToSign)
+		if err != nil {
+			return err
+		}
+		bod.To("set://?prop=body", signedRequest)
+	}
+
+	return nil
 }
 
 func getBarcode(boleto models.BoletoRequest) (bc barcode) {
@@ -188,22 +188,21 @@ func bradescoNetEmpresaBoletoTypes() map[string]string {
 	m["DS"] = "04"  //Duplicata de serviços
 	m["NP"] = "12"  //Nota promissória
 	m["RC"] = "17"  //Recibo
-	m["BP"] = "32"  //Boleto de proposta
+	m["BDP"] = "32" //Boleto de proposta
 	m["OUT"] = "99" //Outros
 
 	return m
 }
 
-func (b bankBradescoNetEmpresa) GetBoletoType(boleto *models.BoletoRequest) string {
+func getBoletoType(boleto *models.BoletoRequest) (bt string, btc string) {
 	if len(boleto.Title.BoletoType) < 1 {
-		return "02"
+		return "DM", "02"
 	}
-	bt := bradescoNetEmpresaBoletoTypes()
+	btm := bradescoNetEmpresaBoletoTypes()
 
-	if bt[strings.ToUpper(boleto.Title.BoletoType)] == "" {
-		return "02"
-	} else {
-		return bt[strings.ToUpper(boleto.Title.BoletoType)]
+	if btm[strings.ToUpper(boleto.Title.BoletoType)] == "" {
+		return "DM", "02"
 	}
 
+	return boleto.Title.BoletoType, btm[strings.ToUpper(boleto.Title.BoletoType)]
 }
