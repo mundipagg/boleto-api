@@ -43,7 +43,7 @@ func configCiti(boleto models.BoletoRequest) ConfigBank {
 }
 
 func configBB(boleto models.BoletoRequest) ConfigBank {
-	return ConfigBank{Logo: template.HTML(LogoBB), EspecieDoc: "DM", Aceite: "N", Quantidade: "N", ValorCotacao: "", Moeda: "R$"}
+	return ConfigBank{Logo: template.HTML(LogoBB), EspecieDoc: boleto.Title.BoletoType, Aceite: "N", Quantidade: "N", ValorCotacao: "", Moeda: "R$"}
 }
 
 func configCaixa(boleto models.BoletoRequest) ConfigBank {
