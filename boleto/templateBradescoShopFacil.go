@@ -444,10 +444,10 @@ const boletoPropostaLayoutFormBradescoShopFacil = `
                 </td>
             </tr>
             <tr>
-                <td><span class="title">Data Processamento</span><br>
+                <td width="20%"><span class="title">Data Processamento</span><br>
                     <p class="content center" id="process_date">{{.View.Boleto.Title.CreateDate | brdate}}</p>
                 </td>
-                <td><span class="title">Num. do Documento</span><br>
+                <td width="17%"><span class="title">Num. do Documento</span><br>
                     <p class="content center" id="boleto_document_number">{{.View.Boleto.Title.DocumentNumber}}</p>
                 </td>
                 <td><span class="title">Nosso Número</span><br><br>
@@ -455,7 +455,7 @@ const boletoPropostaLayoutFormBradescoShopFacil = `
                     {{padLeft (toString .View.Boleto.Title.OurNumber) "0" 11}}-{{mod11BradescoShopFacilDv (padLeft (toString .View.Boleto.Title.OurNumber) "0" 11) (padLeft (toString16 .View.Boleto.Agreement.Wallet) "0" 2)}}
                     </p>
                 </td>
-                <td><span class="title">Agência/Código Beneficiário</span><br>
+                <td width="22%"><span class="title">Agência/Código Beneficiário</span><br>
                     <p class="content center" id="agreement_agency_account">
                     {{padLeft .View.Boleto.Agreement.Agency "0" 4}}{{if eq .View.Boleto.Agreement.AgencyDigit ""}}{{else}}-{{.View.Boleto.Agreement.AgencyDigit}}{{end}}
                     /

@@ -439,10 +439,10 @@ const boletoPropostaLayoutFormDefault = `
                 </td>
             </tr>
             <tr>
-                <td><span class="title">Data Processamento</span><br>
+                <td width="20%"><span class="title">Data Processamento</span><br>
                     <p class="content center" id="process_date">{{.View.Boleto.Title.CreateDate | brdate}}</p>
                 </td>
-                <td><span class="title">Num. do Documento</span><br>
+                <td width="17%"><span class="title">Num. do Documento</span><br>
                     <p class="content center" id="boleto_document_number">{{.View.Boleto.Title.DocumentNumber}}</p>
                 </td>
                 <td><span class="title">Nosso Número</span><br><br>
@@ -450,7 +450,7 @@ const boletoPropostaLayoutFormDefault = `
                         {{.View.Boleto.Title.OurNumber}}
                     </p>
                 </td>
-                <td><span class="title">Agência/Código Beneficiário</span><br>
+                <td width="22%"><span class="title">Agência/Código Beneficiário</span><br>
                     <p class="content center" id="agreement_agency_account">
                         {{.View.Boleto.Agreement.Agency}} / {{if eq .View.BankNumber "033-7"}}
                             {{.View.Boleto.Agreement.AgreementNumber}}                                                                                            

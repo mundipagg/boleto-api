@@ -415,10 +415,10 @@ const boletoPropostaLayoutFormItau = `
                 </td>
             </tr>
             <tr>
-                <td><span class="title">Data Processamento</span><br>
+                <td width="20%"><span class="title">Data Processamento</span><br>
                     <p class="content center" id="process_date">{{.View.Boleto.Title.CreateDate | brdate}}</p>
                 </td>
-                <td><span class="title">Num. do Documento</span><br>
+                <td width="17%"><span class="title">Num. do Documento</span><br>
                     <p class="content center" id="boleto_document_number">{{.View.Boleto.Title.DocumentNumber}}</p>
                 </td>
                 <td><span class="title">Nosso Número</span><br><br>
@@ -426,7 +426,7 @@ const boletoPropostaLayoutFormItau = `
                     {{padLeft (toString .View.Boleto.Title.OurNumber) "0" 8}}-{{mod10ItauDv (padLeft (toString .View.Boleto.Title.OurNumber) "0" 8) (padLeft .View.Boleto.Agreement.Agency "0" 4) (padLeft .View.Boleto.Agreement.Account "0" 7) .View.Boleto.Agreement.Wallet}}
                     </p>
                 </td>
-                <td><span class="title">Agência/Código Beneficiário</span><br>
+                <td width="22%"><span class="title">Agência/Código Beneficiário</span><br>
                     <p class="content center" id="agreement_agency_account">
                         {{.View.Boleto.Agreement.Agency}} / {{.View.Boleto.Agreement.Account}}-{{.View.Boleto.Agreement.AccountDigit}}
                     </p>
