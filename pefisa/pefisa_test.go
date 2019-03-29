@@ -90,4 +90,16 @@ func TestRegisterBoleto(t *testing.T) {
 		So(output.DigitableLine, ShouldBeEmpty)
 		So(output.Errors, ShouldNotBeEmpty)
 	})
+
+	input.Title.BoletoType = "BP"
+	Convey("deve-se mapear corretamente o BoletoType de boleto de proposta", t, func() {
+		output := bank.GetBoletoType(input)
+		So(output, ShouldEqual, "1")
+	})
+
+	input.Title.BoletoType = "Pefisa"
+	Convey("deve-se mapear corretamente o BoletoType quando valor enviado não existir", t, func() {
+		output := bank.GetBoletoType(input)
+		So(output, ShouldEqual, "1")
+	})
 }
