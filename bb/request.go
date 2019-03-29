@@ -40,7 +40,7 @@ const registerBoleto = `
  <sch:codigoTipoDesconto>0</sch:codigoTipoDesconto> 
  <sch:codigoTipoMulta>0</sch:codigoTipoMulta> 
  <sch:codigoAceiteTitulo>N</sch:codigoAceiteTitulo>
- <sch:codigoTipoTitulo>{{ .Title.BoletoTypeCode}}</sch:codigoTipoTitulo>
+ <sch:codigoTipoTitulo>{{.Title.BoletoTypeCode}}</sch:codigoTipoTitulo>
  <sch:textoDescricaoTipoTitulo></sch:textoDescricaoTipoTitulo>
  <sch:indicadorPermissaoRecebimentoParcial>N</sch:indicadorPermissaoRecebimentoParcial>
  <sch:textoNumeroTituloBeneficiario></sch:textoNumeroTituloBeneficiario>
