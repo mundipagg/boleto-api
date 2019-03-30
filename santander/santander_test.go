@@ -57,6 +57,18 @@ func TestShouldProcessBoletoSantander(t *testing.T) {
 		So(output.DigitableLine, ShouldNotBeEmpty)
 		So(output.Errors, ShouldBeEmpty)
 	})
+
+	input.Title.BoletoType = "BP"
+	Convey("deve-se mapear corretamente o BoletoType de boleto de proposta", t, func() {
+		output := bank.GetBoletoType(input)
+		So(output, ShouldEqual, "32")
+	})
+
+	input.Title.BoletoType = "Santander"
+	Convey("deve-se mapear corretamente o BoletoType quando valor enviado não existir", t, func() {
+		output := bank.GetBoletoType(input)
+		So(output, ShouldEqual, "02")
+	})
 }
 
 func TestGetBoletoType(t *testing.T) {
