@@ -74,3 +74,35 @@ func TestOurNumber(t *testing.T) {
 		So(calculateOurNumber(&boleto), ShouldEqual, 86059700)
 	})
 }
+
+func TestGetBoletoType(t *testing.T) {
+
+	input := new(models.BoletoRequest)
+	if err := util.FromJSON(baseMockJSON, input); err != nil {
+		t.Fail()
+	}
+
+	input.Title.BoletoType = ""
+	expectBoletoTypeCode := "03"
+
+	Convey("Quando não informado o BoletoType o retorno deve ser 03 - Duplicata Mercantil", t, func() {
+		_, output := getBoletoType(input)
+		So(output, ShouldEqual, expectBoletoTypeCode)
+	})
+
+	input.Title.BoletoType = "NSA"
+	expectBoletoTypeCode = "03"
+
+	Convey("Quando informado o BoletoType Inválido o retorno deve ser 03 - Duplicata Mercantil", t, func() {
+		_, output := getBoletoType(input)
+		So(output, ShouldEqual, expectBoletoTypeCode)
+	})
+
+	input.Title.BoletoType = "BDP"
+	expectBoletoTypeCode = "03"
+
+	Convey("Quando informado o BoletoType BDP o retorno deve ser 03 - Duplicata Mercantil", t, func() {
+		_, output := getBoletoType(input)
+		So(output, ShouldEqual, expectBoletoTypeCode)
+	})
+}

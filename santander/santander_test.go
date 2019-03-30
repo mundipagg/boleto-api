@@ -58,3 +58,35 @@ func TestShouldProcessBoletoSantander(t *testing.T) {
 		So(output.Errors, ShouldBeEmpty)
 	})
 }
+
+func TestGetBoletoType(t *testing.T) {
+
+	input := new(models.BoletoRequest)
+	if err := util.FromJSON(baseMockJSON, input); err != nil {
+		t.Fail()
+	}
+
+	input.Title.BoletoType = ""
+	expectBoletoTypeCode := "02"
+
+	Convey("Quando não informado o BoletoType o retorno deve ser 02 - Duplicata Mercantil", t, func() {
+		_, output := getBoletoType(input)
+		So(output, ShouldEqual, expectBoletoTypeCode)
+	})
+
+	input.Title.BoletoType = "NSA"
+	expectBoletoTypeCode = "02"
+
+	Convey("Quando informado o BoletoType Inválido o retorno deve ser 02 - Duplicata Mercantil", t, func() {
+		_, output := getBoletoType(input)
+		So(output, ShouldEqual, expectBoletoTypeCode)
+	})
+
+	input.Title.BoletoType = "BDP"
+	expectBoletoTypeCode = "32"
+
+	Convey("Quando informado o BoletoType BDP o retorno deve ser 32 - Boleto de Proposta", t, func() {
+		_, output := getBoletoType(input)
+		So(output, ShouldEqual, expectBoletoTypeCode)
+	})
+}

@@ -88,5 +88,36 @@ func TestRegiterBoletoItau(t *testing.T) {
 		So(output.BarCodeNumber, ShouldBeEmpty)
 		So(output.DigitableLine, ShouldBeEmpty)
 	})
+}
 
+func TestGetBoletoType(t *testing.T) {
+
+	input := new(models.BoletoRequest)
+	if err := util.FromJSON(baseMockJSON, input); err != nil {
+		t.Fail()
+	}
+
+	input.Title.BoletoType = ""
+	expectBoletoTypeCode := "01"
+
+	Convey("Quando não informado o BoletoType o retorno deve ser 01 - Duplicata Mercantil", t, func() {
+		_, output := getBoletoType(input)
+		So(output, ShouldEqual, expectBoletoTypeCode)
+	})
+
+	input.Title.BoletoType = "NSA"
+	expectBoletoTypeCode = "01"
+
+	Convey("Quando informado o BoletoType Inválido o retorno deve ser 01 - Duplicata Mercantil", t, func() {
+		_, output := getBoletoType(input)
+		So(output, ShouldEqual, expectBoletoTypeCode)
+	})
+
+	input.Title.BoletoType = "BDP"
+	expectBoletoTypeCode = "18"
+
+	Convey("Quando informado o BoletoType BDP o retorno deve ser 18 - Boleto de Proposta", t, func() {
+		_, output := getBoletoType(input)
+		So(output, ShouldEqual, expectBoletoTypeCode)
+	})
 }

@@ -123,3 +123,28 @@ func TestShouldCalculateAccountDigitFromBb(t *testing.T) {
 
 	test.ExpectTrue(bbAccountDigitCalculator("", "00000787") == "0", t)
 }
+
+func TestGetBoletoType(t *testing.T) {
+
+	input := new(models.BoletoRequest)
+	if err := util.FromJSON(baseMockJSON, input); err != nil {
+		t.Fail()
+	}
+
+	input.Title.BoletoType = ""
+	expectBoletoTypeCode := "19"
+
+	Convey("Quando não informado o BoletoType o padrão deve ser 19 - Nota de Débito", t, func() {
+		_, output := getBoletoType(input)
+		So(output, ShouldEqual, expectBoletoTypeCode)
+	})
+
+	input.Title.BoletoType = "NSA"
+	expectBoletoTypeCode = "19"
+
+	Convey("Quando informado o BoletoType Invalido o padrão deve ser 19 - Nota de Débito", t, func() {
+		_, output := getBoletoType(input)
+		So(output, ShouldEqual, expectBoletoTypeCode)
+	})
+
+}
