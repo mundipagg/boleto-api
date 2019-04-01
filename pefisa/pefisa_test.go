@@ -89,11 +89,22 @@ func TestRegisterBoleto(t *testing.T) {
 		So(output.BarCodeNumber, ShouldBeEmpty)
 		So(output.DigitableLine, ShouldBeEmpty)
 		So(output.Errors, ShouldNotBeEmpty)
-	})
+	})	
+}
 
-	input.Title.BoletoType = "BP"
-	Convey("deve-se mapear corretamente o BoletoType de boleto de proposta", t, func() {
+func TestShouldMapPefisaBoletoType(t *testing.T) {
+	env.Config(true, true, true)
+	input := new(models.BoletoRequest)
+	if err := util.FromJSON(baseMockJSON, input); err != nil {
+		t.Fail()
+	}
+	bank := New()
+	go mock.Run("9097")
+	time.Sleep(2 * time.Second)
+
+	Convey("deve-se mapear corretamente o BoletoType quando informação for vazia", t, func() {
 		output := bank.GetBoletoType(input)
+		So(input.Title.BoletoType, ShouldEqual, "")
 		So(output, ShouldEqual, "1")
 	})
 
@@ -103,3 +114,4 @@ func TestRegisterBoleto(t *testing.T) {
 		So(output, ShouldEqual, "1")
 	})
 }
+
