@@ -143,7 +143,7 @@ func (b bankSantander) GetBankNameIntegration() string {
 	return "Santander"
 }
 
-func satanderBoletoTypes() map[string]string {
+func santanderBoletoTypes() map[string]string {
 	m := make(map[string]string)
 
 	m["DM"] = "02"  //Duplicata Mercantil
@@ -161,7 +161,7 @@ func getBoletoType(boleto *models.BoletoRequest) (bt string, btc string) {
 	if len(boleto.Title.BoletoType) < 1 {
 		return "DM", "02"
 	}
-	btm := satanderBoletoTypes()
+	btm := santanderBoletoTypes()
 
 	if btm[strings.ToUpper(boleto.Title.BoletoType)] == "" {
 		return "DM", "02"

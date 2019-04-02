@@ -20,7 +20,7 @@ func santanderValidateAgreementNumber(b interface{}) error {
 }
 
 func satanderBoletoTypeValidate(b interface{}) error {
-	bt := satanderBoletoTypes()
+	bt := santanderBoletoTypes()
 
 	switch t := b.(type) {
 
