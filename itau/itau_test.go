@@ -88,16 +88,16 @@ func TestRegiterBoletoItau(t *testing.T) {
 		So(output.BarCodeNumber, ShouldBeEmpty)
 		So(output.DigitableLine, ShouldBeEmpty)
 	})
-  
-  input.Title.BoletoType = "BP"
+
+	input.Title.BoletoType = "BDP"
 	Convey("deve-se mapear corretamente o BoletoType de boleto de proposta", t, func() {
-		output := bank.GetBoletoType(input)
+		_, output := getBoletoType(input)
 		So(output, ShouldEqual, "18")
 	})
 
 	input.Title.BoletoType = "ITAU"
 	Convey("deve-se mapear corretamente o BoletoType quando valor enviado não existir", t, func() {
-		output := bank.GetBoletoType(input)
+		_, output := getBoletoType(input)
 		So(output, ShouldEqual, "01")
 	})
 }
