@@ -3,6 +3,7 @@ package caixa
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/mundipagg/boleto-api/metrics"
 
@@ -15,6 +16,9 @@ import (
 	"github.com/mundipagg/boleto-api/util"
 	"github.com/mundipagg/boleto-api/validations"
 )
+
+var o = &sync.Once{}
+var m map[string]string
 
 type bankCaixa struct {
 	validate *models.Validator
@@ -125,10 +129,11 @@ func (b bankCaixa) GetBankNameIntegration() string {
 }
 
 func caixaBoletoTypes() map[string]string {
-	m := make(map[string]string)
+	o.Do(func() {
+		m = make(map[string]string)
 
-	m["OUT"] = "99" //Duplicata Mercantil p/ Indicação
-
+		m["OUT"] = "99" //Duplicata Mercantil p/ Indicação
+	})
 	return m
 }
 

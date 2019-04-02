@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strconv"
 	"strings"
+	"sync"
 
 	. "github.com/PMoneda/flow"
 	"github.com/mundipagg/boleto-api/config"
@@ -14,6 +15,9 @@ import (
 	"github.com/mundipagg/boleto-api/util"
 	"github.com/mundipagg/boleto-api/validations"
 )
+
+var o = &sync.Once{}
+var m map[string]string
 
 type bankPefisa struct {
 	validate *models.Validator
@@ -165,15 +169,16 @@ func (b bankPefisa) sendRequest(body string, token string) (string, int, error) 
 }
 
 func pefisaBoletoTypes() map[string]string {
-	m := make(map[string]string)
+	o.Do(func() {
+		m = make(map[string]string)
 
-	m["DM"] = "1"   //Duplicata Mercantil
-	m["DS"] = "2"   //Duplicata de serviços
-	m["NP"] = "3"   //Nota promissória
-	m["SE"] = "4"   //Seguro
-	m["CH"] = "10"  //Cheque
-	m["OUT"] = "99" //Outros
-
+		m["DM"] = "1"   //Duplicata Mercantil
+		m["DS"] = "2"   //Duplicata de serviços
+		m["NP"] = "3"   //Nota promissória
+		m["SE"] = "4"   //Seguro
+		m["CH"] = "10"  //Cheque
+		m["OUT"] = "99" //Outros
+	})
 	return m
 }
 

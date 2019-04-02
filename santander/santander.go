@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 
 	"net/http"
 
@@ -17,6 +18,9 @@ import (
 	"github.com/mundipagg/boleto-api/util"
 	"github.com/mundipagg/boleto-api/validations"
 )
+
+var o = &sync.Once{}
+var m map[string]string
 
 type bankSantander struct {
 	validate  *models.Validator
@@ -144,16 +148,17 @@ func (b bankSantander) GetBankNameIntegration() string {
 }
 
 func santanderBoletoTypes() map[string]string {
-	m := make(map[string]string)
+	o.Do(func() {
+		m = make(map[string]string)
 
-	m["DM"] = "02"  //Duplicata Mercantil
-	m["DS"] = "04"  //Duplicata de serviço
-	m["NP"] = "12"  //Nota promissória
-	m["RC"] = "17"  //Recibo
-	m["BDP"] = "32" //Boleto de proposta
-	m["CH"] = "97"  //Cheque
-	m["OUT"] = "99" //Outros
-
+		m["DM"] = "02"  //Duplicata Mercantil
+		m["DS"] = "04"  //Duplicata de serviço
+		m["NP"] = "12"  //Nota promissória
+		m["RC"] = "17"  //Recibo
+		m["BDP"] = "32" //Boleto de proposta
+		m["CH"] = "97"  //Cheque
+		m["OUT"] = "99" //Outros
+	})
 	return m
 }
 

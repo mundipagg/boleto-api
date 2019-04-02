@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/PMoneda/flow"
 	"github.com/mundipagg/boleto-api/config"
@@ -14,6 +15,9 @@ import (
 	"github.com/mundipagg/boleto-api/util"
 	"github.com/mundipagg/boleto-api/validations"
 )
+
+var o = &sync.Once{}
+var m map[string]string
 
 type bankCiti struct {
 	validate  *models.Validator
@@ -125,9 +129,11 @@ func (b bankCiti) GetBankNameIntegration() string {
 }
 
 func citiBoletoTypes() map[string]string {
-	m := make(map[string]string)
+	o.Do(func() {
+		m = make(map[string]string)
 
-	m["DMI"] = "03" //Duplicata Mercantil p/ Indicação
+		m["DMI"] = "03" //Duplicata Mercantil p/ Indicação
+	})
 
 	return m
 }

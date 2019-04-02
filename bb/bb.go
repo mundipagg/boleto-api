@@ -3,6 +3,7 @@ package bb
 import (
 	"errors"
 	"strings"
+	"sync"
 
 	"github.com/PMoneda/flow"
 	"github.com/mundipagg/boleto-api/config"
@@ -14,6 +15,9 @@ import (
 
 	"github.com/mundipagg/boleto-api/validations"
 )
+
+var o = &sync.Once{}
+var m map[string]string
 
 type bankBB struct {
 	validate *models.Validator
@@ -136,14 +140,17 @@ func (b bankBB) GetBankNameIntegration() string {
 }
 
 func bbBoletoTypes() map[string]string {
-	m := make(map[string]string)
 
-	m["CH"] = "01" //Cheque
-	m["DM"] = "02" //Duplicata Mercantil
-	m["DS"] = "04" //Duplicata de serviços
-	m["NP"] = "12" //Nota promissória
-	m["RC"] = "17" //Recibo
-	m["ND"] = "19" //Nota de Débito
+	o.Do(func() {
+		m = make(map[string]string)
+
+		m["CH"] = "01" //Cheque
+		m["DM"] = "02" //Duplicata Mercantil
+		m["DS"] = "04" //Duplicata de serviços
+		m["NP"] = "12" //Nota promissória
+		m["RC"] = "17" //Recibo
+		m["ND"] = "19" //Nota de Débito
+	})
 
 	return m
 }

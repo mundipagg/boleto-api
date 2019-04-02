@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/mundipagg/boleto-api/metrics"
@@ -16,6 +17,9 @@ import (
 	"github.com/mundipagg/boleto-api/util"
 	"github.com/mundipagg/boleto-api/validations"
 )
+
+var o = &sync.Once{}
+var m map[string]string
 
 type bankBradescoShopFacil struct {
 	validate *models.Validator
@@ -146,15 +150,17 @@ func (b bankBradescoShopFacil) GetBankNameIntegration() string {
 }
 
 func bradescoShopFacilBoletoTypes() map[string]string {
-	m := make(map[string]string)
 
-	m["DM"] = "01"  //Duplicata Mercantil
-	m["NP"] = "02"  //Nota promissória
-	m["RC"] = "05"  //Recibo
-	m["DS"] = "12"  //Duplicata de serviço
-	m["BDP"] = "30" //Boleto de proposta
-	m["OUT"] = "99" //Outros
+	o.Do(func() {
+		m = make(map[string]string)
 
+		m["DM"] = "01"  //Duplicata Mercantil
+		m["NP"] = "02"  //Nota promissória
+		m["RC"] = "05"  //Recibo
+		m["DS"] = "12"  //Duplicata de serviço
+		m["BDP"] = "30" //Boleto de proposta
+		m["OUT"] = "99" //Outros
+	})
 	return m
 }
 

@@ -1,6 +1,7 @@
 package bradescoNetEmpresa
 
 import (
+	"sync"
 	"errors"
 	"fmt"
 	"html"
@@ -18,6 +19,9 @@ import (
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/validations"
 )
+
+var o = &sync.Once{}
+var m map[string]string
 
 type bankBradescoNetEmpresa struct {
 	validate *models.Validator
@@ -181,15 +185,18 @@ func dateDueFactor(dateDue time.Time) (string, error) {
 }
 
 func bradescoNetEmpresaBoletoTypes() map[string]string {
-	m := make(map[string]string)
 
-	m["CH"] = "01"  //Cheque
-	m["DM"] = "02"  //Duplicata Mercantil
-	m["DS"] = "04"  //Duplicata de serviços
-	m["NP"] = "12"  //Nota promissória
-	m["RC"] = "17"  //Recibo
-	m["BDP"] = "32" //Boleto de proposta
-	m["OUT"] = "99" //Outros
+	o.Do(func() {
+		m = make(map[string]string)
+
+		m["CH"] = "01"  //Cheque
+		m["DM"] = "02"  //Duplicata Mercantil
+		m["DS"] = "04"  //Duplicata de serviços
+		m["NP"] = "12"  //Nota promissória
+		m["RC"] = "17"  //Recibo
+		m["BDP"] = "32" //Boleto de proposta
+		m["OUT"] = "99" //Outros
+	})
 
 	return m
 }

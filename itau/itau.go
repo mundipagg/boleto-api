@@ -3,6 +3,7 @@ package itau
 import (
 	"errors"
 	"strings"
+	"sync"
 
 	. "github.com/PMoneda/flow"
 	"github.com/mundipagg/boleto-api/config"
@@ -13,6 +14,9 @@ import (
 	"github.com/mundipagg/boleto-api/util"
 	"github.com/mundipagg/boleto-api/validations"
 )
+
+var o = &sync.Once{}
+var m map[string]string
 
 type bankItau struct {
 	validate *models.Validator
@@ -143,15 +147,16 @@ func (b bankItau) GetBankNameIntegration() string {
 }
 
 func itauBoletoTypes() map[string]string {
-	m := make(map[string]string)
+	o.Do(func() {
+		m = make(map[string]string)
 
-	m["DM"] = "01"  //Duplicata Mercantil
-	m["NP"] = "02"  //Nota Promissória
-	m["RC"] = "05"  //Recibo
-	m["DS"] = "08"  //Duplicata de serviços
-	m["BDP"] = "18" //Boleto de proposta
-	m["OUT"] = "99" //Outros
-
+		m["DM"] = "01"  //Duplicata Mercantil
+		m["NP"] = "02"  //Nota Promissória
+		m["RC"] = "05"  //Recibo
+		m["DS"] = "08"  //Duplicata de serviços
+		m["BDP"] = "18" //Boleto de proposta
+		m["OUT"] = "99" //Outros
+	})
 	return m
 }
 
