@@ -21,53 +21,54 @@ import (
 )
 
 var funcMap = template.FuncMap{
-	"today":                    today,
-	"todayCiti":                todayCiti,
-	"brdate":                   brDate,
-	"replace":                  replace,
-	"docType":                  docType,
-	"trim":                     trim,
-	"padLeft":                  padLeft,
-	"clearString":              clearString,
-	"toString":                 toString,
-	"toString64":               toString64,
-	"fmtDigitableLine":         fmtDigitableLine,
-	"fmtCNPJ":                  fmtCNPJ,
-	"fmtCPF":                   fmtCPF,
-	"fmtDoc":                   fmtDoc,
-	"truncate":                 truncateString,
-	"fmtNumber":                fmtNumber,
-	"joinSpace":                joinSpace,
-	"brDateWithoutDelimiter":   brDateWithoutDelimiter,
-	"enDateWithoutDelimiter":   enDateWithoutDelimiter,
-	"fullDate":                 fulldate,
-	"enDate":                   enDate,
-	"hasErrorTags":             hasErrorTags,
-	"toFloatStr":               toFloatStr,
-	"concat":                   concat,
-	"base64":                   base64,
-	"unscape":                  unscape,
-	"unescapeHtmlString":       unescapeHtmlString,
-	"trimLeft":                 trimLeft,
-	"santanderNSUPrefix":       santanderNSUPrefix,
-	"santanderEnv":             santanderEnv,
-	"formatSingleLine":         formatSingleLine,
-	"diff":                     diff,
-	"mod11dv":                  calculateOurNumberMod11,
-	"mod10ItauDv":              mod10Itau,
-	"printIfNotProduction":     printIfNotProduction,
-	"itauEnv":                  itauEnv,
-	"caixaEnv":                 caixaEnv,
-	"extractNumbers":           extractNumbers,
-	"splitValues":              splitValues,
-	"brDateDelimiter":          brDateDelimiter,
-	"brDateDelimiterTime":      brDateDelimiterTime,
-	"toString16":               toString16,
-	"mod11BradescoShopFacilDv": mod11BradescoShopFacilDv,
-	"bsonMongoToString":        bsonMongoToString,
-	"truncateManyFields":       truncateManyFields,
-	"escapeStringOnJson": escapeStringOnJson,
-	"removeSpecialCharacter": removeSpecialCharacter,
+	"today":                             today,
+	"todayCiti":                         todayCiti,
+	"brdate":                            brDate,
+	"replace":                           replace,
+	"docType":                           docType,
+	"trim":                              trim,
+	"padLeft":                           padLeft,
+	"clearString":                       clearString,
+	"toString":                          toString,
+	"toString64":                        toString64,
+	"fmtDigitableLine":                  fmtDigitableLine,
+	"fmtCNPJ":                           fmtCNPJ,
+	"fmtCPF":                            fmtCPF,
+	"fmtDoc":                            fmtDoc,
+	"truncate":                          truncateString,
+	"fmtNumber":                         fmtNumber,
+	"joinSpace":                         joinSpace,
+	"brDateWithoutDelimiter":            brDateWithoutDelimiter,
+	"enDateWithoutDelimiter":            enDateWithoutDelimiter,
+	"fullDate":                          fulldate,
+	"enDate":                            enDate,
+	"hasErrorTags":                      hasErrorTags,
+	"toFloatStr":                        toFloatStr,
+	"concat":                            concat,
+	"base64":                            base64,
+	"unscape":                           unscape,
+	"unescapeHtmlString":                unescapeHtmlString,
+	"trimLeft":                          trimLeft,
+	"santanderNSUPrefix":                santanderNSUPrefix,
+	"santanderEnv":                      santanderEnv,
+	"formatSingleLine":                  formatSingleLine,
+	"diff":                              diff,
+	"mod11dv":                           calculateOurNumberMod11,
+	"mod10ItauDv":                       mod10Itau,
+	"printIfNotProduction":              printIfNotProduction,
+	"itauEnv":                           itauEnv,
+	"caixaEnv":                          caixaEnv,
+	"extractNumbers":                    extractNumbers,
+	"splitValues":                       splitValues,
+	"brDateDelimiter":                   brDateDelimiter,
+	"brDateDelimiterTime":               brDateDelimiterTime,
+	"toString16":                        toString16,
+	"mod11BradescoShopFacilDv":          mod11BradescoShopFacilDv,
+	"bsonMongoToString":                 bsonMongoToString,
+	"truncateManyFields":                truncateManyFields,
+	"escapeStringOnJson":                escapeStringOnJson,
+	"removeSpecialCharacter":            removeSpecialCharacter,
+	"sanitizeCitibakSpecialCharacteres": sanitizeCitibakSpecialCharacteres,
 }
 
 func GetFuncMaps() template.FuncMap {
@@ -374,20 +375,24 @@ func bsonMongoToString(bsonId bson.ObjectId) string {
 	return string(idBson)
 }
 
-func truncateManyFields(num int, values ...string) string{	
+func truncateManyFields(num int, values ...string) string {
 	buf := bytes.Buffer{}
 	for _, item := range values {
 		buf.WriteString(" " + item)
 	}
-	str := strings.Trim(buf.String()," ")
+	str := strings.Trim(buf.String(), " ")
 	return truncateString(str, num)
 }
 
-func escapeStringOnJson(field string) string{
+func escapeStringOnJson(field string) string {
 	field = strings.Replace(field, "\b", "", -1)
-	return regexp.MustCompile(`[\t\f\r\\]`).ReplaceAllString(field,"")
+	return regexp.MustCompile(`[\t\f\r\\]`).ReplaceAllString(field, "")
 }
 
 func removeSpecialCharacter(str string) string {
 	return regexp.MustCompile("[^a-zA-Z0-9ÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕáéíóúàèìòùâêîôûãõç,.\\-\\s]+").ReplaceAllString(str, "")
+}
+
+func sanitizeCitibakSpecialCharacteres(str string) string {
+	return regexp.MustCompile("[^a-zA-Z0-9;@\\-\\/\\s]+").ReplaceAllString(clearString(str), "")
 }

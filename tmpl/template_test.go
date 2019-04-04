@@ -165,18 +165,24 @@ func TestDVOurNumberMod11BradescoShopFacil(t *testing.T) {
 	})
 }
 
-func TestEscape(t *testing.T){
-	escapedText :=  escapeStringOnJson("KM 5,00 \t \f \r \b")
+func TestEscape(t *testing.T) {
+	escapedText := escapeStringOnJson("KM 5,00 \t \f \r \b")
 	Convey("O texto deve ser escapado", t, func() {
 		So(escapedText, ShouldEqual, "KM 5,00    ")
 	})
 }
 
-func TestRemoveCharacterSpecial(t *testing.T){
+func TestRemoveCharacterSpecial(t *testing.T) {
 	text := removeSpecialCharacter("Texto com \"carácter\" especial * ' -")
 	Convey("Os caracteres especiais devem ser removidos", t, func() {
 		So(text, ShouldEqual, "Texto com carácter especial   -")
 	})
 }
 
+func TestCitBankSanitizeString(t *testing.T) {
+	var result = sanitizeCitibakSpecialCharacteres("Ol@ Mundo, você pode ver uma barra /, mas não uma exclamação !;")
 
+	Convey("Caracteres especiais e acendos devem ser removidos", t, func() {
+		So(result, ShouldEqual, "Ol@ Mundo voce pode ver uma barra / mas nao uma exclamacao ;")
+	})
+}
