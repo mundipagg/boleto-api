@@ -3,6 +3,7 @@ package itau
 import (
 	"errors"
 	"strings"
+	"sync"
 
 	. "github.com/PMoneda/flow"
 	"github.com/mundipagg/boleto-api/config"
@@ -13,6 +14,9 @@ import (
 	"github.com/mundipagg/boleto-api/util"
 	"github.com/mundipagg/boleto-api/validations"
 )
+
+var o = &sync.Once{}
+var m map[string]string
 
 type bankItau struct {
 	validate *models.Validator
@@ -78,7 +82,7 @@ func (b bankItau) RegisterBoleto(input *models.BoletoRequest) (models.BoletoResp
 	toAPI := getAPIResponseItau()
 	inputTemplate := getRequestItau()
 
-	input.Title.BoletoType = b.GetBoletoType(input)
+	input.Title.BoletoType, input.Title.BoletoTypeCode = getBoletoType(input)
 	exec := NewFlow().From("message://?source=inline", input, inputTemplate, tmpl.GetFuncMaps())
 	exec.To("logseq://?type=request&url="+itauURL, b.log)
 	duration := util.Duration(func() {
@@ -143,28 +147,28 @@ func (b bankItau) GetBankNameIntegration() string {
 }
 
 func itauBoletoTypes() map[string]string {
-	m := make(map[string]string)
+	o.Do(func() {
+		m = make(map[string]string)
 
-	m["DM"] = "01"  //Duplicata Mercantil
-	m["NP"] = "02"  //Nota Promissória
-	m["RC"] = "05"  //Recibo
-	m["DS"] = "08"  //Duplicata de serviços
-	m["BP"] = "18"  //Boleto de proposta
-	m["OUT"] = "99" //Outros
-
+		m["DM"] = "01"  //Duplicata Mercantil
+		m["NP"] = "02"  //Nota Promissória
+		m["RC"] = "05"  //Recibo
+		m["DS"] = "08"  //Duplicata de serviços
+		m["BDP"] = "18" //Boleto de proposta
+		m["OUT"] = "99" //Outros
+	})
 	return m
 }
 
-func (b bankItau) GetBoletoType(boleto *models.BoletoRequest) string {
+func getBoletoType(boleto *models.BoletoRequest) (bt string, btc string) {
 	if len(boleto.Title.BoletoType) < 1 {
-		return "01"
+		return "DM", "01"
 	}
-	bt := itauBoletoTypes()
+	btm := itauBoletoTypes()
 
-	if bt[strings.ToUpper(boleto.Title.BoletoType)] == "" {
-		return "01"
-	} else {
-		return bt[strings.ToUpper(boleto.Title.BoletoType)]
+	if btm[strings.ToUpper(boleto.Title.BoletoType)] == "" {
+		return "DM", "01"
 	}
 
+	return boleto.Title.BoletoType, btm[strings.ToUpper(boleto.Title.BoletoType)]
 }

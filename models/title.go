@@ -19,6 +19,7 @@ type Title struct {
 	DocumentNumber string    `json:"documentNumber,omitempty"`
 	NSU            string    `json:"nsu,omitempty"`
 	BoletoType     string    `json:"boletoType,omitempty"`
+	BoletoTypeCode string
 }
 
 //ValidateInstructionsLength valida se texto das instruções possui quantidade de caracteres corretos

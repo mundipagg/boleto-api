@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/mundipagg/boleto-api/metrics"
@@ -16,6 +17,9 @@ import (
 	"github.com/mundipagg/boleto-api/util"
 	"github.com/mundipagg/boleto-api/validations"
 )
+
+var o = &sync.Once{}
+var m map[string]string
 
 type bankBradescoShopFacil struct {
 	validate *models.Validator
@@ -60,7 +64,7 @@ func (b bankBradescoShopFacil) Log() *log.Log {
 }
 
 func (b bankBradescoShopFacil) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
-	boleto.Title.BoletoType = b.GetBoletoType(boleto)
+	boleto.Title.BoletoType, boleto.Title.BoletoTypeCode = getBoletoType(boleto)
 	r := flow.NewFlow()
 	serviceURL := config.Get().URLBradescoShopFacil
 	from := getResponseBradescoShopFacil()
@@ -146,27 +150,30 @@ func (b bankBradescoShopFacil) GetBankNameIntegration() string {
 }
 
 func bradescoShopFacilBoletoTypes() map[string]string {
-	m := make(map[string]string)
 
-	m["DM"] = "01"  //Duplicata Mercantil
-	m["NP"] = "02"  //Nota promissória
-	m["RC"] = "05"  //Recibo
-	m["DS"] = "12"  //Duplicata de serviço
-	m["BP"] = "30"  //Boleto de proposta
-	m["OUT"] = "99" //Outros
+	o.Do(func() {
+		m = make(map[string]string)
 
+		m["DM"] = "01"  //Duplicata Mercantil
+		m["NP"] = "02"  //Nota promissória
+		m["RC"] = "05"  //Recibo
+		m["DS"] = "12"  //Duplicata de serviço
+		m["BDP"] = "30" //Boleto de proposta
+		m["OUT"] = "99" //Outros
+	})
 	return m
 }
 
-func (b bankBradescoShopFacil) GetBoletoType(boleto *models.BoletoRequest) string {
+func getBoletoType(boleto *models.BoletoRequest) (bt string, btc string) {
 	if len(boleto.Title.BoletoType) < 1 {
-		return "01"
+		return "DM", "01"
 	}
-	bt := bradescoShopFacilBoletoTypes()
+	btm := bradescoShopFacilBoletoTypes()
 
-	if bt[strings.ToUpper(boleto.Title.BoletoType)] == "" {
-		return "01"
-	} else {
-		return bt[strings.ToUpper(boleto.Title.BoletoType)]
+	if btm[strings.ToUpper(boleto.Title.BoletoType)] == "" {
+		return "DM", "01"
 	}
+
+	return boleto.Title.BoletoType, btm[strings.ToUpper(boleto.Title.BoletoType)]
+
 }

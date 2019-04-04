@@ -100,8 +100,8 @@ func TestRegisterBoleto(t *testing.T) {
 		So(output.BarCodeNumber, ShouldBeEmpty)
 		So(output.DigitableLine, ShouldBeEmpty)
 		So(output.Errors, ShouldNotBeEmpty)
-    })   
-    
+	})
+
 }
 
 func TestShouldMapBradescoNetEmpresaBoletoType(t *testing.T) {
@@ -110,25 +110,57 @@ func TestShouldMapBradescoNetEmpresaBoletoType(t *testing.T) {
 	if err := util.FromJSON(baseMockJSON, input); err != nil {
 		t.Fail()
 	}
-	bank := New()
+
 	go mock.Run("9097")
 	time.Sleep(2 * time.Second)
 
 	Convey("deve-se mapear corretamente o BoletoType quando informação for vazia", t, func() {
-		output := bank.GetBoletoType(input)
+		_, output := getBoletoType(input)
 		So(input.Title.BoletoType, ShouldEqual, "")
 		So(output, ShouldEqual, "02")
 	})
 
-	input.Title.BoletoType = "BP"
+	input.Title.BoletoType = "BDP"
 	Convey("deve-se mapear corretamente o BoletoType de boleto de proposta", t, func() {
-		output := bank.GetBoletoType(input)
+		_, output := getBoletoType(input)
 		So(output, ShouldEqual, "32")
 	})
 
 	input.Title.BoletoType = "Bradesco"
 	Convey("deve-se mapear corretamente o BoletoType quando valor enviado não existir", t, func() {
-		output := bank.GetBoletoType(input)
+		_, output := getBoletoType(input)
 		So(output, ShouldEqual, "02")
+	})
+}
+
+func TestGetBoletoType(t *testing.T) {
+
+	input := new(models.BoletoRequest)
+	if err := util.FromJSON(baseMockJSON, input); err != nil {
+		t.Fail()
+	}
+
+	input.Title.BoletoType = ""
+	expectBoletoTypeCode := "02"
+
+	Convey("Quando não informado o BoletoType o retorno deve ser 02 - Duplicata Mercantil", t, func() {
+		_, output := getBoletoType(input)
+		So(output, ShouldEqual, expectBoletoTypeCode)
+	})
+
+	input.Title.BoletoType = "NSA"
+	expectBoletoTypeCode = "02"
+
+	Convey("Quando informado o BoletoType Inválido o retorno deve ser 02 - Duplicata Mercantil", t, func() {
+		_, output := getBoletoType(input)
+		So(output, ShouldEqual, expectBoletoTypeCode)
+	})
+
+	input.Title.BoletoType = "BDP"
+	expectBoletoTypeCode = "32"
+
+	Convey("Quando informado o BoletoType BDP o retorno deve ser 32 - Boleto de Proposta", t, func() {
+		_, output := getBoletoType(input)
+		So(output, ShouldEqual, expectBoletoTypeCode)
 	})
 }

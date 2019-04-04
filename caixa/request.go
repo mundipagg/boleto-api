@@ -55,7 +55,7 @@ const incluiBoleto = `
                   <NUMERO_DOCUMENTO>{{truncate .Title.DocumentNumber 11}}</NUMERO_DOCUMENTO>
                   <DATA_VENCIMENTO>{{enDate .Title.ExpireDateTime "-"}}</DATA_VENCIMENTO>
                   <VALOR>{{toFloatStr .Title.AmountInCents}}</VALOR>
-                  <TIPO_ESPECIE>99</TIPO_ESPECIE>
+                  <TIPO_ESPECIE>{{.Title.BoletoTypeCode}}</TIPO_ESPECIE>
                   <FLAG_ACEITE>S</FLAG_ACEITE>
                   <DATA_EMISSAO>{{enDate today "-"}}</DATA_EMISSAO>
                   <JUROS_MORA>

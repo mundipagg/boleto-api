@@ -39,36 +39,36 @@ func GetConfig(boleto models.BoletoRequest) ConfigBank {
 }
 
 func configCiti(boleto models.BoletoRequest) ConfigBank {
-	return ConfigBank{Logo: template.HTML(LogoCiti), EspecieDoc: "DMI", Aceite: "N", Quantidade: "", ValorCotacao: "", Moeda: "R$"}
+	return ConfigBank{Logo: template.HTML(LogoCiti), EspecieDoc: boleto.Title.BoletoType, Aceite: "N", Quantidade: "", ValorCotacao: "", Moeda: "R$"}
 }
 
 func configBB(boleto models.BoletoRequest) ConfigBank {
-	return ConfigBank{Logo: template.HTML(LogoBB), EspecieDoc: "DM", Aceite: "N", Quantidade: "N", ValorCotacao: "", Moeda: "R$"}
+	return ConfigBank{Logo: template.HTML(LogoBB), EspecieDoc: boleto.Title.BoletoType, Aceite: "N", Quantidade: "N", ValorCotacao: "", Moeda: "R$"}
 }
 
 func configCaixa(boleto models.BoletoRequest) ConfigBank {
-	return ConfigBank{Logo: template.HTML(LogoCaixa), EspecieDoc: "OUT", Aceite: "N", Quantidade: "", ValorCotacao: "", Moeda: "R$"}
+	return ConfigBank{Logo: template.HTML(LogoCaixa), EspecieDoc: boleto.Title.BoletoType, Aceite: "N", Quantidade: "", ValorCotacao: "", Moeda: "R$"}
 }
 
 func configSantander(boleto models.BoletoRequest) ConfigBank {
-	return ConfigBank{Logo: template.HTML(LogoSantander), EspecieDoc: "DM", Aceite: "N", Quantidade: "N", ValorCotacao: "", Moeda: "R$"}
+	return ConfigBank{Logo: template.HTML(LogoSantander), EspecieDoc: boleto.Title.BoletoType, Aceite: "N", Quantidade: "N", ValorCotacao: "", Moeda: "R$"}
 }
 
 func configItau(boleto models.BoletoRequest) ConfigBank {
-	return ConfigBank{Logo: template.HTML(LogoItau), EspecieDoc: "DM", Aceite: "N", Quantidade: "N", ValorCotacao: "", Moeda: "R$"}
+	return ConfigBank{Logo: template.HTML(LogoItau), EspecieDoc: boleto.Title.BoletoType, Aceite: "N", Quantidade: "N", ValorCotacao: "", Moeda: "R$"}
 }
 
 func configPefisa(boleto models.BoletoRequest) ConfigBank {
-	return ConfigBank{Logo: template.HTML(LogoPefisa), EspecieDoc: "DM", Aceite: "N", Quantidade: "", ValorCotacao: "", Moeda: "R$"}
+	return ConfigBank{Logo: template.HTML(LogoPefisa), EspecieDoc: boleto.Title.BoletoType, Aceite: "N", Quantidade: "", ValorCotacao: "", Moeda: "R$"}
 }
 
 func configBradesco(boleto models.BoletoRequest) ConfigBank {
 	switch boleto.Agreement.Wallet {
 	case 4, 9, 19:
-		return ConfigBank{Logo: template.HTML(LogoBradesco), EspecieDoc: "DM", Aceite: "N", Quantidade: "", ValorCotacao: "", Moeda: "Real"}
+		return ConfigBank{Logo: template.HTML(LogoBradesco), EspecieDoc: boleto.Title.BoletoType, Aceite: "N", Quantidade: "", ValorCotacao: "", Moeda: "Real"}
 	case 25, 26:
-		return ConfigBank{Logo: template.HTML(LogoBradesco), EspecieDoc: "Outro", Aceite: "N", Quantidade: "", ValorCotacao: "", Moeda: "Real"}
+		return ConfigBank{Logo: template.HTML(LogoBradesco), EspecieDoc: boleto.Title.BoletoType, Aceite: "N", Quantidade: "", ValorCotacao: "", Moeda: "Real"}
 	default:
-		return ConfigBank{Logo: template.HTML(LogoBradesco), EspecieDoc: "Outro", Aceite: "N", Quantidade: "", ValorCotacao: "", Moeda: "Real"}
+		return ConfigBank{Logo: template.HTML(LogoBradesco), EspecieDoc: boleto.Title.BoletoType, Aceite: "N", Quantidade: "", ValorCotacao: "", Moeda: "Real"}
 	}
 }
