@@ -111,7 +111,7 @@ const requestTicket = `
                 </entry>
                 <entry>
                     <key>TITULO.ESPECIE</key>
-                    <value>99</value>
+                    <value>{{ .Title.BoletoTypeCode}}</value>
                 </entry>
                 <entry>
                     <key>TITULO.TP-DESC</key>

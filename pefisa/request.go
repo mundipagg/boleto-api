@@ -8,7 +8,7 @@ const registerPefisa = `
     "carteira": {{.Agreement.Wallet}},
     "nossoNumero": "{{padLeft (toString .Title.OurNumber) "0" 10}}",
     "seuNumero": "{{truncate .Title.DocumentNumber 10}}",    
-    "tipoTitulo": 1,
+    "tipoTitulo": {{ .Title.BoletoTypeCode}},
     "valorTitulo": "{{toFloatStr .Title.AmountInCents}}",
     "dataDocumento": "{{enDate (today) "-"}}",
 	"dataVencimento": "{{.Title.ExpireDate}}",

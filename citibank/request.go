@@ -62,7 +62,7 @@ const registerBoletoCiti = `
          <TitlOurNb>{{padLeft (toString .Title.OurNumber) "0" 12}}</TitlOurNb>
          <TitlPortCd>1</TitlPortCd>
          <TitlRbtAmt>0</TitlRbtAmt>
-         <TitlTpCd>03</TitlTpCd>
+         <TitlTpCd>{{.Title.BoletoTypeCode}}</TitlTpCd>
          <TitlYourNb>{{trimLeft .Title.DocumentNumber "0"}}</TitlYourNb>
          <GrpDscnt>
             <TitlDscntAmtOrPrct>0</TitlDscntAmtOrPrct>

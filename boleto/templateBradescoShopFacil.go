@@ -396,6 +396,122 @@ const boletoFormBradescoShopFacil = `
 	{{end}}
 `
 
-func getTemplateBradescoShopFacil() (string, string) {
+const boletoPropostaLayoutFormBradescoShopFacil = `
+{{define "boletoForm"}}
+<div class="document">
+    <table cellspacing="0" cellpadding="0">
+        <tbody>
+            <tr class="topLine">
+                <td class="bankLogo">{{.ConfigBank.Logo}}</td>
+                <td class="sideBorders center"><span style="font-weight:700;font-size:.9em">{{.View.BankNumber}}</span></td>
+                <td class="boletoNumber center"><img src="data:image/png;base64,{{.DigitableLine}}" line="{{printIfNotProduction .View.DigitableLine}}"  /></td>
+            </tr>
+        </tbody>
+    </table>
+    <table cellspacing="0" cellpadding="0" border="1">
+        <tbody>
+            <tr>
+                <td colspan="6">
+                    <p class="center" style="font-weight:bold">BOLETO DE PROPOSTA</p>
+                    <br>
+                    <p class="text" style="font-weight:bold">ESTE BOLETO SE REFERE A UMA PROPOSTA JÁ FEITA A VOCÊ E O
+                        SEU PAGAMENTO NÃO É OBRIGATÓRIO.
+                        <br>Deixar de pagá-lo não dará causa a protesto, a cobrança judicial ou extrajudicial, nem a
+                        inserção de seu nome em cadastro de restrição de credito.
+                        <br>Pagar até a data do vencimento significa aceitar a proposta.
+                        <br>Informações adicionais sobre a proposta e sobre o respectivo contrato poderão ser
+                        solicitadas a qualquer momento ao beneficiário,por meio de seus canais de atendimento.</p>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="6"><span class="title">Local de Pagamento</span><br><span class="text">ATÉ O VENCIMENTO EM
+                        QUALQUER BANCO OU CORRESPONDENTE NÃO BANCÁRIO</span></td>
+            </tr>
+            <tr>
+                <td colspan="5"><span class="title">Nome do Beneficiário / CNPJ / CPF / Endereço:</span>
+                    <br>
+                    <span class="text" id="recipient_name">{{.View.Boleto.Recipient.Name}}</span>
+                    <span class="text" id="recipient_document" style="margin-left:5em"><b>{{.View.Boleto.Recipient.Document.Type}}</b> {{fmtDoc .View.Boleto.Recipient.Document}}</span>
+                    <br>
+                    <span class="text" id="recipient_address">{{.View.Boleto.Recipient.Address.Street}}, 
+                    {{.View.Boleto.Recipient.Address.Number}} - 
+                    {{.View.Boleto.Recipient.Address.District}}, 
+                    {{.View.Boleto.Recipient.Address.StateCode}} - 
+                    {{.View.Boleto.Recipient.Address.ZipCode}}</span>
+                </td>
+                <td width="20%"><span class="title">Data de Vencimento</span><br><br>
+                    <p class="content right text" style="font-weight:700" id="expire_date">{{.View.Boleto.Title.ExpireDateTime | brdate}}</p>
+                </td>
+            </tr>
+            <tr>
+                <td width="20%"><span class="title">Data Processamento</span><br>
+                    <p class="content center" id="process_date">{{.View.Boleto.Title.CreateDate | brdate}}</p>
+                </td>
+                <td width="17%"><span class="title">Num. do Documento</span><br>
+                    <p class="content center" id="boleto_document_number">{{.View.Boleto.Title.DocumentNumber}}</p>
+                </td>
+                <td><span class="title">Nosso Número</span><br><br>
+                    <p class="content center" id="ournumber">
+                    {{padLeft (toString .View.Boleto.Title.OurNumber) "0" 11}}-{{mod11BradescoShopFacilDv (padLeft (toString .View.Boleto.Title.OurNumber) "0" 11) (padLeft (toString16 .View.Boleto.Agreement.Wallet) "0" 2)}}
+                    </p>
+                </td>
+                <td width="22%"><span class="title">Agência/Código Beneficiário</span><br>
+                    <p class="content center" id="agreement_agency_account">
+                    {{padLeft .View.Boleto.Agreement.Agency "0" 4}}{{if eq .View.Boleto.Agreement.AgencyDigit ""}}{{else}}-{{.View.Boleto.Agreement.AgencyDigit}}{{end}}
+                    /
+                    {{padLeft .View.Boleto.Agreement.Account "0" 7}}{{if eq .View.Boleto.Agreement.AccountDigit ""}}{{else}}-{{.View.Boleto.Agreement.AccountDigit}}{{end}}
+                    </p>
+                </td>
+                <td width="8%"><span class="title">Carteira</span><br>
+                    <p class="content center" id="wallet">{{.View.Boleto.Agreement.Wallet}}</p>
+                </td>
+                <td><span class="title">(=) Valor do Documento</span><br><br>
+                    <p class="content right" id="amount_in_cents">{{fmtNumber .View.Boleto.Title.AmountInCents}}</p>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="5" rowspan="2"><span class="title">Informações de responsabilidade do
+                        beneficiário</span><br><br><p class="content" id="instructions">{{.View.Boleto.Title.Instructions }}</p></td>
+                <td width="20%"><span class="title">(-) Descontos/Abatimento</span><br>
+                    <p class="content right">&nbsp;</p>
+                </td>
+            </tr>
+            <tr>
+                <td><span class="title">(=) Valor Pago</span><br>
+                    <p class="content right">&nbsp;</p>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="7">
+                    <table border="0" style="border:none">
+                        <tbody>
+                            <tr>
+                                <td width="60%"><span class="text" id="buyer_name"><b>Nome do Pagador: </b>&nbsp;{{.View.Boleto.Buyer.Name}}</span></td>
+                                <td><span class="text" id="buyer_document"><b>CNPJ/CPF: </b>&nbsp;{{fmtDoc .View.Boleto.Buyer.Document}}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="text" id="buyer_address"><b>Endereço: </b>&nbsp;{{.View.Boleto.Buyer.Address.Street}}&nbsp;{{.View.Boleto.Buyer.Address.Number}}, {{.View.Boleto.Buyer.Address.District}} - {{.View.Boleto.Buyer.Address.City}}, {{.View.Boleto.Buyer.Address.StateCode}} - {{.View.Boleto.Buyer.Address.ZipCode}}</span></td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td><span class="text"><b>Sacador/Avalista:</b> &nbsp;</span></td>
+                                <td><span class="text"><b>CNPJ/CPF:</b> &nbsp;</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+
+    </table><br>
+</div>
+	{{end}}
+`
+
+func getTemplateBradescoShopFacil(bt string) (string, string) {
+	if bt == "BDP" {
+		return templateBoletoBradescoShopFacil, boletoPropostaLayoutFormBradescoShopFacil
+	}
 	return templateBoletoBradescoShopFacil, boletoFormBradescoShopFacil
 }

@@ -2,6 +2,8 @@ package caixa
 
 import (
 	"fmt"
+	"strings"
+	"sync"
 
 	"github.com/mundipagg/boleto-api/metrics"
 
@@ -14,6 +16,9 @@ import (
 	"github.com/mundipagg/boleto-api/util"
 	"github.com/mundipagg/boleto-api/validations"
 )
+
+var o = &sync.Once{}
+var m map[string]string
 
 type bankCaixa struct {
 	validate *models.Validator
@@ -31,6 +36,7 @@ func New() bankCaixa {
 	b.validate.Push(validations.ValidateRecipientDocumentNumber)
 	b.validate.Push(caixaValidateAgency)
 	b.validate.Push(validadeOurNumber)
+	b.validate.Push(caixaValidateBoletoType)
 	return b
 }
 
@@ -39,6 +45,8 @@ func (b bankCaixa) Log() *log.Log {
 	return b.log
 }
 func (b bankCaixa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
+
+	boleto.Title.BoletoType, boleto.Title.BoletoTypeCode = getBoletoType(boleto)
 
 	r := flow.NewFlow()
 	urlCaixa := config.Get().URLCaixaRegisterBoleto
@@ -118,4 +126,26 @@ func (b bankCaixa) GetBankNumber() models.BankNumber {
 
 func (b bankCaixa) GetBankNameIntegration() string {
 	return "Caixa"
+}
+
+func caixaBoletoTypes() map[string]string {
+	o.Do(func() {
+		m = make(map[string]string)
+
+		m["OUT"] = "99" //Duplicata Mercantil p/ Indicação
+	})
+	return m
+}
+
+func getBoletoType(boleto *models.BoletoRequest) (bt string, btc string) {
+	if len(boleto.Title.BoletoType) < 1 {
+		return "OUT", "99"
+	}
+	btm := caixaBoletoTypes()
+
+	if btm[strings.ToUpper(boleto.Title.BoletoType)] == "" {
+		return "OUT", "99"
+	}
+
+	return boleto.Title.BoletoType, btm[strings.ToUpper(boleto.Title.BoletoType)]
 }

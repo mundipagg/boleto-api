@@ -3,6 +3,8 @@ package bradescoShopFacil
 import (
 	"errors"
 	"fmt"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/mundipagg/boleto-api/metrics"
@@ -15,6 +17,9 @@ import (
 	"github.com/mundipagg/boleto-api/util"
 	"github.com/mundipagg/boleto-api/validations"
 )
+
+var o = &sync.Once{}
+var m map[string]string
 
 type bankBradescoShopFacil struct {
 	validate *models.Validator
@@ -49,6 +54,7 @@ func New() bankBradescoShopFacil {
 	b.validate.Push(bradescoShopFacilValidateWallet)
 	b.validate.Push(bradescoShopFacilValidateAuth)
 	b.validate.Push(bradescoShopFacilValidateAgreement)
+	b.validate.Push(bradescoShopFacilBoletoTypeValidate)
 	return b
 }
 
@@ -58,6 +64,7 @@ func (b bankBradescoShopFacil) Log() *log.Log {
 }
 
 func (b bankBradescoShopFacil) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
+	boleto.Title.BoletoType, boleto.Title.BoletoTypeCode = getBoletoType(boleto)
 	r := flow.NewFlow()
 	serviceURL := config.Get().URLBradescoShopFacil
 	from := getResponseBradescoShopFacil()
@@ -140,4 +147,33 @@ func dateDueFactor(dateDue time.Time) (string, error) {
 
 func (b bankBradescoShopFacil) GetBankNameIntegration() string {
 	return "BradescoShopFacil"
+}
+
+func bradescoShopFacilBoletoTypes() map[string]string {
+
+	o.Do(func() {
+		m = make(map[string]string)
+
+		m["DM"] = "01"  //Duplicata Mercantil
+		m["NP"] = "02"  //Nota promissória
+		m["RC"] = "05"  //Recibo
+		m["DS"] = "12"  //Duplicata de serviço
+		m["BDP"] = "30" //Boleto de proposta
+		m["OUT"] = "99" //Outros
+	})
+	return m
+}
+
+func getBoletoType(boleto *models.BoletoRequest) (bt string, btc string) {
+	if len(boleto.Title.BoletoType) < 1 {
+		return "DM", "01"
+	}
+	btm := bradescoShopFacilBoletoTypes()
+
+	if btm[strings.ToUpper(boleto.Title.BoletoType)] == "" {
+		return "DM", "01"
+	}
+
+	return boleto.Title.BoletoType, btm[strings.ToUpper(boleto.Title.BoletoType)]
+
 }

@@ -47,7 +47,7 @@ const registerItau = `
     "data_vencimento": "{{enDate .Title.ExpireDateTime "-"}}",
     "valor_cobrado": "{{padLeft (toString64 .Title.AmountInCents) "0" 16}}",
     "seu_numero": "{{padLeft .Title.DocumentNumber "0" 10}}",
-    "especie": "01",
+    "especie": "{{ .Title.BoletoTypeCode}}",
     "data_emissao": "{{enDate (today) "-"}}",
     "data_limite_pagamento": "{{enDate .Title.ExpireDateTime "-"}}",
     "tipo_pagamento": 1,

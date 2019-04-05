@@ -54,3 +54,18 @@ func bradescoNetEmpresaValidateAgreement(b interface{}) error {
 		return validations.InvalidType(t)
 	}
 }
+
+func bradescoNetEmpresaBoletoTypeValidate(b interface{}) error {
+	bt := bradescoNetEmpresaBoletoTypes()
+
+	switch t := b.(type) {
+
+	case *models.BoletoRequest:
+		if len(t.Title.BoletoType) > 0 && bt[t.Title.BoletoType] == "" {
+			return models.NewErrorResponse("MP400", "espécie de boleto informada não existente")
+		}
+		return nil
+	default:
+		return validations.InvalidType(t)
+	}
+}

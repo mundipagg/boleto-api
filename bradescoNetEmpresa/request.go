@@ -33,7 +33,7 @@ const registerBradescoNetEmpresa = `
     "dtVencimentoTitulo": "{{brDateDelimiter .Title.ExpireDate "."}}",
     "tpVencimento": "0",
     "vlNominalTitulo": "{{.Title.AmountInCents}}",
-    "cdEspecieTitulo": "02",
+    "cdEspecieTitulo": "{{ .Title.BoletoTypeCode}}",
     "nomePagador": "{{truncate .Buyer.Name 70}}",
     "logradouroPagador": "{{truncate .Buyer.Address.Street 40}}",
     "nuLogradouroPagador": "{{truncate .Buyer.Address.Number 10}}",

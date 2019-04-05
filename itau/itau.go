@@ -3,6 +3,7 @@ package itau
 import (
 	"errors"
 	"strings"
+	"sync"
 
 	. "github.com/PMoneda/flow"
 	"github.com/mundipagg/boleto-api/config"
@@ -13,6 +14,9 @@ import (
 	"github.com/mundipagg/boleto-api/util"
 	"github.com/mundipagg/boleto-api/validations"
 )
+
+var o = &sync.Once{}
+var m map[string]string
 
 type bankItau struct {
 	validate *models.Validator
@@ -30,6 +34,7 @@ func New() bankItau {
 	b.validate.Push(validations.ValidateRecipientDocumentNumber)
 	b.validate.Push(itauValidateAccount)
 	b.validate.Push(itauValidateAgency)
+	b.validate.Push(itauBoletoTypeValidate)
 	return b
 }
 
@@ -76,6 +81,8 @@ func (b bankItau) RegisterBoleto(input *models.BoletoRequest) (models.BoletoResp
 	fromResponseError := getResponseErrorItau()
 	toAPI := getAPIResponseItau()
 	inputTemplate := getRequestItau()
+
+	input.Title.BoletoType, input.Title.BoletoTypeCode = getBoletoType(input)
 	exec := NewFlow().From("message://?source=inline", input, inputTemplate, tmpl.GetFuncMaps())
 	exec.To("logseq://?type=request&url="+itauURL, b.log)
 	duration := util.Duration(func() {
@@ -137,4 +144,31 @@ func (b bankItau) GetBankNumber() models.BankNumber {
 
 func (b bankItau) GetBankNameIntegration() string {
 	return "Itau"
+}
+
+func itauBoletoTypes() map[string]string {
+	o.Do(func() {
+		m = make(map[string]string)
+
+		m["DM"] = "01"  //Duplicata Mercantil
+		m["NP"] = "02"  //Nota Promissória
+		m["RC"] = "05"  //Recibo
+		m["DS"] = "08"  //Duplicata de serviços
+		m["BDP"] = "18" //Boleto de proposta
+		m["OUT"] = "99" //Outros
+	})
+	return m
+}
+
+func getBoletoType(boleto *models.BoletoRequest) (bt string, btc string) {
+	if len(boleto.Title.BoletoType) < 1 {
+		return "DM", "01"
+	}
+	btm := itauBoletoTypes()
+
+	if btm[strings.ToUpper(boleto.Title.BoletoType)] == "" {
+		return "DM", "01"
+	}
+
+	return boleto.Title.BoletoType, btm[strings.ToUpper(boleto.Title.BoletoType)]
 }

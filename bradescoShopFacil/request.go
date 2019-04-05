@@ -51,7 +51,7 @@ const registerBradescoShopFacil = `
             "rateio_credito": false,
             "endereco_debito_automatico": "2",
             "tipo_ocorrencia": "02",
-            "especie_titulo": "01",
+            "especie_titulo": "{{ .Title.BoletoTypeCode}}",
             "primeira_instrucao": "00",
             "segunda_instrucao": "00",
             "valor_juros_mora": 0,
