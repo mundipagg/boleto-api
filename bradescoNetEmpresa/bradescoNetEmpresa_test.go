@@ -157,9 +157,9 @@ func TestGetBoletoType(t *testing.T) {
 	})
 
 	input.Title.BoletoType = "BDP"
-	expectBoletoTypeCode = "32"
+	expectBoletoTypeCode = "02"
 
-	Convey("Quando informado o BoletoType BDP o retorno deve ser 32 - Boleto de Proposta", t, func() {
+	Convey("Quando informado o BoletoType BDP o retorno deve ser 02 - Duplicata Mercantil", t, func() {
 		_, output := getBoletoType(input)
 		So(output, ShouldEqual, expectBoletoTypeCode)
 	})

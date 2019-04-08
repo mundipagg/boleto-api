@@ -158,7 +158,6 @@ func bradescoShopFacilBoletoTypes() map[string]string {
 		m["NP"] = "02"  //Nota promissória
 		m["RC"] = "05"  //Recibo
 		m["DS"] = "12"  //Duplicata de serviço
-		m["BDP"] = "30" //Boleto de proposta
 		m["OUT"] = "99" //Outros
 	})
 	return m

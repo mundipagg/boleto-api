@@ -194,7 +194,6 @@ func bradescoNetEmpresaBoletoTypes() map[string]string {
 		m["DS"] = "04"  //Duplicata de serviços
 		m["NP"] = "12"  //Nota promissória
 		m["RC"] = "17"  //Recibo
-		m["BDP"] = "32" //Boleto de proposta
 		m["OUT"] = "99" //Outros
 	})
 

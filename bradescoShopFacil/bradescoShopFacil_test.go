@@ -92,7 +92,7 @@ func TestRegiterBoleto(t *testing.T) {
 		So(output.BarCodeNumber, ShouldBeEmpty)
 		So(output.DigitableLine, ShouldBeEmpty)
 		So(output.Errors, ShouldNotBeEmpty)
-	})	
+	})
 }
 
 func TestShouldMapBradescoNetEmpresaBoletoType(t *testing.T) {
@@ -101,7 +101,7 @@ func TestShouldMapBradescoNetEmpresaBoletoType(t *testing.T) {
 	if err := util.FromJSON(baseMockJSON, input); err != nil {
 		t.Fail()
 	}
-	
+
 	go mock.Run("9097")
 	time.Sleep(2 * time.Second)
 
@@ -121,7 +121,7 @@ func TestShouldMapBradescoNetEmpresaBoletoType(t *testing.T) {
 	Convey("deve-se mapear corretamente o BoletoType quando valor enviado não existir", t, func() {
 		_, output := getBoletoType(input)
 		So(output, ShouldEqual, "01")
-	})	
+	})
 }
 
 func TestBarcodeGenerationBradescoShopFacil(t *testing.T) {
@@ -186,9 +186,9 @@ func TestGetBoletoType(t *testing.T) {
 	})
 
 	input.Title.BoletoType = "BDP"
-	expectBoletoTypeCode = "30"
+	expectBoletoTypeCode = "01"
 
-	Convey("Quando informado o BoletoType BDP o retorno deve ser 30 - Boleto de Proposta", t, func() {
+	Convey("Quando informado o BoletoType BDP o retorno deve ser 01 - Duplicata Mercantil", t, func() {
 		_, output := getBoletoType(input)
 		So(output, ShouldEqual, expectBoletoTypeCode)
 	})
