@@ -397,7 +397,7 @@ func sanitizeCitibakSpecialCharacteres(str string, num int) string {
 	if len(str) > num {
 		str = str[0:num]
 	}
-	str = regexp.MustCompile("[^a-zA-Z0-9;@\\-\\/\\s]+").ReplaceAllString(clearString(str), "")
+	str = regexp.MustCompile("[^a-zA-Z0-9.,;@\\-\\/\\s]+").ReplaceAllString(clearString(str), "")
 	
 	return str
 }
