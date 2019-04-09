@@ -48,7 +48,7 @@ const registerBoletoCiti = `
          </GrpClPgd>
          <CdOccTp>01</CdOccTp>
          <DbtrGrntNm> </DbtrGrntNm>
-         <DbtrMsg>{{truncate .Title.Instructions 40}}</DbtrMsg>
+         <DbtrMsg>{{sanitizeCitibakSpecialCharacteres .Title.Instructions 40}}</DbtrMsg>
          <TitlAmt>{{.Title.AmountInCents}}</TitlAmt>
          <TitlBarCdInd>0</TitlBarCdInd>
          <TitlCcyCd>09</TitlCcyCd>
