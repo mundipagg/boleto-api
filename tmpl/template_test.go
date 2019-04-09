@@ -183,6 +183,6 @@ func TestCitBankSanitizeString(t *testing.T) {
 	var result = sanitizeCitibakSpecialCharacteres("Ol@ Mundo. você pode ver uma barra /, mas não uma exclamação!; Nem Isso", 66)
 
 	Convey("Caracteres especiais e acendos devem ser removidos", t, func() {
-		So(result, ShouldEqual, "Ol@ Mundo. voce pode ver uma barra /, mas nao uma exclamacao;")
+		So(result, ShouldEqual, "Ol@ Mundo. voce pode ver uma barra / mas nao uma exclamacao;")
 	})
 }
