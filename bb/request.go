@@ -50,7 +50,7 @@ const registerBoleto = `
  <sch:numeroInscricaoPagador>{{clearString (truncate .Buyer.Document.Number 15)}}</sch:numeroInscricaoPagador>
  <sch:nomePagador>{{clearString (truncate .Buyer.Name 60)}}</sch:nomePagador>
  <sch:textoEnderecoPagador>{{clearString (truncate .Buyer.Address.Street 60)}}</sch:textoEnderecoPagador>
- <sch:numeroCepPagador>{{.Buyer.Address.ZipCode}}</sch:numeroCepPagador>
+ <sch:numeroCepPagador>{{extractNumbers .Buyer.Address.ZipCode}}</sch:numeroCepPagador>
  <sch:nomeMunicipioPagador>{{clearString (truncate .Buyer.Address.City 20)}}</sch:nomeMunicipioPagador>
  <sch:nomeBairroPagador>{{clearString (truncate .Buyer.Address.District 20)}}</sch:nomeBairroPagador>
  <sch:siglaUfPagador>{{clearString (truncate .Buyer.Address.StateCode 2)}}</sch:siglaUfPagador> 
