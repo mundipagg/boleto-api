@@ -10,6 +10,7 @@ import (
 	"github.com/mundipagg/boleto-api/util"
 )
 
+//Config Realiza a configuração da aplicação
 func Config(devMode, mockMode, disableLog bool) {
 	configFlags(devMode, mockMode, disableLog)
 	flow.RegisterConnector("logseq", util.SeqLogConector)
@@ -18,6 +19,7 @@ func Config(devMode, mockMode, disableLog bool) {
 	metrics.Install()
 }
 
+//ConfigMock Criar configurações de desenvolvimento
 func ConfigMock(port string) {
 	os.Setenv("URL_BB_REGISTER_BOLETO", "http://localhost:"+port+"/registrarBoleto")
 	os.Setenv("URL_BB_TOKEN", "http://localhost:"+port+"/oauth/token")
