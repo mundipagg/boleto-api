@@ -39,6 +39,7 @@ type Config struct {
 	RedisPassword                   string
 	RedisDatabase                   string
 	RedisExpirationTime             string
+	RedisSSL                        bool
 	BoletoJSONFileStore             string
 	DisableLog                      bool
 	CertBoletoPathCrt               string
@@ -107,6 +108,7 @@ func Install(mockMode, devMode, disableLog bool) {
 		RedisPassword:                   os.Getenv("REDIS_PASSWORD"),
 		RedisDatabase:                   os.Getenv("REDIS_DATABASE"),
 		RedisExpirationTime:             os.Getenv("REDIS_EXPIRATION_TIME_IN_SECONDS"),
+		RedisSSL:                        os.Getenv("REDIS_SSL") == "true",
 		CertBoletoPathCrt:               os.Getenv("CERT_BOLETO_CRT"),
 		CertBoletoPathKey:               os.Getenv("CERT_BOLETO_KEY"),
 		CertBoletoPathCa:                os.Getenv("CERT_BOLETO_CA"),
