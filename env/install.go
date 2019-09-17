@@ -10,6 +10,7 @@ import (
 	"github.com/mundipagg/boleto-api/util"
 )
 
+//Config Realiza a configuração da aplicação
 func Config(devMode, mockMode, disableLog bool) {
 	configFlags(devMode, mockMode, disableLog)
 	flow.RegisterConnector("logseq", util.SeqLogConector)
@@ -18,6 +19,7 @@ func Config(devMode, mockMode, disableLog bool) {
 	metrics.Install()
 }
 
+//ConfigMock Criar configurações de desenvolvimento
 func ConfigMock(port string) {
 	os.Setenv("URL_BB_REGISTER_BOLETO", "http://localhost:"+port+"/registrarBoleto")
 	os.Setenv("URL_BB_TOKEN", "http://localhost:"+port+"/oauth/token")
@@ -37,6 +39,7 @@ func ConfigMock(port string) {
 	os.Setenv("REDIS_URL", "localhost:6379")
 	os.Setenv("REDIS_PASSWORD", "123456")
 	os.Setenv("REDIS_DATABASE", "8")
+	os.Setenv("REDIS_SSL", "false")
 	os.Setenv("REDIS_EXPIRATION_TIME_IN_SECONDS", "2880")
 	os.Setenv("RECOVERYROBOT_EXECUTION_ENABLED", "true")
 	os.Setenv("RECOVERYROBOT_EXECUTION_IN_MINUTES", "2")
@@ -74,6 +77,7 @@ func configFlags(devMode, mockMode, disableLog bool) {
 		os.Setenv("REDIS_URL", "localhost:6379")
 		os.Setenv("REDIS_PASSWORD", "123456")
 		os.Setenv("REDIS_DATABASE", "8")
+		os.Setenv("REDIS_SSL", "false")
 		os.Setenv("REDIS_EXPIRATION_TIME_IN_SECONDS", "2880")
 		os.Setenv("CERT_BOLETO_CRT", "C:\\cert_boleto_api\\certificate.crt")
 		os.Setenv("CERT_BOLETO_KEY", "C:\\cert_boleto_api\\pkey.key")
