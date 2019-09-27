@@ -63,6 +63,16 @@ type Config struct {
 	URLPefisaToken                  string
 	URLPefisaRegister               string
 	EnableMetrics                   bool
+	CertificatesPath                string
+	AzureTenantId                   string
+	AzureClientId                   string
+	AzureClientSecret               string
+	VaultName                       string
+	CertificateICPName              string
+	PswCertificateICP               string
+	CertificateSSLName              string
+	PswCertificateSSL               string
+	EnableFileServerCertificate     bool
 }
 
 var cnf Config
@@ -132,6 +142,16 @@ func Install(mockMode, devMode, disableLog bool) {
 		URLPefisaToken:                  os.Getenv("URL_PEFISA_TOKEN"),
 		URLPefisaRegister:               os.Getenv("URL_PEFISA_REGISTER"),
 		EnableMetrics:                   os.Getenv("ENABLE_METRICS") == "true",
+		CertificatesPath:                os.Getenv("PATH_CERTIFICATES"),
+		AzureTenantId:                   os.Getenv("AZURE_TENANT_ID"),
+		AzureClientId:                   os.Getenv("AZURE_CLIENT_ID"),
+		AzureClientSecret:               os.Getenv("AZURE_CLIENT_SECRET"),
+		VaultName:                       os.Getenv("VAULT_NAME"),
+		CertificateICPName:              os.Getenv("CERTIFICATE_ICP_NAME"),
+		PswCertificateICP:               os.Getenv("PSW_CERTIFICATE_ICP_NAME"),
+		CertificateSSLName:              os.Getenv("CERTIFICATE_SSL_NAME"),
+		PswCertificateSSL:               os.Getenv("PSW_CERTIFICATE_SSL_NAME"),
+		EnableFileServerCertificate:     os.Getenv("ENABLE_FILESERVER_CERTIFICATE") == "true",
 	}
 }
 
