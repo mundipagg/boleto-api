@@ -39,7 +39,7 @@ func Run(params *Params) {
 
 	installLog()
 
-	installCertificates()
+	go installCertificates()
 
 	go robot.RecoveryRobot(config.Get().RecoveryRobotExecutionEnabled)
 
@@ -68,7 +68,7 @@ func installCertificates() {
 		}
 	}
 
-	if config.Get().MockMode == false && config.Get().EnableFileServerCertificate == true || err != nil {
+	if config.Get().MockMode == false && config.Get().EnableFileServerCertificate == true {
 		err := certificate.InstanceStoreCertificatesFromFileServer(config.Get().CertificateICPName, config.Get().CertificateSSLName)
 		if err == nil {
 			l.Info("Success in load certificates from fileserver")
