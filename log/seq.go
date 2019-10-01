@@ -143,13 +143,25 @@ func (l Log) Warn(content interface{}, msg string) {
 	})()
 }
 
+func (l Log) Error(content interface{}, msg string) {
+	if config.Get().DisableLog {
+		return
+	}
+	go (func() {
+		props := l.defaultProperties("Error", content)
+		m := formatter(msg)
+
+		l.logger.Error(m, props)
+	})()
+}
+
 // Fatal loga erros da aplicação
 func (l Log) Fatal(content interface{}, msg string) {
 	if config.Get().DisableLog {
 		return
 	}
 	go (func() {
-		props := l.defaultProperties("Error", content)
+		props := l.defaultProperties("Fatal", content)
 		m := formatter(msg)
 
 		l.logger.Fatal(m, props)

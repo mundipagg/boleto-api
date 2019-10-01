@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/mundipagg/boleto-api/certificate"
+
 	"github.com/PMoneda/flow"
 	"github.com/mundipagg/boleto-api/api"
 	"github.com/mundipagg/boleto-api/config"
@@ -37,7 +39,7 @@ func Run(params *Params) {
 
 	installLog()
 
-	installCertificates()
+	go installCertificates()
 
 	go robot.RecoveryRobot(config.Get().RecoveryRobotExecutionEnabled)
 
@@ -54,11 +56,24 @@ func installLog() {
 }
 
 func installCertificates() {
-	if config.Get().DevMode == false {
-		err := util.ListCert()
-		if err != nil {
-			fmt.Println("Copy Certificates Fails")
-			os.Exit(-1)
+	l := log.CreateLog()
+	var err error
+
+	if config.Get().MockMode == false && config.Get().EnableFileServerCertificate == false {
+		err = certificate.InstanceStoreCertificatesFromAzureVault(config.Get().VaultName, config.Get().CertificateICPName, config.Get().CertificateSSLName)
+		if err == nil {
+			l.Info("Success in load certificates from azureVault")
+		} else {
+			l.Error(err.Error(), "Error in load certificates from azureVault")
+		}
+	}
+
+	if config.Get().MockMode == false && config.Get().EnableFileServerCertificate == true {
+		err := certificate.InstanceStoreCertificatesFromFileServer(config.Get().CertificateICPName, config.Get().CertificateSSLName)
+		if err == nil {
+			l.Info("Success in load certificates from fileserver")
+		} else {
+			l.Error(err.Error(), "Error in load certificates from fileServer")
 		}
 	}
 }
