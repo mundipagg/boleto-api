@@ -38,13 +38,14 @@ const registerBradescoNetEmpresa = `
     "logradouroPagador": "{{truncate .Buyer.Address.Street 40}}",
     "nuLogradouroPagador": "{{truncate .Buyer.Address.Number 10}}",
     "complementoLogradouroPagador": "{{truncate .Buyer.Address.Complement 15}}",
-	{{ $length := len .Buyer.Address.ZipCode }}
+	{{ $length := len (extractNumbers .Buyer.Address.ZipCode)}}
+	{{ $zipCode := (extractNumbers .Buyer.Address.ZipCode)}}
 	{{ if ge $length 5}}
-		"cepPagador": "{{splitValues (extractNumbers .Buyer.Address.ZipCode) 0 5}}",
+		"cepPagador": "{{splitValues $zipCode 0 5}}",
 	{{ end }}
 
 	{{ if ge $length 8}}
-		"complementoCepPagador": "{{splitValues (extractNumbers .Buyer.Address.ZipCode) 5 8}}",
+		"complementoCepPagador": "{{splitValues $zipCode 5 8}}",
 	{{ end }}
 
     "bairroPagador": "{{truncate .Buyer.Address.District 40}}",
