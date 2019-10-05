@@ -48,7 +48,8 @@ func ConfigMock(port string) {
 	os.Setenv("TIMEOUT_REGISTER", "30")
 	os.Setenv("TIMEOUT_TOKEN", "20")
 	os.Setenv("TIMEOUT_DEFAULT", "50")
-	config.Install(true, true, true)
+
+	config.Install(true, true, false)
 }
 
 func configFlags(devMode, mockMode, disableLog bool) {
@@ -79,6 +80,7 @@ func configFlags(devMode, mockMode, disableLog bool) {
 		os.Setenv("REDIS_DATABASE", "8")
 		os.Setenv("REDIS_SSL", "false")
 		os.Setenv("REDIS_EXPIRATION_TIME_IN_SECONDS", "2880")
+		os.Setenv("PATH_CERTIFICATES", "C:\\cert_boleto_api\\")
 		os.Setenv("CERT_BOLETO_CRT", "C:\\cert_boleto_api\\certificate.crt")
 		os.Setenv("CERT_BOLETO_KEY", "C:\\cert_boleto_api\\pkey.key")
 		os.Setenv("CERT_BOLETO_CA", "C:\\cert_boleto_api\\ca-cert.ca")
@@ -100,6 +102,15 @@ func configFlags(devMode, mockMode, disableLog bool) {
 		os.Setenv("URL_PEFISA_TOKEN", "https://psdo-hom.pernambucanas.com.br:444/sdcobr/api/oauth/token")
 		os.Setenv("URL_PEFISA_REGISTER", "https://psdo-hom.pernambucanas.com.br:444/sdcobr/api/v2/titulos")
 		os.Setenv("ENABLE_METRICS", "true")
+		os.Setenv("AZURE_TENANT_ID", "")
+		os.Setenv("AZURE_CLIENT_ID", "")
+		os.Setenv("AZURE_CLIENT_SECRET", "")
+		os.Setenv("VAULT_NAME", "")
+		os.Setenv("CERTIFICATE_ICP_NAME", "yourCertificateICP")
+		os.Setenv("PSW_CERTIFICATE_ICP_NAME", "yourPass")
+		os.Setenv("CERTIFICATE_SSL_NAME", "yourCertificateSSL")
+		os.Setenv("PSW_CERTIFICATE_SSL_NAME", "yourPass")
+		os.Setenv("ENABLE_FILESERVER_CERTIFICATE", "true")
 	}
 	config.Install(mockMode, devMode, disableLog)
 }

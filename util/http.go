@@ -11,8 +11,11 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"reflect"
 	"strings"
 	"time"
+
+	"github.com/mundipagg/boleto-api/certificate"
 
 	s "github.com/fullsailor/pkcs7"
 	"github.com/mundipagg/boleto-api/config"
@@ -30,6 +33,11 @@ var client *http.Client = &http.Client{
 		TLSHandshakeTimeout: 16 * time.Second,
 	},
 }
+
+var (
+	icpCert certificate.ICPCertificate
+	sslCert certificate.SSLCertificate
+)
 
 // DefaultHTTPClient retorna um cliente http configurado para dar um skip na validação do certificado digital
 func DefaultHTTPClient() *http.Client {
@@ -74,22 +82,21 @@ func doRequest(method, url, body, timeout string, header map[string]string) (str
 
 //BuildTLSTransport creates a TLS Client Transport from crt, ca and key files
 func BuildTLSTransport(crtPath string, keyPath string, caPath string) (*http.Transport, error) {
-	cert, err := tls.LoadX509KeyPair(crtPath, keyPath)
+	if reflect.DeepEqual(sslCert, certificate.SSLCertificate{}) {
+		ssl, err := certificate.GetCertificateFromStore(config.Get().CertificateSSLName)
+		if err != nil {
+			return nil, err
+		}
+		sslCert = ssl.(certificate.SSLCertificate)
+	}
+
+	cert, err := tls.X509KeyPair(sslCert.PemData, sslCert.PemData)
 	if err != nil {
 		return nil, err
 	}
-
-	caCert, err := ioutil.ReadFile(caPath)
-	if err != nil {
-		return nil, err
-	}
-
-	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(caCert)
 
 	tlsConfig := &tls.Config{
 		Certificates:       []tls.Certificate{cert},
-		RootCAs:            caCertPool,
 		InsecureSkipVerify: true,
 	}
 	return &http.Transport{TLSClientConfig: tlsConfig}, nil
@@ -98,14 +105,12 @@ func BuildTLSTransport(crtPath string, keyPath string, caPath string) (*http.Tra
 //Sigs request
 func SignRequest(request string) (string, error) {
 
-	pkey, err := parsePrivateKey()
-	if err != nil {
-		return "", err
-	}
-
-	chainCertificates, err := parseChainCertificates()
-	if err != nil {
-		return "", err
+	if icpCert == (certificate.ICPCertificate{}) {
+		icp, err := certificate.GetCertificateFromStore(config.Get().CertificateICPName)
+		if err != nil {
+			return "", err
+		}
+		icpCert = icp.(certificate.ICPCertificate)
 	}
 
 	signedData, err := s.NewSignedData([]byte(request))
@@ -113,7 +118,7 @@ func SignRequest(request string) (string, error) {
 		return "", err
 	}
 
-	if err := signedData.AddSigner(chainCertificates, pkey, s.SignerInfoConfig{}); err != nil {
+	if err := signedData.AddSigner(icpCert.Certificate, icpCert.RsaPrivateKey, s.SignerInfoConfig{}); err != nil {
 		return "", err
 	}
 
