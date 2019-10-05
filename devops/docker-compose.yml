@@ -8,8 +8,11 @@ services:
         volumes:
           - $GOPATH/src/github.com/mundipagg/volumes-boletoapi/boleto_json_store/:/home/mundipagg/upmongo
           - $GOPATH/src/github.com/mundipagg/volumes-boletoapi/cert_boleto_api/:/home/mundipagg/boleto_cert/
+          - $GOPATH/src/github.com/mundipagg/volumes-boletoapi/orig_cert_boleto_api/:/home/mundipagg/boleto_orig/
         ports:
           - "3000:3000"
+        env_file:
+          - boleto.env
         links:
           - pdfapi
           - mongodb
