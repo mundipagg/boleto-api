@@ -39,7 +39,7 @@ func Run(params *Params) {
 
 	installLog()
 
-	go installCertificates()
+	installCertificates()
 
 	go robot.RecoveryRobot(config.Get().RecoveryRobotExecutionEnabled)
 
@@ -57,10 +57,9 @@ func installLog() {
 
 func installCertificates() {
 	l := log.CreateLog()
-	var err error
 
 	if config.Get().MockMode == false && config.Get().EnableFileServerCertificate == false {
-		err = certificate.InstanceStoreCertificatesFromAzureVault(config.Get().VaultName, config.Get().CertificateICPName, config.Get().CertificateSSLName)
+		err := certificate.InstanceStoreCertificatesFromAzureVault(config.Get().VaultName, config.Get().CertificateICPName, config.Get().CertificateSSLName)
 		if err == nil {
 			l.Info("Success in load certificates from azureVault")
 		} else {

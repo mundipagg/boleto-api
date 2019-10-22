@@ -25,11 +25,18 @@ type bankCiti struct {
 	transport *http.Transport
 }
 
-func New() bankCiti {
+func New() (bankCiti, error) {
+	var err error
 	b := bankCiti{
 		validate: models.NewValidator(),
 		log:      log.CreateLog(),
 	}
+
+	b.transport, err = util.BuildTLSTransport()
+	if err != nil {
+		return bankCiti{}, err
+	}
+
 	b.validate.Push(validations.ValidateAmount)
 	b.validate.Push(validations.ValidateExpireDate)
 	b.validate.Push(validations.ValidateBuyerDocumentNumber)
@@ -38,12 +45,8 @@ func New() bankCiti {
 	b.validate.Push(citiValidateAccount)
 	b.validate.Push(citiValidateWallet)
 	b.validate.Push(citiValidateBoletoType)
-	transp, err := util.BuildTLSTransport(config.Get().CertBoletoPathCrt, config.Get().CertBoletoPathKey, config.Get().CertBoletoPathCa)
-	if err != nil {
-		//TODO
-	}
-	b.transport = transp
-	return b
+
+	return b, nil
 }
 
 //Log retorna a referencia do log

@@ -6,5 +6,5 @@ import (
 )
 
 func getIntegrationCitibank(boleto models.BoletoRequest) (Bank, error) {
-	return citibank.New(), nil
+	return citibank.New()
 }

@@ -2,7 +2,6 @@ package santander
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 	"sync"
@@ -29,11 +28,18 @@ type bankSantander struct {
 }
 
 //New Create a new Santander Integration Instance
-func New() bankSantander {
+func New() (bankSantander, error) {
+	var err error
 	b := bankSantander{
 		validate: models.NewValidator(),
 		log:      log.CreateLog(),
 	}
+
+	b.transport, err = util.BuildTLSTransport()
+	if err != nil {
+		return bankSantander{}, err
+	}
+
 	b.validate.Push(validations.ValidateAmount)
 	b.validate.Push(validations.ValidateExpireDate)
 	b.validate.Push(validations.ValidateBuyerDocumentNumber)
@@ -41,13 +47,7 @@ func New() bankSantander {
 	b.validate.Push(santanderValidateAgreementNumber)
 	b.validate.Push(satanderBoletoTypeValidate)
 
-	t, err := util.BuildTLSTransport(config.Get().CertBoletoPathCrt, config.Get().CertBoletoPathKey, config.Get().CertBoletoPathCa)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	b.transport = t
-
-	return b
+	return b, nil
 }
 
 //Log retorna a referencia do log
@@ -148,7 +148,7 @@ func (b bankSantander) GetBankNameIntegration() string {
 }
 
 func santanderBoletoTypes() map[string]string {
-  o.Do(func() {
+	o.Do(func() {
 		m = make(map[string]string)
 
 		m["DM"] = "02"  //Duplicata Mercantil
