@@ -2,18 +2,19 @@ package certificate
 
 import (
 	"errors"
+	"sync"
 
 	"github.com/mundipagg/boleto-api/config"
 )
 
-var localCertificateStorage = map[string]interface{}{}
+var localCertificateStorage = sync.Map{}
 
 func SetCertificateOnStore(key string, value interface{}) {
-	localCertificateStorage[key] = value
+	localCertificateStorage.Store(key, value)
 }
 
 func GetCertificateFromStore(key string) (interface{}, error) {
-	if value, ok := localCertificateStorage[key]; ok {
+	if value, ok := localCertificateStorage.Load(key); ok {
 		return value, nil
 	}
 	return nil, errors.New("Certificate not found.")

@@ -81,7 +81,7 @@ func doRequest(method, url, body, timeout string, header map[string]string) (str
 }
 
 //BuildTLSTransport creates a TLS Client Transport from crt, ca and key files
-func BuildTLSTransport(crtPath string, keyPath string, caPath string) (*http.Transport, error) {
+func BuildTLSTransport() (*http.Transport, error) {
 	if reflect.DeepEqual(sslCert, certificate.SSLCertificate{}) {
 		ssl, err := certificate.GetCertificateFromStore(config.Get().CertificateSSLName)
 		if err != nil {
@@ -102,7 +102,7 @@ func BuildTLSTransport(crtPath string, keyPath string, caPath string) (*http.Tra
 	return &http.Transport{TLSClientConfig: tlsConfig}, nil
 }
 
-//Sigs request
+//Sign request
 func SignRequest(request string) (string, error) {
 
 	if icpCert == (certificate.ICPCertificate{}) {
