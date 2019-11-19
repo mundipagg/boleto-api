@@ -25,11 +25,11 @@ const registerItau = `
     "pagador": {
         "cpf_cnpj_pagador": "{{extractNumbers .Buyer.Document.Number}}",
         "nome_pagador": "{{unescapeHtmlString (truncate .Buyer.Name 30)}}",
-        "logradouro_pagador": "{{unescapeHtmlString (truncate (concat .Buyer.Address.Street " " .Buyer.Address.Number " " .Buyer.Address.Complement) 40) }}",        
-        "bairro_pagador": "{{unescapeHtmlString (truncate .Buyer.Address.District 15)}}",
-        "cidade_pagador": "{{unescapeHtmlString (truncate .Buyer.Address.City 20)}}",
+        "logradouro_pagador": "{{unescapeHtmlString ( escapeStringOnJson (truncate (concat .Buyer.Address.Street " " .Buyer.Address.Number " " .Buyer.Address.Complement) 40)) }}",        
+        "bairro_pagador": "{{unescapeHtmlString ( escapeStringOnJson (truncate .Buyer.Address.District 15))}}",
+        "cidade_pagador": "{{unescapeHtmlString ( escapeStringOnJson (truncate .Buyer.Address.City 20))}}",
         "uf_pagador": "{{truncate .Buyer.Address.StateCode 2}}",
-        "cep_pagador": "{{truncate (extractNumbers .Buyer.Address.ZipCode) 8}}",
+        "cep_pagador": "{{escapeStringOnJson (truncate (extractNumbers .Buyer.Address.ZipCode) 8)}}",
         "grupo_email_pagador": [
             {
                 "email_pagador": ""
