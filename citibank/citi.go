@@ -64,8 +64,7 @@ func (b bankCiti) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoRes
 	from := getResponseCiti()
 	to := getAPIResponseCiti()
 	bod := r.From("message://?source=inline", boleto, getRequestCiti(), tmpl.GetFuncMaps())
-	bod.To("logseq://?type=request&url="+serviceURL, b.log)
-	//TODO: change for tls flow connector (waiting for santander)
+	bod.To("log://?type=request&url="+serviceURL, b.log)
 	var responseCiti string
 	var status int
 	var err error
@@ -78,12 +77,12 @@ func (b bankCiti) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoRes
 	metrics.PushTimingMetric("citibank-register-boleto-online", duration.Seconds())
 	bod.To("set://?prop=header", map[string]string{"status": strconv.Itoa(status)})
 	bod.To("set://?prop=body", responseCiti)
-	bod.To("logseq://?type=response&url="+serviceURL, b.log)
+	bod.To("log://?type=response&url="+serviceURL, b.log)
 	ch := bod.Choice()
 	ch.When(flow.Header("status").IsEqualTo("200"))
 	ch.To("transform://?format=xml", from, to, tmpl.GetFuncMaps())
 	ch.Otherwise()
-	ch.To("logseq://?type=response&url="+serviceURL, b.log).To("apierro://")
+	ch.To("log://?type=response&url="+serviceURL, b.log).To("apierro://")
 
 	switch t := bod.GetBody().(type) {
 	case string:

@@ -54,17 +54,17 @@ func (b bankCaixa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoRe
 	to := getAPIResponseCaixa()
 
 	bod := r.From("message://?source=inline", boleto, getRequestCaixa(), tmpl.GetFuncMaps())
-	bod = bod.To("logseq://?type=request&url="+urlCaixa, b.log)
+	bod = bod.To("log://?type=request&url="+urlCaixa, b.log)
 	duration := util.Duration(func() {
 		bod = bod.To(urlCaixa, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutDefault})
 	})
 	metrics.PushTimingMetric("caixa-register-time", duration.Seconds())
-	bod = bod.To("logseq://?type=response&url="+urlCaixa, b.log)
+	bod = bod.To("log://?type=response&url="+urlCaixa, b.log)
 	ch := bod.Choice()
 	ch = ch.When(flow.Header("status").IsEqualTo("200"))
 	ch = ch.To("transform://?format=xml", from, to, tmpl.GetFuncMaps())
 	ch = ch.Otherwise()
-	ch = ch.To("logseq://?type=response&url="+urlCaixa, b.log).To("apierro://")
+	ch = ch.To("log://?type=response&url="+urlCaixa, b.log).To("apierro://")
 
 	switch t := bod.GetBody().(type) {
 	case string:

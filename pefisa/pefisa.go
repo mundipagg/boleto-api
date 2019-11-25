@@ -49,13 +49,13 @@ func (b bankPefisa) GetToken(boleto *models.BoletoRequest) (string, error) {
 	url := config.Get().URLPefisaToken
 
 	pipe.From("message://?source=inline", boleto, getRequestToken(), tmpl.GetFuncMaps())
-	pipe.To("logseq://?type=request&url="+url, b.log)
+	pipe.To("log://?type=request&url="+url, b.log)
 
 	duration := util.Duration(func() {
 		pipe.To(url, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutToken})
 	})
 	metrics.PushTimingMetric("pefisa-get-token-boleto-time", duration.Seconds())
-	pipe.To("logseq://?type=response&url="+url, b.log)
+	pipe.To("log://?type=response&url="+url, b.log)
 	ch := pipe.Choice()
 	ch.When(Header("status").IsEqualTo("200"))
 	ch.To("transform://?format=json", getTokenResponse(), `{{.access_token}}`, tmpl.GetFuncMaps())
@@ -65,7 +65,7 @@ func (b bankPefisa) GetToken(boleto *models.BoletoRequest) (string, error) {
 	ch.To("set://?prop=body", errors.New(pipe.GetBody().(string)))
 
 	ch.Otherwise()
-	ch.To("logseq://?type=request&url="+url, b.log).To("print://?msg=${body}").To("set://?prop=body", errors.New("integration error"))
+	ch.To("log://?type=request&url="+url, b.log).To("print://?msg=${body}").To("set://?prop=body", errors.New("integration error"))
 	switch t := pipe.GetBody().(type) {
 	case string:
 
@@ -83,7 +83,7 @@ func (b bankPefisa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoR
 	boleto.Title.BoletoType, boleto.Title.BoletoTypeCode = getBoletoType(boleto)
 
 	exec := NewFlow().From("message://?source=inline", boleto, getRequestPefisa(), tmpl.GetFuncMaps())
-	exec.To("logseq://?type=request&url="+pefisaURL, b.log)
+	exec.To("log://?type=request&url="+pefisaURL, b.log)
 
 	var response string
 	var status int
@@ -98,7 +98,7 @@ func (b bankPefisa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoR
 	metrics.PushTimingMetric("pefisa-register-boleto-time", duration.Seconds())
 	exec.To("set://?prop=header", map[string]string{"status": strconv.Itoa(status)})
 	exec.To("set://?prop=body", response)
-	exec.To("logseq://?type=response&url="+pefisaURL, b.log)
+	exec.To("log://?type=response&url="+pefisaURL, b.log)
 
 	if status == 200 || status == 401 {
 		exec.To("set://?prop=body", response)
@@ -121,7 +121,7 @@ func (b bankPefisa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoR
 	ch.To("unmarshall://?format=json", new(models.BoletoResponse))
 
 	ch.Otherwise()
-	ch.To("logseq://?type=response&url="+pefisaURL, b.log).To("apierro://")
+	ch.To("log://?type=response&url="+pefisaURL, b.log).To("apierro://")
 
 	switch t := exec.GetBody().(type) {
 	case *models.BoletoResponse:

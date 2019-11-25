@@ -73,6 +73,13 @@ type Config struct {
 	CertificateSSLName              string
 	PswCertificateSSL               string
 	EnableFileServerCertificate     bool
+	SplunkAddress                   string
+	SplunkKey                       string
+	SplunkSourceType                string
+	SplunkIndex                     string
+	SplunkEnabled                   bool
+	SeqEnabled                      bool
+	WaitSecondsRetentationLog       string
 }
 
 var cnf Config
@@ -93,8 +100,9 @@ func Install(mockMode, devMode, disableLog bool) {
 		PdfAPIURL:                       os.Getenv("PDF_API"),
 		Version:                         os.Getenv("API_VERSION"),
 		MachineName:                     hostName,
-		SEQUrl:                          os.Getenv("SEQ_URL"),                        //Pegar o SEQ de dev
-		SEQAPIKey:                       os.Getenv("SEQ_API_KEY"),                    //Staging Key:
+		SEQUrl:                          os.Getenv("SEQ_URL"),     //Pegar o SEQ de dev
+		SEQAPIKey:                       os.Getenv("SEQ_API_KEY"), //Staging Key:
+		SeqEnabled:                      os.Getenv("SEQ_ENABLED") == "true",
 		EnableRequestLog:                os.Getenv("ENABLE_REQUEST_LOG") == "true",   // Log a cada request no SEQ
 		EnablePrintRequest:              os.Getenv("ENABLE_PRINT_REQUEST") == "true", // Imprime algumas informacoes da request no console
 		Environment:                     os.Getenv("ENVIRONMENT"),
@@ -152,6 +160,12 @@ func Install(mockMode, devMode, disableLog bool) {
 		CertificateSSLName:              os.Getenv("CERTIFICATE_SSL_NAME"),
 		PswCertificateSSL:               os.Getenv("PSW_CERTIFICATE_SSL_NAME"),
 		EnableFileServerCertificate:     os.Getenv("ENABLE_FILESERVER_CERTIFICATE") == "true",
+		SplunkSourceType:                os.Getenv("SPLUNK_SOURCE_TYPE"),
+		SplunkIndex:                     os.Getenv("SPLUNK_SOURCE_INDEX"),
+		SplunkEnabled:                   os.Getenv("SPLUNK_ENABLED") == "true",
+		SplunkAddress:                   os.Getenv("SPLUNK_ADDRESS"),
+		SplunkKey:                       os.Getenv("SPLUNK_KEY"),
+		WaitSecondsRetentationLog:       os.Getenv("WAIT_SECONDS_RETENTATION_LOG"),
 	}
 }
 

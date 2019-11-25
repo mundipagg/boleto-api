@@ -47,12 +47,12 @@ func (b bankItau) GetTicket(boleto *models.BoletoRequest) (string, error) {
 	pipe := NewFlow()
 	url := config.Get().URLTicketItau
 	pipe.From("message://?source=inline", boleto, getRequestTicket(), tmpl.GetFuncMaps())
-	pipe.To("logseq://?type=request&url="+url, b.log)
+	pipe.To("log://?type=request&url="+url, b.log)
 	duration := util.Duration(func() {
 		pipe.To(url, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutToken})
 	})
 	metrics.PushTimingMetric("itau-get-ticket-boleto-time", duration.Seconds())
-	pipe.To("logseq://?type=response&url="+url, b.log)
+	pipe.To("log://?type=response&url="+url, b.log)
 	ch := pipe.Choice()
 	ch.When(Header("status").IsEqualTo("200"))
 	ch.To("transform://?format=json", getTicketResponse(), `{{.access_token}}`, tmpl.GetFuncMaps())
@@ -65,7 +65,7 @@ func (b bankItau) GetTicket(boleto *models.BoletoRequest) (string, error) {
 	ch.To("transform://?format=json", getTicketErrorResponse(), `{{.errorMessage}}`, tmpl.GetFuncMaps())
 	ch.To("set://?prop=body", errors.New(pipe.GetBody().(string)))
 	ch.Otherwise()
-	ch.To("logseq://?type=request&url="+url, b.log).To("print://?msg=${body}").To("set://?prop=body", errors.New("integration error"))
+	ch.To("log://?type=request&url="+url, b.log).To("print://?msg=${body}").To("set://?prop=body", errors.New("integration error"))
 	switch t := pipe.GetBody().(type) {
 	case string:
 		return t, nil
@@ -84,12 +84,12 @@ func (b bankItau) RegisterBoleto(input *models.BoletoRequest) (models.BoletoResp
 
 	input.Title.BoletoType, input.Title.BoletoTypeCode = getBoletoType(input)
 	exec := NewFlow().From("message://?source=inline", input, inputTemplate, tmpl.GetFuncMaps())
-	exec.To("logseq://?type=request&url="+itauURL, b.log)
+	exec.To("log://?type=request&url="+itauURL, b.log)
 	duration := util.Duration(func() {
 		exec.To(itauURL, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutRegister})
 	})
 	metrics.PushTimingMetric("itau-register-boleto-time", duration.Seconds())
-	exec.To("logseq://?type=response&url="+itauURL, b.log)
+	exec.To("log://?type=response&url="+itauURL, b.log)
 
 	ch := exec.Choice()
 	ch.When(Header("status").IsEqualTo("200"))
@@ -109,7 +109,7 @@ func (b bankItau) RegisterBoleto(input *models.BoletoRequest) (models.BoletoResp
 	}
 
 	ch.Otherwise()
-	ch.To("logseq://?type=response&url="+itauURL, b.log).To("apierro://")
+	ch.To("log://?type=response&url="+itauURL, b.log).To("apierro://")
 
 	switch t := exec.GetBody().(type) {
 	case *models.BoletoResponse:

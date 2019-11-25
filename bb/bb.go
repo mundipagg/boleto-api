@@ -59,12 +59,12 @@ func (b *bankBB) login(boleto *models.BoletoRequest) (string, error) {
 	url := config.Get().URLBBToken
 	from, resp := GetBBAuthLetters()
 	bod := r.From("message://?source=inline", boleto, from, tmpl.GetFuncMaps())
-	r = r.To("logseq://?type=request&url="+url, b.log)
+	r = r.To("log://?type=request&url="+url, b.log)
 	duration := util.Duration(func() {
 		bod = bod.To(url, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutToken})
 	})
 	metrics.PushTimingMetric("bb-login-time", duration.Seconds())
-	r = r.To("logseq://?type=response&url="+url, b.log)
+	r = r.To("log://?type=response&url="+url, b.log)
 	ch := bod.Choice().When(flow.Header("status").IsEqualTo("200")).To("transform://?format=json", resp, `{{.authToken}}`)
 	ch = ch.Otherwise().To("unmarshall://?format=json", new(errorAuth))
 	result := bod.GetBody()
@@ -101,18 +101,18 @@ func (b bankBB) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoRespo
 	boleto.Title.BoletoType, boleto.Title.BoletoTypeCode = getBoletoType(boleto)
 
 	r = r.From("message://?source=inline", boleto, from, tmpl.GetFuncMaps())
-	r.To("logseq://?type=request&url="+url, b.log)
+	r.To("log://?type=request&url="+url, b.log)
 	duration := util.Duration(func() {
 		r.To(url, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutRegister})
 	})
 	metrics.PushTimingMetric("bb-register-boleto-time", duration.Seconds())
-	r.To("logseq://?type=response&url="+url, b.log)
+	r.To("log://?type=response&url="+url, b.log)
 	ch := r.Choice()
 	ch.When(flow.Header("status").IsEqualTo("200"))
 	ch.To("transform://?format=xml", getResponseBB(), getAPIResponse(), tmpl.GetFuncMaps())
 	ch.To("unmarshall://?format=json", new(models.BoletoResponse))
 	ch.Otherwise()
-	ch.To("logseq://?type=response&url="+url, b.log).To("apierro://")
+	ch.To("log://?type=response&url="+url, b.log).To("apierro://")
 	switch t := r.GetBody().(type) {
 	case *models.BoletoResponse:
 		return *t, nil

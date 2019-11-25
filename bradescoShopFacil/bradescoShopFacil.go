@@ -70,12 +70,12 @@ func (b bankBradescoShopFacil) RegisterBoleto(boleto *models.BoletoRequest) (mod
 	from := getResponseBradescoShopFacil()
 	to := getAPIResponseBradescoShopFacil()
 	bod := r.From("message://?source=inline", boleto, getRequestBradescoShopFacil(), tmpl.GetFuncMaps())
-	bod.To("logseq://?type=request&url="+serviceURL, b.log)
+	bod.To("log://?type=request&url="+serviceURL, b.log)
 	duration := util.Duration(func() {
 		bod.To(serviceURL, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutDefault})
 	})
 	metrics.PushTimingMetric("bradesco-shopfacil-register-boleto-online", duration.Seconds())
-	bod.To("logseq://?type=response&url="+serviceURL, b.log)
+	bod.To("log://?type=response&url="+serviceURL, b.log)
 	ch := bod.Choice()
 	ch.When(flow.Header("status").IsEqualTo("201"))
 	ch.To("transform://?format=json", from, to, tmpl.GetFuncMaps())
@@ -84,7 +84,7 @@ func (b bankBradescoShopFacil) RegisterBoleto(boleto *models.BoletoRequest) (mod
 	ch.To("transform://?format=json", from, to, tmpl.GetFuncMaps())
 	ch.To("unmarshall://?format=json", new(models.BoletoResponse))
 	ch.Otherwise()
-	ch.To("logseq://?type=response&url="+serviceURL, b.log).To("apierro://")
+	ch.To("log://?type=response&url="+serviceURL, b.log).To("apierro://")
 	switch t := bod.GetBody().(type) {
 	case *models.BoletoResponse:
 		if !t.HasErrors() {
