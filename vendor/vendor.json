@@ -321,6 +321,18 @@
 			"revisionTime": "2017-10-18T15:31:37Z"
 		},
 		{
+			"checksumSHA1": "S5xSDTiiYwCZvfblojiZS8vvCZ4=",
+			"path": "github.com/mundipagg/tracer-seq-writer",
+			"revision": "6360c2432c04fdfdb5e905d34f2e85e62cb76da1",
+			"revisionTime": "2019-11-26T20:54:08Z"
+		},
+		{
+			"checksumSHA1": "f3mtQuM7ynxKWXCutbtdK/e1b78=",
+			"path": "github.com/mundipagg/tracer-splunk-writer",
+			"revision": "3b43d284d261d100550ac1ec5403e8c48b4e1c01",
+			"revisionTime": "2019-11-26T20:52:39Z"
+		},
+		{
 			"checksumSHA1": "w2gboNQUJjjm4tx8Ck8HEJvPHTU=",
 			"path": "github.com/smartystreets/assertions",
 			"revision": "eb5b59917fa21f01252cee37e84631c7fb502d82",
