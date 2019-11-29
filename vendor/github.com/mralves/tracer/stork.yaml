@@ -1,0 +1,10 @@
+changelog: CHANGELOG.md
+prefixes:
+  enhancements:
+  - ':bulb:'
+  - ':sparkles:'
+  - ':sparkle:'
+  - ':gem:'
+  fixes:
+  - ':beetle:'
+  - ':bug:'

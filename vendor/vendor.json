@@ -315,6 +315,12 @@
 			"revisionTime": "2018-07-18T01:23:57Z"
 		},
 		{
+			"checksumSHA1": "LfDV8tK1DieDrES6Eh1HFhim70M=",
+			"path": "github.com/mralves/tracer",
+			"revision": "1097b8cb8bd357dece2dd39fbccec1671a5010bb",
+			"revisionTime": "2019-11-19T18:31:23Z"
+		},
+		{
 			"checksumSHA1": "H9qm9EU+myoVyajACMbzLr4Vtak=",
 			"path": "github.com/mundipagg/goseq",
 			"revision": "ac118d58394e95c89704f68f6594f3e6d60f70b9",
