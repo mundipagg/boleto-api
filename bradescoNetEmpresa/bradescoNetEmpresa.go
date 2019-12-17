@@ -74,7 +74,7 @@ func (b bankBradescoNetEmpresa) RegisterBoleto(boleto *models.BoletoRequest) (mo
 	to := getAPIResponseBradescoNetEmpresa()
 
 	bod := r.From("message://?source=inline", boleto, getRequestBradescoNetEmpresa(), tmpl.GetFuncMaps())
-	bod.To("logseq://?type=request&url="+serviceURL, b.log)
+	bod.To("log://?type=request&url="+serviceURL, b.log)
 
 	err := signRequest(bod)
 	if err != nil {
@@ -86,7 +86,7 @@ func (b bankBradescoNetEmpresa) RegisterBoleto(boleto *models.BoletoRequest) (mo
 	})
 
 	metrics.PushTimingMetric("bradesco-netempresa-register-boleto-online", duration.Seconds())
-	bod.To("logseq://?type=response&url="+serviceURL, b.log)
+	bod.To("log://?type=response&url="+serviceURL, b.log)
 
 	bod.To("transform://?format=xml", xmlResponse, jsonReponse)
 	bodyTransform := fmt.Sprintf("%v", bod.GetBody())
@@ -104,7 +104,7 @@ func (b bankBradescoNetEmpresa) RegisterBoleto(boleto *models.BoletoRequest) (mo
 	ch.To("transform://?format=json", from, to, tmpl.GetFuncMaps())
 	ch.To("unmarshall://?format=json", new(models.BoletoResponse))
 	ch.Otherwise()
-	ch.To("logseq://?type=response&url="+serviceURL, b.log).To("apierro://")
+	ch.To("log://?type=response&url="+serviceURL, b.log).To("apierro://")
 
 	switch t := bod.GetBody().(type) {
 	case *models.BoletoResponse:

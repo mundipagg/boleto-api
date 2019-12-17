@@ -13,8 +13,8 @@ import (
 	"github.com/PMoneda/flow"
 )
 
-// SeqLogConector é um connector flow para logar no Seq
-func SeqLogConector(e *flow.ExchangeMessage, u flow.URI, params ...interface{}) error {
+// LogConector é um connector flow para utilizar as rotinas de log
+func LogConector(e *flow.ExchangeMessage, u flow.URI, params ...interface{}) error {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println(r)

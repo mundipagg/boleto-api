@@ -38,8 +38,6 @@ func handleSignal(c chan os.Signal) {
 	<-c
 	config.Stop()
 	log.Info("Quiting BoletoApi")
-	log.Close()
-
 	fmt.Println("Done")
 	os.Exit(1)
 }
