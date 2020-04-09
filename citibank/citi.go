@@ -3,7 +3,6 @@ package citibank
 import (
 	"net/http"
 	"strconv"
-	"strings"
 	"sync"
 
 	"github.com/PMoneda/flow"
@@ -44,7 +43,6 @@ func New() (bankCiti, error) {
 	b.validate.Push(citiValidateAgency)
 	b.validate.Push(citiValidateAccount)
 	b.validate.Push(citiValidateWallet)
-	b.validate.Push(citiValidateBoletoType)
 
 	return b, nil
 }
@@ -56,7 +54,7 @@ func (b bankCiti) Log() *log.Log {
 
 func (b bankCiti) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
 
-	boleto.Title.BoletoType, boleto.Title.BoletoTypeCode = getBoletoType(boleto)
+	boleto.Title.BoletoType, boleto.Title.BoletoTypeCode = getBoletoType()
 
 	boleto.Title.OurNumber = calculateOurNumber(boleto)
 	r := flow.NewFlow()
@@ -130,25 +128,6 @@ func (b bankCiti) GetBankNameIntegration() string {
 	return "Citibank"
 }
 
-func citiBoletoTypes() map[string]string {
-	o.Do(func() {
-		m = make(map[string]string)
-
-		m["DMI"] = "03" //Duplicata Mercantil p/ Indicação
-	})
-
-	return m
-}
-
-func getBoletoType(boleto *models.BoletoRequest) (bt string, btc string) {
-	if len(boleto.Title.BoletoType) < 1 {
-		return "DMI", "03"
-	}
-	btm := citiBoletoTypes()
-
-	if btm[strings.ToUpper(boleto.Title.BoletoType)] == "" {
-		return "DMI", "03"
-	}
-
-	return boleto.Title.BoletoType, btm[strings.ToUpper(boleto.Title.BoletoType)]
+func getBoletoType() (bt string, btc string) {
+	return "DMI", "03"
 }
