@@ -46,6 +46,8 @@ func timingMetrics() gin.HandlerFunc {
 func ParseBoleto() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
+		user, _, _ := c.Request.BasicAuth()
+
 		boleto := models.BoletoRequest{}
 		errBind := c.BindJSON(&boleto)
 		if errBind != nil {
@@ -68,6 +70,7 @@ func ParseBoleto() gin.HandlerFunc {
 			metrics.PushBusinessMetric(bank.GetBankNameIntegration()+"-bad-request", 1)
 			return
 		}
+
 		l := log.CreateLog()
 		l.NossoNumero = boleto.Title.OurNumber
 		l.Operation = "RegisterBoleto"
@@ -75,6 +78,7 @@ func ParseBoleto() gin.HandlerFunc {
 		l.RequestKey = boleto.RequestKey
 		l.BankName = bank.GetBankNameIntegration()
 		l.IPAddress = c.ClientIP()
+		l.ServiceRefererName = user
 		l.RequestApplication(boleto, c.Request.URL.RequestURI(), util.HeaderToMap(c.Request.Header))
 		c.Set("boleto", boleto)
 		c.Next()
