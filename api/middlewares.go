@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mundipagg/boleto-api/bank"
 	"github.com/mundipagg/boleto-api/config"
+	"github.com/mundipagg/boleto-api/db"
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/metrics"
 	"github.com/mundipagg/boleto-api/models"
@@ -81,6 +82,39 @@ func ParseBoleto() gin.HandlerFunc {
 		l.ResponseApplication(resp, c.Request.URL.RequestURI())
 		tag := bank.GetBankNameIntegration() + "-status"
 		metrics.PushBusinessMetric(tag, c.Writer.Status())
-
 	}
+}
+
+//Authentication Trata a autenticação para registro de boleto
+func Authentication() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		log := log.CreateLog()
+
+		cred := getHeaderCredentials(c)
+
+		if cred == nil {
+			c.AbortWithStatusJSON(401, models.GetBoletoResponseError("MP401", "Unauthorized"))
+			return
+		}
+
+		mongo, errMongo := db.CreateMongo(log)
+		if checkError(c, errMongo, log) {
+			c.AbortWithStatusJSON(500, models.GetBoletoResponseError("MP500", "InternalError"))
+			return
+		}
+
+		if !mongo.HasValidCredentials(cred) {
+			c.AbortWithStatusJSON(401, models.GetBoletoResponseError("MP401", "Unauthorized"))
+			return
+		}
+		c.Next()
+	}
+}
+
+func getHeaderCredentials(c *gin.Context) *models.Credentials {
+	user, pass, hasAuth := c.Request.BasicAuth()
+	if user == "" || pass == "" || !hasAuth {
+		return nil
+	}
+	return models.NewCredentials(user, pass)
 }
