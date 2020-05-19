@@ -203,3 +203,11 @@ func BoletoErrorConector(e *flow.ExchangeMessage, u flow.URI, params ...interfac
 func (b *BoletoResponse) HasErrors() bool {
 	return b.Errors != nil && len(b.Errors) > 0
 }
+
+//GetBoletoResponseError Retorna um BoletoResponse com um erro específico
+func GetBoletoResponseError(code, message string) BoletoResponse {
+	resp := BoletoResponse{}
+	resp.Errors = make(Errors, 0, 0)
+	resp.Errors.Append(code, message)
+	return resp
+}
