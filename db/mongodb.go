@@ -96,6 +96,21 @@ func (e *MongoDb) GetBoletoByID(id, pk string) (models.BoletoView, error) {
 	return result, nil
 }
 
+//HasValidCredentials Verifica a credencial para registro de boleto
+func (e *MongoDb) HasValidCredentials(cred *models.Credentials) bool {
+	e.m.Lock()
+	defer e.m.Unlock()
+
+	result := models.Credentials{}
+	session := dbSession.Copy()
+	defer session.Close()
+
+	c := session.DB(dbName).C("credentials")
+	err = c.Find(bson.M{"username": cred.Username, "password": cred.Password}).One(&result)
+
+	return (err == nil && result.Username == cred.Username && result.Password == cred.Password)
+}
+
 //Close Fecha a conexão
 func (e *MongoDb) Close() {
 	fmt.Println("Close Database Connection")
