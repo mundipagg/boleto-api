@@ -7,10 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mundipagg/boleto-api/bank"
 	"github.com/mundipagg/boleto-api/config"
-	"github.com/mundipagg/boleto-api/db"
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/metrics"
 	"github.com/mundipagg/boleto-api/models"
+	"github.com/mundipagg/boleto-api/usermanagement"
 	"github.com/mundipagg/boleto-api/util"
 )
 
@@ -92,7 +92,6 @@ func ParseBoleto() gin.HandlerFunc {
 //Authentication Trata a autenticação para registro de boleto
 func Authentication() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		log := log.CreateLog()
 
 		cred := getHeaderCredentials(c)
 
@@ -101,13 +100,7 @@ func Authentication() gin.HandlerFunc {
 			return
 		}
 
-		mongo, errMongo := db.CreateMongo(log)
-		if checkError(c, errMongo, log) {
-			c.AbortWithStatusJSON(500, models.GetBoletoResponseError("MP500", "InternalError"))
-			return
-		}
-
-		if !mongo.HasValidCredentials(cred) {
+		if !hasValidCredentials(cred) {
 			c.AbortWithStatusJSON(401, models.GetBoletoResponseError("MP401", "Unauthorized"))
 			return
 		}
@@ -115,10 +108,26 @@ func Authentication() gin.HandlerFunc {
 	}
 }
 
+func hasValidCredentials(c *models.Credentials) bool {
+	u, hasUser := usermanagement.GetUser(c.UserKey)
+
+	if !hasUser {
+		return false
+	}
+
+	user := u.(models.Credentials)
+
+	if user.UserKey == c.UserKey && user.Password == c.Password {
+		return true
+	}
+
+	return false
+}
+
 func getHeaderCredentials(c *gin.Context) *models.Credentials {
-	user, pass, hasAuth := c.Request.BasicAuth()
-	if user == "" || pass == "" || !hasAuth {
+	userkey, pass, hasAuth := c.Request.BasicAuth()
+	if userkey == "" || pass == "" || !hasAuth {
 		return nil
 	}
-	return models.NewCredentials(user, pass)
+	return models.NewCredentials(userkey, pass)
 }
