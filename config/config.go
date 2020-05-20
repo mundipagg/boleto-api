@@ -54,6 +54,8 @@ type Config struct {
 	ItauEnv                         string
 	SantanderEnv                    string
 	URLTicketItau                   string
+	StoneClientID                   string
+	StonePrivateKeyPath             string
 	URLRegisterBoletoItau           string
 	RecoveryRobotExecutionEnabled   string
 	RecoveryRobotExecutionInMinutes string
@@ -140,6 +142,8 @@ func Install(mockMode, devMode, disableLog bool) {
 		URLRegisterBoletoItau:           os.Getenv("URL_ITAU_REGISTER"),
 		URLBradescoShopFacil:            os.Getenv("URL_BRADESCO_SHOPFACIL"),
 		URLBradescoNetEmpresa:           os.Getenv("URL_BRADESCO_NET_EMPRESA"),
+		StoneClientID:                   os.Getenv("STONE_CLIENT_ID"),
+		StonePrivateKeyPath:             os.Getenv("STONE_PRIVATE_KEY"),
 		InfluxDBHost:                    os.Getenv("INFLUXDB_HOST"),
 		InfluxDBPort:                    os.Getenv("INFLUXDB_PORT"),
 		RecoveryRobotExecutionEnabled:   os.Getenv("RECOVERYROBOT_EXECUTION_ENABLED"),

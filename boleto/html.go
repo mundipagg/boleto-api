@@ -61,6 +61,8 @@ func getTemplateBank(bv models.BoletoView) (string, string) {
 		return getTemplatePerWallet(bv)
 	case models.Pefisa:
 		return getTemplatePefisa()
+	case models.Stone:
+		return getTemplateStone()
 	default:
 		return getTemplateDefault(bv.Boleto.Title.BoletoType)
 	}

@@ -21,5 +21,6 @@ func Run(port string) {
 	router.POST("/bradesconetempresa/registrarBoleto", registerBoletoBradescoNetEmpresa)
 	router.POST("/pefisa/gerarToken", getTokenPefisa)
 	router.POST("/pefisa/registrarBoleto", registerPefisa)
+	router.POST("/stone/registrarBoleto", registerStone)
 	router.Run(":" + port)
 }
