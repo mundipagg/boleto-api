@@ -21,14 +21,14 @@ var Recipient string
 
 //Log struct com os elemtos do log
 type Log struct {
-	Operation          string
-	Recipient          string
-	RequestKey         string
-	BankName           string
-	IPAddress          string
-	ServiceRefererName string
-	NossoNumero        uint
-	logger             tracer.Logger
+	Operation   string
+	Recipient   string
+	RequestKey  string
+	BankName    string
+	IPAddress   string
+	ServiceUser string
+	NossoNumero uint
+	logger      tracer.Logger
 }
 
 //Install instala o "servico" de log do SEQ
@@ -189,15 +189,15 @@ func (l *Log) EndRobot() {
 
 func (l *Log) defaultProperties(messageType string, content interface{}) LogEntry {
 	props := LogEntry{
-		"MessageType":        messageType,
-		"Content":            content,
-		"Recipient":          l.Recipient,
-		"Operation":          l.Operation,
-		"NossoNumero":        l.NossoNumero,
-		"RequestKey":         l.RequestKey,
-		"BankName":           l.BankName,
-		"IPAddress":          l.IPAddress,
-		"ServiceRefererName": l.ServiceRefererName,
+		"MessageType": messageType,
+		"Content":     content,
+		"Recipient":   l.Recipient,
+		"Operation":   l.Operation,
+		"NossoNumero": l.NossoNumero,
+		"RequestKey":  l.RequestKey,
+		"BankName":    l.BankName,
+		"IPAddress":   l.IPAddress,
+		"ServiceUser": l.ServiceUser,
 	}
 	return props
 }

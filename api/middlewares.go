@@ -46,8 +46,6 @@ func timingMetrics() gin.HandlerFunc {
 func ParseBoleto() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		user, _, _ := c.Request.BasicAuth()
-
 		boleto := models.BoletoRequest{}
 		errBind := c.BindJSON(&boleto)
 		if errBind != nil {
@@ -72,13 +70,14 @@ func ParseBoleto() gin.HandlerFunc {
 		}
 
 		l := log.CreateLog()
+		user, _ := c.Get("serviceuser")
 		l.NossoNumero = boleto.Title.OurNumber
 		l.Operation = "RegisterBoleto"
 		l.Recipient = boleto.Recipient.Name
 		l.RequestKey = boleto.RequestKey
 		l.BankName = bank.GetBankNameIntegration()
 		l.IPAddress = c.ClientIP()
-		l.ServiceRefererName = user
+		l.ServiceUser = user.(string)
 		l.RequestApplication(boleto, c.Request.URL.RequestURI(), util.HeaderToMap(c.Request.Header))
 		c.Set("boleto", boleto)
 		c.Next()
@@ -104,6 +103,9 @@ func Authentication() gin.HandlerFunc {
 			c.AbortWithStatusJSON(401, models.GetBoletoResponseError("MP401", "Unauthorized"))
 			return
 		}
+
+		c.Set("serviceuser", cred.Username)
+
 		c.Next()
 	}
 }
@@ -118,6 +120,7 @@ func hasValidCredentials(c *models.Credentials) bool {
 	user := u.(models.Credentials)
 
 	if user.UserKey == c.UserKey && user.Password == c.Password {
+		c.Username = user.Username
 		return true
 	}
 
