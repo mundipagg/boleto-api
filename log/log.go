@@ -11,22 +11,22 @@ import (
 
 type LogEntry = map[string]interface{}
 
-//var logger tracer.Logger
 var logger tracer.Logger
 
-// Operation a operacao usada na API
+//Operation a operacao usada na API
 var Operation string
 
-// Recipient o nome do banco
+//Recipient o nome do banco
 var Recipient string
 
-// Log struct com os elemtos do log
+//Log struct com os elemtos do log
 type Log struct {
 	Operation   string
 	Recipient   string
 	RequestKey  string
 	BankName    string
 	IPAddress   string
+	ServiceUser string
 	NossoNumero uint
 	logger      tracer.Logger
 }
@@ -48,7 +48,7 @@ func CreateLog() *Log {
 	}
 }
 
-// Request loga o request para algum banco
+//Request loga o request para algum banco
 func (l *Log) Request(content interface{}, url string, headers map[string]string) {
 	if config.Get().DisableLog {
 		return
@@ -66,7 +66,7 @@ func (l *Log) Request(content interface{}, url string, headers map[string]string
 	})()
 }
 
-// Response loga o response para algum banco
+//Response loga o response para algum banco
 func (l *Log) Response(content interface{}, url string) {
 	if config.Get().DisableLog {
 		return
@@ -83,7 +83,7 @@ func (l *Log) Response(content interface{}, url string) {
 	})()
 }
 
-// Request loga o request que chega na boleto api
+//RequestApplication loga o request que chega na boleto api
 func (l *Log) RequestApplication(content interface{}, url string, headers map[string]string) {
 	if config.Get().DisableLog {
 		return
@@ -100,7 +100,7 @@ func (l *Log) RequestApplication(content interface{}, url string, headers map[st
 	})()
 }
 
-// Response loga o response que sai da boleto api
+//ResponseApplication loga o response que sai da boleto api
 func (l *Log) ResponseApplication(content interface{}, url string) {
 	if config.Get().DisableLog {
 		return
@@ -123,6 +123,7 @@ func (l *Log) Info(msg string) {
 	go l.logger.Info(msg, nil)
 }
 
+//Info loga mensagem do level INFO
 func Info(msg string) {
 	if config.Get().DisableLog {
 		return
@@ -196,6 +197,7 @@ func (l *Log) defaultProperties(messageType string, content interface{}) LogEntr
 		"RequestKey":  l.RequestKey,
 		"BankName":    l.BankName,
 		"IPAddress":   l.IPAddress,
+		"ServiceUser": l.ServiceUser,
 	}
 	return props
 }

@@ -96,6 +96,23 @@ func (e *MongoDb) GetBoletoByID(id, pk string) (models.BoletoView, error) {
 	return result, nil
 }
 
+//GetUserCredentials Busca as Credenciais dos Usuários
+func (e *MongoDb) GetUserCredentials() ([]models.Credentials, error) {
+	e.m.Lock()
+	defer e.m.Unlock()
+	result := []models.Credentials{}
+	session := dbSession.Copy()
+	defer session.Close()
+
+	c := session.DB(dbName).C("credentials")
+	err = c.Find(nil).All(&result)
+
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 //Close Fecha a conexão
 func (e *MongoDb) Close() {
 	fmt.Println("Close Database Connection")

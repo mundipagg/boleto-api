@@ -29,6 +29,8 @@ func registerBoleto(c *gin.Context) {
 	if _, hasErr := c.Get("error"); hasErr {
 		return
 	}
+
+	_user, _ := c.Get("serviceuser")
 	_boleto, _ := c.Get("boleto")
 	_bank, _ := c.Get("bank")
 	bol := _boleto.(models.BoletoRequest)
@@ -41,7 +43,7 @@ func registerBoleto(c *gin.Context) {
 	lg.RequestKey = bol.RequestKey
 	lg.BankName = bank.GetBankNameIntegration()
 	lg.IPAddress = c.ClientIP()
-
+	lg.ServiceUser = _user.(string)
 	resp, err := bank.ProcessBoleto(&bol)
 	if checkError(c, err, lg) {
 		return

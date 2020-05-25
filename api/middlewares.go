@@ -10,6 +10,7 @@ import (
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/metrics"
 	"github.com/mundipagg/boleto-api/models"
+	"github.com/mundipagg/boleto-api/usermanagement"
 	"github.com/mundipagg/boleto-api/util"
 )
 
@@ -67,13 +68,16 @@ func ParseBoleto() gin.HandlerFunc {
 			metrics.PushBusinessMetric(bank.GetBankNameIntegration()+"-bad-request", 1)
 			return
 		}
+
 		l := log.CreateLog()
+		user, _ := c.Get("serviceuser")
 		l.NossoNumero = boleto.Title.OurNumber
 		l.Operation = "RegisterBoleto"
 		l.Recipient = boleto.Recipient.Name
 		l.RequestKey = boleto.RequestKey
 		l.BankName = bank.GetBankNameIntegration()
 		l.IPAddress = c.ClientIP()
+		l.ServiceUser = user.(string)
 		l.RequestApplication(boleto, c.Request.URL.RequestURI(), util.HeaderToMap(c.Request.Header))
 		c.Set("boleto", boleto)
 		c.Next()
@@ -81,6 +85,52 @@ func ParseBoleto() gin.HandlerFunc {
 		l.ResponseApplication(resp, c.Request.URL.RequestURI())
 		tag := bank.GetBankNameIntegration() + "-status"
 		metrics.PushBusinessMetric(tag, c.Writer.Status())
-
 	}
+}
+
+//Authentication Trata a autenticação para registro de boleto
+func Authentication() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		cred := getHeaderCredentials(c)
+
+		if cred == nil {
+			c.AbortWithStatusJSON(401, models.GetBoletoResponseError("MP401", "Unauthorized"))
+			return
+		}
+
+		if !hasValidCredentials(cred) {
+			c.AbortWithStatusJSON(401, models.GetBoletoResponseError("MP401", "Unauthorized"))
+			return
+		}
+
+		c.Set("serviceuser", cred.Username)
+
+		c.Next()
+	}
+}
+
+func hasValidCredentials(c *models.Credentials) bool {
+	u, hasUser := usermanagement.GetUser(c.UserKey)
+
+	if !hasUser {
+		return false
+	}
+
+	user := u.(models.Credentials)
+
+	if user.UserKey == c.UserKey && user.Password == c.Password {
+		c.Username = user.Username
+		return true
+	}
+
+	return false
+}
+
+func getHeaderCredentials(c *gin.Context) *models.Credentials {
+	userkey, pass, hasAuth := c.Request.BasicAuth()
+	if userkey == "" || pass == "" || !hasAuth {
+		return nil
+	}
+	return models.NewCredentials(userkey, pass)
 }

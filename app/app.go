@@ -8,6 +8,7 @@ import (
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/mock"
 	"github.com/mundipagg/boleto-api/robot"
+	"github.com/mundipagg/boleto-api/usermanagement"
 )
 
 //Params this struct contains all execution parameters to run application
@@ -32,6 +33,8 @@ func Run(params *Params) {
 	log.Install()
 
 	installCertificates()
+
+	usermanagement.LoadUserCredentials()
 
 	go robot.RecoveryRobot(config.Get().RecoveryRobotExecutionEnabled)
 
