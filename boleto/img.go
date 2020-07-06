@@ -70,7 +70,7 @@ func formatDigitableLine(s string) string {
 func GetFont() ft {
 
 	if (ft{}) == fnt {
-		fontBytes, err := ioutil.ReadFile("./Arial.ttf")
+		fontBytes, err := ioutil.ReadFile("./boleto/Arial.ttf")
 		if err != nil {
 			l := log.CreateLog()
 			l.Error(err.Error(), " An error has occurred load font")
