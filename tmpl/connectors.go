@@ -1,7 +1,8 @@
-package util
+package tmpl
 
 import (
 	"fmt"
+	"github.com/mundipagg/boleto-api/util"
 
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/log"
@@ -73,10 +74,10 @@ func TlsConector(e *flow.ExchangeMessage, u flow.URI, params ...interface{}) err
 
 			if config.Get().MockMode {
 				url = strings.Replace(u.GetRaw(), "tls", "http", 1)
-				response, status, err = Post(url, b, timeout, e.GetHeaderMap())
+				response, status, err = util.Post(url, b, timeout, e.GetHeaderMap())
 			} else {
 				url = strings.Replace(u.GetRaw(), "tls", "https", 1)
-				response, status, err = PostTLS(url, b, timeout, e.GetHeaderMap(), t)
+				response, status, err = util.PostTLS(url, b, timeout, e.GetHeaderMap(), t)
 			}
 			if err != nil {
 				e.SetHeader("error", err.Error())

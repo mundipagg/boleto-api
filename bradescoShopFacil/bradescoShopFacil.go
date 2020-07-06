@@ -75,6 +75,9 @@ func (b bankBradescoShopFacil) RegisterBoleto(boleto *models.BoletoRequest) (mod
 		bod.To(serviceURL, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutDefault})
 	})
 	metrics.PushTimingMetric("bradesco-shopfacil-register-boleto-online", duration.Seconds())
+
+	b.log.ElapsedTime = duration.Milliseconds()
+
 	bod.To("log://?type=response&url="+serviceURL, b.log)
 	ch := bod.Choice()
 	ch.When(flow.Header("status").IsEqualTo("201"))
