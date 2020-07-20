@@ -36,8 +36,9 @@ func init() {
 
 func handleSignal(c chan os.Signal) {
 	<-c
+	l := log.CreateLog()
 	config.Stop()
-	log.Info("Quiting BoletoApi")
+	l.Info("Quiting BoletoApi")
 	fmt.Println("Done")
 	os.Exit(1)
 }

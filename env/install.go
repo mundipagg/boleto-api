@@ -1,21 +1,21 @@
 package env
 
 import (
+	"github.com/mundipagg/boleto-api/tmpl"
 	"os"
 
 	"github.com/PMoneda/flow"
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/metrics"
 	"github.com/mundipagg/boleto-api/models"
-	"github.com/mundipagg/boleto-api/util"
 )
 
 //Config Realiza a configuração da aplicação
 func Config(devMode, mockMode, disableLog bool) {
 	configFlags(devMode, mockMode, disableLog)
-	flow.RegisterConnector("log", util.LogConector)
+	flow.RegisterConnector("log", tmpl.LogConector)
 	flow.RegisterConnector("apierro", models.BoletoErrorConector)
-	flow.RegisterConnector("tls", util.TlsConector)
+	flow.RegisterConnector("tls", tmpl.TlsConector)
 	metrics.Install()
 }
 
@@ -83,7 +83,7 @@ func configFlags(devMode, mockMode, disableLog bool) {
 		os.Setenv("MONGODB_USER", "")
 		os.Setenv("MONGODB_PASSWORD", "")
 		os.Setenv("REDIS_URL", "localhost:6379")
-		os.Setenv("REDIS_PASSWORD", "123456")
+		os.Setenv("REDIS_PASSWORD", "")
 		os.Setenv("REDIS_DATABASE", "8")
 		os.Setenv("REDIS_SSL", "false")
 		os.Setenv("REDIS_EXPIRATION_TIME_IN_SECONDS", "2880")
@@ -120,7 +120,7 @@ func configFlags(devMode, mockMode, disableLog bool) {
 		os.Setenv("ENABLE_FILESERVER_CERTIFICATE", "false")
 		os.Setenv("SPLUNK_SOURCE_TYPE", "_json")
 		os.Setenv("SPLUNK_SOURCE_INDEX", "main")
-		os.Setenv("SPLUNK_ENABLED", "true")
+		os.Setenv("SPLUNK_ENABLED", "false")
 		os.Setenv("SEQ_ENABLED", "true")
 		os.Setenv("SPLUNK_ADDRESS", "http://localhost:8088/services/collector")
 		os.Setenv("SPLUNK_KEY", "dd4a1733-75c8-48b2-abba-c102af7b9523")

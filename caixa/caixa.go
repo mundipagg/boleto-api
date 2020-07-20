@@ -59,6 +59,9 @@ func (b bankCaixa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoRe
 		bod = bod.To(urlCaixa, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutDefault})
 	})
 	metrics.PushTimingMetric("caixa-register-time", duration.Seconds())
+
+	b.log.ElapsedTime = duration.Milliseconds()
+
 	bod = bod.To("log://?type=response&url="+urlCaixa, b.log)
 	ch := bod.Choice()
 	ch = ch.When(flow.Header("status").IsEqualTo("200"))

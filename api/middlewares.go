@@ -46,16 +46,18 @@ func timingMetrics() gin.HandlerFunc {
 func ParseBoleto() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
+		l := log.CreateLog()
+
 		boleto := models.BoletoRequest{}
 		errBind := c.BindJSON(&boleto)
 		if errBind != nil {
 			e := models.NewFormatError(errBind.Error())
-			checkError(c, e, log.CreateLog())
+			checkError(c, e, l)
 			metrics.PushBusinessMetric("json_error", 1)
 			return
 		}
 		bank, err := bank.Get(boleto)
-		if checkError(c, err, log.CreateLog()) {
+		if checkError(c, err, l) {
 			c.Set("error", err)
 			return
 		}
@@ -64,12 +66,11 @@ func ParseBoleto() gin.HandlerFunc {
 		boleto.Title.ExpireDateTime = d
 		if errFmt != nil {
 			e := models.NewFormatError(errFmt.Error())
-			checkError(c, e, log.CreateLog())
+			checkError(c, e, l)
 			metrics.PushBusinessMetric(bank.GetBankNameIntegration()+"-bad-request", 1)
 			return
 		}
 
-		l := log.CreateLog()
 		user, _ := c.Get("serviceuser")
 		l.NossoNumero = boleto.Title.OurNumber
 		l.Operation = "RegisterBoleto"
