@@ -52,9 +52,6 @@ func (b bankItau) GetTicket(boleto *models.BoletoRequest) (string, error) {
 		pipe.To(url, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutToken})
 	})
 	metrics.PushTimingMetric("itau-get-ticket-boleto-time", duration.Seconds())
-
-	b.log.ElapsedTime = duration.Milliseconds()
-
 	pipe.To("log://?type=response&url="+url, b.log)
 	ch := pipe.Choice()
 	ch.When(Header("status").IsEqualTo("200"))
@@ -92,9 +89,6 @@ func (b bankItau) RegisterBoleto(input *models.BoletoRequest) (models.BoletoResp
 		exec.To(itauURL, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutRegister})
 	})
 	metrics.PushTimingMetric("itau-register-boleto-time", duration.Seconds())
-
-	b.log.ElapsedTime = duration.Milliseconds()
-
 	exec.To("log://?type=response&url="+itauURL, b.log)
 
 	ch := exec.Choice()

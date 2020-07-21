@@ -1,11 +1,11 @@
 package bradescoNetEmpresa
 
 import (
+	"sync"
 	"errors"
 	"fmt"
 	"html"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/mundipagg/boleto-api/metrics"
@@ -84,8 +84,6 @@ func (b bankBradescoNetEmpresa) RegisterBoleto(boleto *models.BoletoRequest) (mo
 	duration := util.Duration(func() {
 		bod.To(serviceURL, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutDefault})
 	})
-
-	b.log.ElapsedTime = duration.Milliseconds()
 
 	metrics.PushTimingMetric("bradesco-netempresa-register-boleto-online", duration.Seconds())
 	bod.To("log://?type=response&url="+serviceURL, b.log)
