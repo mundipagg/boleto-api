@@ -73,9 +73,6 @@ func (b bankCiti) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoRes
 		return models.BoletoResponse{}, err
 	}
 	metrics.PushTimingMetric("citibank-register-boleto-online", duration.Seconds())
-
-	b.log.ElapsedTime = duration.Milliseconds()
-
 	bod.To("set://?prop=header", map[string]string{"status": strconv.Itoa(status)})
 	bod.To("set://?prop=body", responseCiti)
 	bod.To("log://?type=response&url="+serviceURL, b.log)

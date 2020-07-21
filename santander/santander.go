@@ -67,9 +67,6 @@ func (b bankSantander) GetTicket(boleto *models.BoletoRequest) (string, error) {
 		pipe.To(tlsURL, b.transport, map[string]string{"timeout": config.Get().TimeoutToken})
 	})
 	metrics.PushTimingMetric("santander-get-ticket-boleto-time", duration.Seconds())
-
-	b.log.ElapsedTime = duration.Milliseconds()
-
 	pipe.To("log://?type=response&url="+url, b.log)
 	ch := pipe.Choice()
 	ch.When(Header("status").IsEqualTo("200"))
@@ -103,9 +100,6 @@ func (b bankSantander) RegisterBoleto(input *models.BoletoRequest) (models.Bolet
 		exec.To(santanderURL, b.transport, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutRegister})
 	})
 	metrics.PushTimingMetric("santander-register-boleto-time", duration.Seconds())
-
-	b.log.ElapsedTime = duration.Milliseconds()
-
 	exec.To("log://?type=response&url="+serviceURL, b.log)
 	ch := exec.Choice()
 	ch.When(Header("status").IsEqualTo("200"))

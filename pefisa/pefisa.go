@@ -54,9 +54,6 @@ func (b bankPefisa) GetToken(boleto *models.BoletoRequest) (string, error) {
 	duration := util.Duration(func() {
 		pipe.To(url, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutToken})
 	})
-
-	b.log.ElapsedTime = duration.Milliseconds()
-
 	metrics.PushTimingMetric("pefisa-get-token-boleto-time", duration.Seconds())
 	pipe.To("log://?type=response&url="+url, b.log)
 	ch := pipe.Choice()
@@ -94,9 +91,6 @@ func (b bankPefisa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoR
 	duration := util.Duration(func() {
 		response, status, err = b.sendRequest(exec.GetBody().(string), boleto.Authentication.AuthorizationToken)
 	})
-
-	b.log.ElapsedTime = duration.Milliseconds()
-
 	if err != nil {
 		return models.BoletoResponse{}, err
 	}

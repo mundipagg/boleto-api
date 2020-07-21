@@ -1,9 +1,10 @@
 package util
 
 import (
-	"fmt"
 	"strconv"
 	"time"
+
+	"github.com/mundipagg/boleto-api/log"
 )
 
 func Duration(callback func()) (duration time.Duration) {
@@ -17,7 +18,8 @@ func Duration(callback func()) (duration time.Duration) {
 func BrNow() time.Time {
 	z, err := time.LoadLocation("America/Sao_Paulo")
 	if err != nil {
-		fmt.Println("Could not get Timezone - ", err.Error())
+		lg := log.CreateLog()
+		lg.Warn(err.Error(), "Could not get Timezone")
 		return time.Now()
 	}
 	t := time.Now()
@@ -28,7 +30,8 @@ func BrNow() time.Time {
 func NycNow() time.Time {
 	z, err := time.LoadLocation("America/New_York")
 	if err != nil {
-		fmt.Println("Could not get Timezone - ", err.Error())
+		lg := log.CreateLog()
+		lg.Warn(err.Error(), "Could not get Timezone")
 		return time.Now()
 	}
 	t := time.Now()
@@ -40,8 +43,4 @@ func GetDurationTimeoutRequest(t string) time.Duration {
 	tTime, _ := strconv.Atoi(t)
 	tOut := time.Duration(tTime)
 	return tOut
-}
-
-func UtcNow() string {
-	return time.Now().UTC().Format("2006-01-02T15:04:05.0000000Z")
 }

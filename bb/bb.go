@@ -64,9 +64,6 @@ func (b *bankBB) login(boleto *models.BoletoRequest) (string, error) {
 		bod = bod.To(url, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutToken})
 	})
 	metrics.PushTimingMetric("bb-login-time", duration.Seconds())
-
-	b.log.ElapsedTime = duration.Milliseconds()
-
 	r = r.To("log://?type=response&url="+url, b.log)
 	ch := bod.Choice().When(flow.Header("status").IsEqualTo("200")).To("transform://?format=json", resp, `{{.authToken}}`)
 	ch = ch.Otherwise().To("unmarshall://?format=json", new(errorAuth))
@@ -109,9 +106,6 @@ func (b bankBB) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoRespo
 		r.To(url, map[string]string{"method": "POST", "insecureSkipVerify": "true", "timeout": config.Get().TimeoutRegister})
 	})
 	metrics.PushTimingMetric("bb-register-boleto-time", duration.Seconds())
-
-	b.log.ElapsedTime = duration.Milliseconds()
-
 	r.To("log://?type=response&url="+url, b.log)
 	ch := r.Choice()
 	ch.When(flow.Header("status").IsEqualTo("200"))
