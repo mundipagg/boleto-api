@@ -3,31 +3,39 @@ package boleto
 import (
 	"bytes"
 	"encoding/base64"
+	"github.com/golang/freetype/truetype"
+	"github.com/mundipagg/boleto-api/log"
 	"image"
 	"image/draw"
 	"image/png"
-	
-	s "strings"
+	"io/ioutil"
+
 	"github.com/golang/freetype"
-	"github.com/mundipagg/boleto-api/util"
 	"golang.org/x/image/font"
+	s "strings"
 )
 
+type ft struct {
+	FtFont *truetype.Font
+}
+
+var fnt ft
+
 func textToImage(text string) string {
-	
-	if s.Contains(text,"  ") {		
-		text = s.Replace(text," ","",-1)
-		text = s.Replace(text,".","",-1)	
+
+	if s.Contains(text, "  ") {
+		text = s.Replace(text, " ", "", -1)
+		text = s.Replace(text, ".", "", -1)
 		text = formatDigitableLine(text)
 	}
-	
+
 	size := float64(13)
 	dpi := float64(100)
 	rgba := image.NewNRGBA64(image.Rect(0, 0, 530, 20))
 	draw.Draw(rgba, rgba.Bounds(), image.Transparent, image.ZP, draw.Src)
 	c := freetype.NewContext()
 	c.SetDPI(dpi)
-	c.SetFont(util.GetFont().FtFont)
+	c.SetFont(GetFont().FtFont)
 	c.SetFontSize(size)
 	c.SetClip(rgba.Bounds())
 	c.SetDst(rgba)
@@ -57,4 +65,27 @@ func formatDigitableLine(s string) string {
 		buf.WriteByte(byte(c))
 	}
 	return buf.String()
+}
+
+func GetFont() ft {
+
+	if (ft{}) == fnt {
+		fontBytes, err := ioutil.ReadFile("./boleto/Arial.ttf")
+		if err != nil {
+			l := log.CreateLog()
+			l.Error(err.Error(), " An error has occurred load font")
+		}
+
+		f, err := freetype.ParseFont(fontBytes)
+		if err != nil {
+			l := log.CreateLog()
+			l.Error(err.Error(), " An error has occurred load font")
+		}
+
+		fnt = ft{
+			FtFont: f,
+		}
+	}
+
+	return fnt
 }
