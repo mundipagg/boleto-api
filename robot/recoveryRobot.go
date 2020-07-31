@@ -27,34 +27,36 @@ func executionTask() {
 	lg := log.CreateLog()
 	lg.Operation = "RecoveryRobot"
 
-	lg.InitRobot()
-
 	redis := db.CreateRedis()
-	keys, _ := redis.GetAllJSON(lg)
+	keys, err := redis.GetAllJSON(lg)
+	lg.InitRobot(len(keys))
 
-	mongo, errMongo := db.CreateMongo(lg)
-	if util.CheckErrorRobot(errMongo) == false {
-		for _, key := range keys {
-			bol, errRedis := redis.GetBoletoJSONByKey(key, lg)
+	if util.CheckErrorRobot(err) == false && len(keys) != 0 {
+		mongo, errMongo := db.CreateMongo(lg)
+		if util.CheckErrorRobot(errMongo) == false {
+			for _, key := range keys {
+				bol, errRedis := redis.GetBoletoJSONByKey(key, lg)
 
-			if util.CheckErrorRobot(errRedis) == false {
-				lg.RequestKey = bol.Boleto.RequestKey
+				if util.CheckErrorRobot(errRedis) == false {
+					lg.RequestKey = bol.Boleto.RequestKey
 
-				err := mongo.SaveBoleto(bol)
-				if err != nil{
-					lg.Warn(err.Error(), fmt.Sprintf("Error saving to mongo - %s", err.Error()))
-				}
+					err := mongo.SaveBoleto(bol)
+					if err != nil{
+						lg.Warn(err.Error(), fmt.Sprintf("Error saving to mongo - %s", err.Error()))
+					}
 
-				if util.CheckErrorRobot(err) == false {
-					errRedis = redis.DeleteBoletoJSONByKey(key, lg)
+					if util.CheckErrorRobot(err) == false {
+						errRedis = redis.DeleteBoletoJSONByKey(key, lg)
 
-					if util.CheckErrorRobot(errRedis) == false{
-						lg.ResumeRobot(key)
+						if util.CheckErrorRobot(errRedis) == false{
+							lg.ResumeRobot(key)
+						}
 					}
 				}
 			}
 		}
 	}
+
 
 	lg.EndRobot()
 }

@@ -170,9 +170,13 @@ func (l *Log) Fatal(content interface{}, msg string) {
 }
 
 //InitRobot loga o inicio da execução do robô de recovery
-func (l *Log) InitRobot() {
+func (l *Log) InitRobot(totalRecords int) {
 	msg := formatter("- Starting execution")
-	go logger.Info(msg, defaultRobotProperties("Execute", l.Operation, ""))
+	go func() {
+		props := defaultRobotProperties("Execute", l.Operation, "")
+		props["TotalRecords"] = totalRecords
+		logger.Info(msg, props)
+	}()
 }
 
 //ResumeRobot loga um resumo de Recovery do robô de recovery
