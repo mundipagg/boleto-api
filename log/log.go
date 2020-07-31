@@ -178,7 +178,11 @@ func (l *Log) InitRobot() {
 //ResumeRobot loga um resumo de Recovery do robô de recovery
 func (l *Log) ResumeRobot(key string) {
 	msg := formatter(key)
-	go logger.Info(msg, defaultRobotProperties("RecoveryBoleto", l.Operation, key))
+	go func() {
+		props := defaultRobotProperties("RecoveryBoleto", l.Operation, key)
+		props["RequestKey"] = l.RequestKey
+		logger.Info(msg, props)
+	}()
 }
 
 //EndRobot loga o fim da execução do robô de recovery

@@ -1,13 +1,13 @@
 package robot
 
 import (
-	"strconv"
-
+	"fmt"
 	"github.com/jasonlvhit/gocron"
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/db"
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/util"
+	"strconv"
 )
 
 //RecoveryRobot robô que faz a resiliência de boletos
@@ -20,7 +20,6 @@ func RecoveryRobot(ex string) {
 			<-gocron.Start()
 		}()
 	}
-
 }
 
 func executionTask() {
@@ -31,18 +30,27 @@ func executionTask() {
 	lg.InitRobot()
 
 	redis := db.CreateRedis()
-	keys, _ := redis.GetAllJSON()
+	keys, _ := redis.GetAllJSON(lg)
 
 	mongo, errMongo := db.CreateMongo(lg)
 	if util.CheckErrorRobot(errMongo) == false {
 		for _, key := range keys {
-			bol, errRedis := redis.GetBoletoJSONByKey(string(key), lg)
+			bol, errRedis := redis.GetBoletoJSONByKey(key, lg)
+
 			if util.CheckErrorRobot(errRedis) == false {
+				lg.RequestKey = bol.Boleto.RequestKey
+
 				err := mongo.SaveBoleto(bol)
+				if err != nil{
+					lg.Warn(err.Error(), fmt.Sprintf("Error saving to mongo - %s", err.Error()))
+				}
 
 				if util.CheckErrorRobot(err) == false {
-					lg.ResumeRobot(string(key))
-					redis.DeleteBoletoJSONByKey(string(key), lg)
+					errRedis = redis.DeleteBoletoJSONByKey(key, lg)
+
+					if util.CheckErrorRobot(errRedis) == false{
+						lg.ResumeRobot(key)
+					}
 				}
 			}
 		}

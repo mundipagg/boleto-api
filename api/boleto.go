@@ -13,14 +13,14 @@ import (
 
 	"strings"
 
-	"io/ioutil"
-
+	"fmt"
 	"github.com/mundipagg/boleto-api/bank"
 	"github.com/mundipagg/boleto-api/boleto"
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/db"
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/models"
+	"io/ioutil"
 )
 
 //Regista um boleto em um determinado banco
@@ -66,18 +66,17 @@ func registerBoleto(c *gin.Context) {
 		resp.ID = string(mID)
 		resp.Links = boView.Links
 
-		if errMongo == nil {
-			errMongo = mongo.SaveBoleto(boView)
-		}
-
 		redis := db.CreateRedis()
 
-		if errMongo != nil {
-			b := minifyJSON(boView)
-
-			err = redis.SetBoletoJSON(b, resp.ID, boView.PublicKey, lg)
-			if checkError(c, err, lg) {
-				return
+		if errMongo == nil {
+			errMongo = mongo.SaveBoleto(boView)
+			if errMongo != nil {
+				lg.Warn(errMongo.Error(), fmt.Sprintf("Error saving to mongo - %s", errMongo.Error()))
+				b := minifyJSON(boView)
+				err = redis.SetBoletoJSON(b, resp.ID, boView.PublicKey, lg)
+				if checkError(c, err, lg) {
+					return
+				}
 			}
 		}
 
@@ -94,11 +93,12 @@ func getBoleto(c *gin.Context) {
 	c.Status(200)
 
 	id := c.Query("id")
-	fmt := c.Query("fmt")
+	format := c.Query("fmt")
 	pk := c.Query("pk")
 
 	log := log.CreateLog()
 	log.Operation = "GetBoleto"
+	log.IPAddress = c.ClientIP()
 
 	redis := db.CreateRedis()
 	b := redis.GetBoletoHTMLByID(id, pk, log)
@@ -110,7 +110,15 @@ func getBoleto(c *gin.Context) {
 		}
 
 		boView, err := mongo.GetBoletoByID(id, pk)
-		if checkError(c, err, log) {
+
+		if err != nil && err.Error() == db.NotFoundDoc {
+			e := fmt.Sprintf("%s - %s", err.Error(), c.Request.RequestURI)
+			log.Warn(e, fmt.Sprintf("Boleto notfound - %s", id))
+
+			checkError(c, models.NewHTTPNotFound("MP404", "Not Found"), log)
+			return
+		} else if err != nil{
+			checkError(c, models.NewInternalServerError("MP500", "Internal Error"), log)
 			return
 		}
 
@@ -118,7 +126,7 @@ func getBoleto(c *gin.Context) {
 		b = minifyString(bhtml, "text/html")
 	}
 
-	if fmt == "html" {
+	if format == "html" {
 		c.Header("Content-Type", "text/html; charset=utf-8")
 		c.Writer.WriteString(b)
 	} else {
