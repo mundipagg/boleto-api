@@ -70,20 +70,20 @@ func registerBoleto(c *gin.Context) {
 
 		if errMongo == nil {
 			errMongo = mongo.SaveBoleto(boView)
-			if errMongo != nil {
-				lg.Warn(errMongo.Error(), fmt.Sprintf("Error saving to mongo - %s", errMongo.Error()))
-				b := minifyJSON(boView)
-				err = redis.SetBoletoJSON(b, resp.ID, boView.PublicKey, lg)
-				if checkError(c, err, lg) {
-					return
-				}
+		}
+
+		if errMongo != nil {
+			lg.Warn(errMongo.Error(), fmt.Sprintf("Error saving to mongo - %s", errMongo.Error()))
+			b := minifyJSON(boView)
+			err = redis.SetBoletoJSON(b, resp.ID, boView.PublicKey, lg)
+			if checkError(c, err, lg) {
+				return
 			}
 		}
 
 		bhtml, _ := boleto.HTML(boView, "html")
 		s := minifyString(bhtml, "text/html")
 		redis.SetBoletoHTML(s, resp.ID, boView.PublicKey, lg)
-
 	}
 	c.JSON(st, resp)
 	c.Set("boletoResponse", resp)
@@ -114,11 +114,15 @@ func getBoleto(c *gin.Context) {
 		if err != nil && err.Error() == db.NotFoundDoc {
 			e := fmt.Sprintf("%s - %s", err.Error(), c.Request.RequestURI)
 			log.Warn(e, fmt.Sprintf("Boleto notfound - %s", id))
-
+			checkError(c, models.NewHTTPNotFound("MP404", "Not Found"), log)
+			return
+		} else if err != nil && err.Error() == db.InvalidPK {
+			e := fmt.Sprintf("%s - %s", err.Error(), c.Request.RequestURI)
+			log.Warn(e, fmt.Sprintf("Boleto with invalid pk - %s", id))
 			checkError(c, models.NewHTTPNotFound("MP404", "Not Found"), log)
 			return
 		} else if err != nil{
-			checkError(c, models.NewInternalServerError("MP500", "Internal Error"), log)
+			checkError(c, models.NewInternalServerError("MP500", err.Error()), log)
 			return
 		}
 

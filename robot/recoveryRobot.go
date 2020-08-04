@@ -17,6 +17,7 @@ func RecoveryRobot(ex string) {
 		go func() {
 			e, _ := strconv.ParseUint(config.Get().RecoveryRobotExecutionInMinutes, 10, 64)
 			gocron.Every(e).Minutes().Do(executionTask)
+			gocron.RunAll()
 			<-gocron.Start()
 		}()
 	}

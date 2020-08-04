@@ -27,6 +27,7 @@ var (
 )
 
 const NotFoundDoc = "not found"
+const InvalidPK = "invalid pk"
 
 //CreateMongo cria uma nova intancia de conexão com o mongodb
 func CreateMongo(l *log.Log) (*MongoDb, error) {
@@ -70,11 +71,7 @@ func (e *MongoDb) SaveBoleto(boleto models.BoletoView) error {
 	c := session.DB(dbName).C("boletos")
 	err = c.Insert(boleto)
 
-	if err != nil{
-		return err
-	}
-
-	return nil
+	return err
 }
 
 //GetBoletoByID busca um boleto pelo ID que vem na URL
@@ -100,7 +97,7 @@ func (e *MongoDb) GetBoletoByID(id, pk string) (models.BoletoView, error) {
 	if err != nil{
 		return models.BoletoView{}, err
 	} else if !hasValidKey(result, pk){
-		return models.BoletoView{}, errors.New(NotFoundDoc)
+		return models.BoletoView{}, errors.New(InvalidPK)
 	}
 
 	return result, nil
