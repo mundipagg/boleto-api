@@ -1,6 +1,7 @@
 package usermanagement
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/mundipagg/boleto-api/db"
@@ -33,7 +34,7 @@ func LoadUserCredentials() {
 
 	c, err := mongo.GetUserCredentials()
 	if err != nil {
-		log.Error(err.Error(), "Error in get user crendentials")
+		log.Error(err.Error(), fmt.Sprintf("Error in get user crendentials - %s", err.Error()))
 		return
 	}
 

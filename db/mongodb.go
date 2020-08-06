@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -25,6 +26,9 @@ var (
 	err       error
 )
 
+const NotFoundDoc = "not found"
+const InvalidPK = "invalid pk"
+
 //CreateMongo cria uma nova intancia de conexão com o mongodb
 func CreateMongo(l *log.Log) (*MongoDb, error) {
 
@@ -32,7 +36,7 @@ func CreateMongo(l *log.Log) (*MongoDb, error) {
 		dbSession, err = mgo.DialWithInfo(getInfo())
 
 		if err != nil {
-			l.Warn(err, fmt.Sprintf("Error create connection mongo %s", err.Error()))
+			l.Warn(err.Error(), fmt.Sprintf("Error create connection with mongo %s", err.Error()))
 			return nil, err
 		}
 	}
@@ -66,6 +70,7 @@ func (e *MongoDb) SaveBoleto(boleto models.BoletoView) error {
 
 	c := session.DB(dbName).C("boletos")
 	err = c.Insert(boleto)
+
 	return err
 }
 
@@ -89,8 +94,10 @@ func (e *MongoDb) GetBoletoByID(id, pk string) (models.BoletoView, error) {
 		err = c.Find(bson.M{"id": id}).One(&result)
 	}
 
-	if err != nil || !hasValidKey(result, pk) {
-		return models.BoletoView{}, models.NewHTTPNotFound("MP404", "Not Found")
+	if err != nil{
+		return models.BoletoView{}, err
+	} else if !hasValidKey(result, pk){
+		return models.BoletoView{}, errors.New(InvalidPK)
 	}
 
 	return result, nil
@@ -119,5 +126,5 @@ func (e *MongoDb) Close() {
 }
 
 func hasValidKey(r models.BoletoView, pk string) bool {
-	return (r.SecretKey == "" || r.PublicKey == pk)
+	return r.SecretKey == "" || r.PublicKey == pk
 }

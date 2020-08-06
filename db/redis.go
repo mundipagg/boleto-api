@@ -2,6 +2,7 @@ package db
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -47,7 +48,7 @@ func (r *Redis) closeConnection() {
 func (r *Redis) SetBoletoHTML(b, mID, pk string, lg *log.Log) {
 	err := r.openConnection()
 	if err != nil {
-		lg.Warn(err, fmt.Sprintf("OpenConnection [SetBoletoHTML] - Could not connection to Redis Database "))
+		lg.Warn(err.Error(), fmt.Sprintf("OpenConnection [SetBoletoHTML] - Could not connection to Redis Database "))
 	} else {
 
 		key := fmt.Sprintf("%s:%s:%s", "HTML", mID, pk)
@@ -56,7 +57,9 @@ func (r *Redis) SetBoletoHTML(b, mID, pk string, lg *log.Log) {
 		res := fmt.Sprintf("%s", ret)
 
 		if res != "OK" {
-			lg.Warn(err, fmt.Sprintf("SetBoletoHTML [SetBoletoHTML] - Could not record HTML in Redis Database: %s", err.Error()))
+			lg.Warn(res, fmt.Sprintf("SetBoletoHTML [SetBoletoHTML] - Could not record HTML in Redis Database: %s", key))
+		} else if err != nil{
+			lg.Warn(err.Error(), fmt.Sprintf("Error Redis [SetBoletoHTML] - Could not record HTML in Redis Database: %s", key))
 		}
 
 		r.closeConnection()
@@ -69,7 +72,7 @@ func (r *Redis) GetBoletoHTMLByID(id string, pk string, lg *log.Log) string {
 	err := r.openConnection()
 
 	if err != nil {
-		lg.Warn(err, fmt.Sprintf("OpenConnection [GetBoletoHTMLByID] - Could not connection to Redis Database"))
+		lg.Warn(err.Error(), fmt.Sprintf("OpenConnection [GetBoletoHTMLByID] - Could not connection to Redis Database"))
 		return ""
 	}
 
@@ -89,19 +92,24 @@ func (r *Redis) SetBoletoJSON(b, mID, pk string, lg *log.Log) error {
 	err := r.openConnection()
 
 	if err != nil {
-		lg.Warn(err, fmt.Sprintf("OpenConnection [SetBoletoJSON] - Could not connection to Redis Database "))
+		lg.Warn(err.Error(), fmt.Sprintf("OpenConnection [SetBoletoJSON] - Could not connection to Redis Database "))
 		return err
 	}
 
 	key := fmt.Sprintf("%s:%s:%s", "JSON", mID, pk)
 	ret, err := r.conn.Do("SET", key, b)
-	r.closeConnection()
-
 	res := fmt.Sprintf("%s", ret)
 
-	if res != "OK" {
-		lg.Warn(err, fmt.Sprintf("SetBoletoHTML [SetBoletoJSON] - Could not record HTML in Redis Database: %s", err.Error()))
+	r.closeConnection()
+
+	if err != nil {
+		lg.Warn(err.Error(), fmt.Sprintf("SetBoletoJSON [SetBoletoJSON] - Could not record JSON in Redis Database: %s", key))
 		return err
+	}
+
+	if res != "OK" {
+		lg.Warn("could not record JSON", fmt.Sprintf("SetBoletoJSON [SetBoletoJSON] - Error could not record JSON in Redis Database: %s", key))
+		return errors.New("could not record JSON")
 	}
 
 	return nil
@@ -112,43 +120,65 @@ func (r *Redis) GetBoletoJSONByKey(key string, lg *log.Log) (models.BoletoView, 
 	err := r.openConnection()
 
 	if err != nil {
-		lg.Warn(err, fmt.Sprintf("OpenConnection [GetBoletoJSONByKey] - Could not connection to Redis Database "))
+		lg.Warn(err.Error(), fmt.Sprintf("OpenConnection [GetBoletoJSONByKey] - Could not connection to Redis Database "))
 		return models.BoletoView{}, err
 	}
 
 	ret, err := r.conn.Do("GET", key)
 	r.closeConnection()
 
+	if err != nil {
+		lg.Warn(err.Error(), fmt.Sprintf("GetData [GetBoletoJSONByKey] - Error could not to get data - " + key))
+		return models.BoletoView{}, err
+	}
+
 	if ret != nil {
 		result := models.BoletoView{}
 		r := fmt.Sprintf("%s", ret)
-		_ = json.Unmarshal([]byte(r), &result)
-		return result, nil
-	}
+		err = json.Unmarshal([]byte(r), &result)
 
-	return models.BoletoView{}, err
+		if err != nil {
+			lg.Warn(err.Error(), fmt.Sprintf("Deserialize [GetBoletoJSONByKey] - Could not deserialize json - " + key))
+		}
+
+		return result, err
+	} else {
+		lg.Warn("not found data", fmt.Sprintf("GetData [GetBoletoJSONByKey] - not found data - " + key))
+		return models.BoletoView{}, errors.New("not found data")
+	}
 }
 
 // DeleteBoletoJSONByKey Deleta um boleto do tipo JSON do Redis
-func (r *Redis) DeleteBoletoJSONByKey(key string, lg *log.Log) {
+func (r *Redis) DeleteBoletoJSONByKey(key string, lg *log.Log) error {
 	err := r.openConnection()
 
 	if err != nil {
-		lg.Warn(err, fmt.Sprintf("OpenConnection [DeleteBoletoJSONByKey] - Could not connection to Redis Database "))
+		lg.Warn(err.Error(), fmt.Sprintf("OpenConnection [DeleteBoletoJSONByKey] - Could not connection to Redis Database "))
+		return err
 	} else {
-
-		_, err = r.conn.Do("DEL", key)
+		result, err := r.conn.Do("DEL", key)
 		r.closeConnection()
 
+		if err != nil {
+			lg.Warn(err.Error(), fmt.Sprintf("Delete data [DeleteBoletoJSONByKey] - Error on delete key: " + key))
+			return err
+		}
+
+		if result == int64(0) {
+			lg.Warn(result, fmt.Sprintf("Delete data [DeleteBoletoJSONByKey] - Data not deleted: " + key))
+			return errors.New("data not deleted")
+		}
 	}
 
+	return nil
 }
 
 // GetAllJSON Recupera todas as keys JSON do Redis
-func (r *Redis) GetAllJSON() ([]string, error) {
+func (r *Redis) GetAllJSON(lg *log.Log) ([]string, error) {
 
 	err := r.openConnection()
 	if err != nil {
+		lg.Warn(err.Error(), fmt.Sprintf("OpenConnection [GetAllJson] - Could not connection to Redis Database "))
 		return nil, err
 	}
 
@@ -156,12 +186,18 @@ func (r *Redis) GetAllJSON() ([]string, error) {
 
 	arr, err := redis.Values(r.conn.Do("SCAN", 0, "MATCH", "JSON:*", "COUNT", 500))
 	if err != nil {
+		lg.Warn(err.Error(), fmt.Sprintf("ReadDb [GetAllJson] - Could not get all json from database"))
 		return nil, err
 	}
 
-	keys, _ = redis.Strings(arr[1], nil)
+	keys, err = redis.Strings(arr[1], nil)
 
 	r.closeConnection()
+
+	if err != nil {
+		lg.Warn(err.Error(), fmt.Sprintf("Stringify Keys [GetAllJson] - Error when setting keys in the array"))
+		return nil, err
+	}
 
 	return keys, nil
 
