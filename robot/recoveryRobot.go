@@ -44,8 +44,7 @@ func executionTask() {
 					idBoleto, _ := bol.ID.MarshalText()
 
 					b, _ := mongo.GetBoletoByID(string(idBoleto), bol.PublicKey)
-					id := string(idBoleto)
-					fmt.Println(id)
+					
 					if b.ID == "" {
 						err = mongo.SaveBoleto(bol)
 
