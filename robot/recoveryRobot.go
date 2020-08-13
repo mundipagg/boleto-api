@@ -7,6 +7,7 @@ import (
 	"github.com/mundipagg/boleto-api/db"
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/util"
+	"gopkg.in/mgo.v2"
 	"strconv"
 )
 
@@ -37,13 +38,22 @@ func executionTask() {
 		if util.CheckErrorRobot(errMongo) == false {
 			for _, key := range keys {
 				bol, errRedis := redis.GetBoletoJSONByKey(key, lg)
+				lg.RequestKey = bol.Boleto.RequestKey
 
 				if util.CheckErrorRobot(errRedis) == false {
-					lg.RequestKey = bol.Boleto.RequestKey
+					idBoleto, _ := bol.ID.MarshalText()
 
-					err := mongo.SaveBoleto(bol)
-					if err != nil{
-						lg.Warn(err.Error(), fmt.Sprintf("Error saving to mongo - %s", err.Error()))
+					b, _ := mongo.GetBoletoByID(string(idBoleto), bol.PublicKey)
+					id := string(idBoleto)
+					fmt.Println(id)
+					if b.ID == "" {
+						err = mongo.SaveBoleto(bol)
+
+						/*If the error when saving to the mongo is because the key is duplicated,
+						we will ignore it, as this is a way to control the flow, if there are two instances running.*/
+						if lastErr, ok := err.(*mgo.LastError); (ok && lastErr.Code != 11000) || (!ok && err != nil) {
+							lg.Warn(err.Error(), fmt.Sprintf("Error saving to mongo - %s", key))
+						}
 					}
 
 					if util.CheckErrorRobot(err) == false {
@@ -57,7 +67,6 @@ func executionTask() {
 			}
 		}
 	}
-
 
 	lg.EndRobot()
 }
