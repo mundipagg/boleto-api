@@ -11,6 +11,8 @@ import (
 	"strconv"
 )
 
+const MongoIndexUniqueError = 11000
+
 //RecoveryRobot robô que faz a resiliência de boletos
 func RecoveryRobot(ex string) {
 
@@ -50,7 +52,7 @@ func executionTask() {
 
 						/*If the error when saving to the mongo is because the key is duplicated,
 						we will ignore it, as this is a way to control the flow, if there are two instances running.*/
-						if lastErr, ok := err.(*mgo.LastError); (ok && lastErr.Code != 11000) || (!ok && err != nil) {
+						if lastErr, ok := err.(*mgo.LastError); (ok && lastErr.Code != MongoIndexUniqueError) || (!ok && err != nil) {
 							lg.Warn(err.Error(), fmt.Sprintf("Error saving to mongo - %s", key))
 						}
 					}
