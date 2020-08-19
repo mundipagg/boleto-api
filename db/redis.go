@@ -143,7 +143,7 @@ func (r *Redis) GetBoletoJSONByKey(key string, lg *log.Log) (models.BoletoView, 
 
 		return result, err
 	} else {
-		lg.Warn("not found data", fmt.Sprintf("GetData [GetBoletoJSONByKey] - not found data - " + key))
+		lg.Warn("not found data", fmt.Sprintf("GetData [GetBoletoJSONByKey] - Data not found - " + key))
 		return models.BoletoView{}, errors.New("not found data")
 	}
 }
@@ -156,17 +156,12 @@ func (r *Redis) DeleteBoletoJSONByKey(key string, lg *log.Log) error {
 		lg.Warn(err.Error(), fmt.Sprintf("OpenConnection [DeleteBoletoJSONByKey] - Could not connection to Redis Database "))
 		return err
 	} else {
-		result, err := r.conn.Do("DEL", key)
+		_, err := r.conn.Do("DEL", key)
 		r.closeConnection()
 
 		if err != nil {
 			lg.Warn(err.Error(), fmt.Sprintf("Delete data [DeleteBoletoJSONByKey] - Error on delete key: " + key))
 			return err
-		}
-
-		if result == int64(0) {
-			lg.Warn(result, fmt.Sprintf("Delete data [DeleteBoletoJSONByKey] - Data not deleted: " + key))
-			return errors.New("data not deleted")
 		}
 	}
 
