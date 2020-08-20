@@ -5,7 +5,6 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-
 	pkcs122 "software.sslmate.com/src/go-pkcs12"
 )
 
@@ -21,7 +20,7 @@ type ICPCertificate struct {
 }
 
 func GetICPCertificate(name string, pfxBytes []byte, pass string) (ICPCertificate, error) {
-	rsaPrivateKey, certificate, err := pkcs122.Decode(pfxBytes, pass)
+	rsaPrivateKey, certificate, _, err := pkcs122.DecodeChain(pfxBytes, pass)
 	if err != nil {
 		return ICPCertificate{}, err
 	}
