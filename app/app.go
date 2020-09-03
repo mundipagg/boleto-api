@@ -7,7 +7,6 @@ import (
 	"github.com/mundipagg/boleto-api/env"
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/mock"
-	"github.com/mundipagg/boleto-api/robot"
 	"github.com/mundipagg/boleto-api/usermanagement"
 )
 
@@ -35,8 +34,6 @@ func Run(params *Params) {
 	installCertificates()
 
 	usermanagement.LoadUserCredentials()
-
-	go robot.RecoveryRobot(config.Get().RecoveryRobotExecutionEnabled)
 
 	api.InstallRestAPI()
 
