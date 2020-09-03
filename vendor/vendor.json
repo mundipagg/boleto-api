@@ -441,6 +441,12 @@
 			"revisionTime": "2018-02-22T19:45:00Z"
 		},
 		{
+			"checksumSHA1": "81AnGHnR0jodZLtCI6rhbaUl5Tk=",
+			"path": "github.com/streadway/amqp",
+			"revision": "e6b33f460591b0acb2f13b04ef9cf493720ffe17",
+			"revisionTime": "2020-07-16T22:33:59Z"
+		},
+		{
 			"checksumSHA1": "DLiA2vF63QqhTM+L39mSlbRXTio=",
 			"path": "github.com/stretchr/objx",
 			"revision": "35313a95ee26395aa17d366c71a2ccf788fa69b6",
