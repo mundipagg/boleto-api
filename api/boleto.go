@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/mundipagg/boleto-api/queue"
 	"net/http"
 
@@ -73,8 +72,6 @@ func registerBoleto(c *gin.Context) {
 		if errMongo == nil {
 			errMongo = mongo.SaveBoleto(boView)
 		}
-
-		errMongo = errors.New("teste")
 
 		if errMongo != nil {
 			lg.Warn(errMongo.Error(), fmt.Sprintf("Error saving to mongo - %s", errMongo.Error()))
