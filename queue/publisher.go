@@ -28,6 +28,7 @@ func WriteMessage(queuePublisher PublisherInterface) bool {
 		return false
 	}
 
+	defer closeConnection(GetConnection(), "WriteMessage")
 	defer closeChannel(channel, "WriteMessage")
 
 	if exchangeDeclare(channel, queuePublisher.GetExchangeName(), "topic") &&

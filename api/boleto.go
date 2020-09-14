@@ -86,8 +86,6 @@ func registerBoleto(c *gin.Context) {
 			}
 		}
 
-		defer queue.CloseConnection()
-
 		bhtml, _ := boleto.HTML(boView, "html")
 		s := minifyString(bhtml, "text/html")
 		redis.SetBoletoHTML(s, resp.ID, boView.PublicKey, lg)

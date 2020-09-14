@@ -58,7 +58,7 @@ func ConfigMock(port string) {
 	os.Setenv("CONN_QUEUE", "amqp://guest:guest@localhost:5672/")
 	os.Setenv("ORIGIN_EXCHANGE", "boletorecovery.main.exchange")
 	os.Setenv("ORIGIN_QUEUE", "boletorecovery.main.queue")
-	os.Setenv("ORIGIN_ROUTING_KEY", "*")
+	os.Setenv("ORIGIN_ROUTING_KEY", "*.*")
 	os.Setenv("TIME_TO_RECOVERY_WITH_QUEUE_IN_SECONDS", "120")
 	os.Setenv("HEARTBEAT", "30")
 
@@ -134,7 +134,7 @@ func configFlags(devMode, mockMode, disableLog bool) {
 		os.Setenv("CONN_QUEUE", "amqp://guest:guest@localhost:5672/")
 		os.Setenv("ORIGIN_EXCHANGE", "boletorecovery.main.exchange")
 		os.Setenv("ORIGIN_QUEUE", "boletorecovery.main.queue")
-		os.Setenv("ORIGIN_ROUTING_KEY", "*")
+		os.Setenv("ORIGIN_ROUTING_KEY", "*.*")
 		os.Setenv("TIME_TO_RECOVERY_WITH_QUEUE_IN_SECONDS", "120")
 		os.Setenv("HEARTBEAT", "30")
 	}
