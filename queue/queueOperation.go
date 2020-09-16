@@ -25,7 +25,6 @@ func OpenConnection() error {
 	conn, err = openConnection()
 
 	if err == nil {
-		l.Info(fmt.Sprintf("%s - Connection opened successfully", "OpenConnection"))
 		watchConnection(conn)
 	}
 	return err
