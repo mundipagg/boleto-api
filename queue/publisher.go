@@ -20,6 +20,7 @@ func WriteMessage(queuePublisher PublisherInterface) bool {
 
 	err := OpenConnection()
 	if err != nil {
+		failOnError(err, "Error to open connection with RabbitMQ", "OpenConnection")
 		return false
 	}
 

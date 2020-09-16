@@ -84,7 +84,6 @@ func openConnection() (*amqp.Connection, error) {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	})
 
-	failOnError(err, "Error to open connection with RabbitMQ", "OpenConnection")
 	return conn, err
 }
 
