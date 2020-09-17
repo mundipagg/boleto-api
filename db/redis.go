@@ -51,7 +51,7 @@ func (r *Redis) SetBoletoHTML(b, mID, pk string, lg *log.Log) {
 		lg.Warn(err.Error(), fmt.Sprintf("OpenConnection [SetBoletoHTML] - Could not connection to Redis Database "))
 	} else {
 
-		key := fmt.Sprintf("%s:%s:%s", "BOLETO:HTML", mID, pk)
+		key := fmt.Sprintf("%s:%s:%s", "boleto:html", mID, pk)
 		ret, err := r.conn.Do("SETEX", key, config.Get().RedisExpirationTime, b)
 
 		res := fmt.Sprintf("%s", ret)
@@ -76,7 +76,7 @@ func (r *Redis) GetBoletoHTMLByID(id string, pk string, lg *log.Log) string {
 		return ""
 	}
 
-	key := fmt.Sprintf("%s:%s:%s", "BOLETO:HTML", id, pk)
+	key := fmt.Sprintf("%s:%s:%s", "boleto:html", id, pk)
 	ret, _ := r.conn.Do("GET", key)
 	r.closeConnection()
 
@@ -96,7 +96,7 @@ func (r *Redis) SetBoletoJSON(b, mID, pk string, lg *log.Log) error {
 		return err
 	}
 
-	key := fmt.Sprintf("%s:%s:%s", "BOLETO:JSON", mID, pk)
+	key := fmt.Sprintf("%s:%s:%s", "boleto:json", mID, pk)
 	ret, err := r.conn.Do("SET", key, b)
 	res := fmt.Sprintf("%s", ret)
 
@@ -179,7 +179,7 @@ func (r *Redis) GetAllJSON(lg *log.Log) ([]string, error) {
 
 	var keys []string
 
-	arr, err := redis.Values(r.conn.Do("SCAN", 0, "MATCH", "BOLETO:JSON:*", "COUNT", 500))
+	arr, err := redis.Values(r.conn.Do("SCAN", 0, "MATCH", "boleto:json:*", "COUNT", 500))
 	if err != nil {
 		lg.Warn(err.Error(), fmt.Sprintf("ReadDb [GetAllJson] - Could not get all json from database"))
 		return nil, err
