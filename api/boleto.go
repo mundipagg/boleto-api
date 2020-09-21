@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/mundipagg/boleto-api/queue"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -75,9 +76,13 @@ func registerBoleto(c *gin.Context) {
 		if errMongo != nil {
 			lg.Warn(errMongo.Error(), fmt.Sprintf("Error saving to mongo - %s", errMongo.Error()))
 			b := minifyJSON(boView)
-			err = redis.SetBoletoJSON(b, resp.ID, boView.PublicKey, lg)
-			if checkError(c, err, lg) {
-				return
+			p := queue.NewPublisher(b)
+
+			if !queue.WriteMessage(p) {
+				err = redis.SetBoletoJSON(b, resp.ID, boView.PublicKey, lg)
+				if checkError(c, err, lg) {
+					return
+				}
 			}
 		}
 
@@ -121,7 +126,7 @@ func getBoleto(c *gin.Context) {
 			log.Warn(e, fmt.Sprintf("Boleto with invalid pk - %s", id))
 			checkError(c, models.NewHTTPNotFound("MP404", "Not Found"), log)
 			return
-		} else if err != nil{
+		} else if err != nil {
 			checkError(c, models.NewInternalServerError("MP500", err.Error()), log)
 			return
 		}

@@ -51,14 +51,14 @@ func (r *Redis) SetBoletoHTML(b, mID, pk string, lg *log.Log) {
 		lg.Warn(err.Error(), fmt.Sprintf("OpenConnection [SetBoletoHTML] - Could not connection to Redis Database "))
 	} else {
 
-		key := fmt.Sprintf("%s:%s:%s", "HTML", mID, pk)
+		key := fmt.Sprintf("%s:%s:%s", "boleto:html", mID, pk)
 		ret, err := r.conn.Do("SETEX", key, config.Get().RedisExpirationTime, b)
 
 		res := fmt.Sprintf("%s", ret)
 
 		if res != "OK" {
 			lg.Warn(res, fmt.Sprintf("SetBoletoHTML [SetBoletoHTML] - Could not record HTML in Redis Database: %s", key))
-		} else if err != nil{
+		} else if err != nil {
 			lg.Warn(err.Error(), fmt.Sprintf("Error Redis [SetBoletoHTML] - Could not record HTML in Redis Database: %s", key))
 		}
 
@@ -76,7 +76,7 @@ func (r *Redis) GetBoletoHTMLByID(id string, pk string, lg *log.Log) string {
 		return ""
 	}
 
-	key := fmt.Sprintf("%s:%s:%s", "HTML", id, pk)
+	key := fmt.Sprintf("%s:%s:%s", "boleto:html", id, pk)
 	ret, _ := r.conn.Do("GET", key)
 	r.closeConnection()
 
@@ -96,7 +96,7 @@ func (r *Redis) SetBoletoJSON(b, mID, pk string, lg *log.Log) error {
 		return err
 	}
 
-	key := fmt.Sprintf("%s:%s:%s", "JSON", mID, pk)
+	key := fmt.Sprintf("%s:%s:%s", "boleto:json", mID, pk)
 	ret, err := r.conn.Do("SET", key, b)
 	res := fmt.Sprintf("%s", ret)
 
@@ -128,7 +128,7 @@ func (r *Redis) GetBoletoJSONByKey(key string, lg *log.Log) (models.BoletoView, 
 	r.closeConnection()
 
 	if err != nil {
-		lg.Warn(err.Error(), fmt.Sprintf("GetData [GetBoletoJSONByKey] - Error could not to get data - " + key))
+		lg.Warn(err.Error(), fmt.Sprintf("GetData [GetBoletoJSONByKey] - Error could not to get data - "+key))
 		return models.BoletoView{}, err
 	}
 
@@ -138,12 +138,12 @@ func (r *Redis) GetBoletoJSONByKey(key string, lg *log.Log) (models.BoletoView, 
 		err = json.Unmarshal([]byte(r), &result)
 
 		if err != nil {
-			lg.Warn(err.Error(), fmt.Sprintf("Deserialize [GetBoletoJSONByKey] - Could not deserialize json - " + key))
+			lg.Warn(err.Error(), fmt.Sprintf("Deserialize [GetBoletoJSONByKey] - Could not deserialize json - "+key))
 		}
 
 		return result, err
 	} else {
-		lg.Warn("not found data", fmt.Sprintf("GetData [GetBoletoJSONByKey] - Data not found - " + key))
+		lg.Warn("not found data", fmt.Sprintf("GetData [GetBoletoJSONByKey] - Data not found - "+key))
 		return models.BoletoView{}, errors.New("not found data")
 	}
 }
@@ -160,7 +160,7 @@ func (r *Redis) DeleteBoletoJSONByKey(key string, lg *log.Log) error {
 		r.closeConnection()
 
 		if err != nil {
-			lg.Warn(err.Error(), fmt.Sprintf("Delete data [DeleteBoletoJSONByKey] - Error on delete key: " + key))
+			lg.Warn(err.Error(), fmt.Sprintf("Delete data [DeleteBoletoJSONByKey] - Error on delete key: "+key))
 			return err
 		}
 	}
@@ -179,7 +179,7 @@ func (r *Redis) GetAllJSON(lg *log.Log) ([]string, error) {
 
 	var keys []string
 
-	arr, err := redis.Values(r.conn.Do("SCAN", 0, "MATCH", "JSON:*", "COUNT", 500))
+	arr, err := redis.Values(r.conn.Do("SCAN", 0, "MATCH", "boleto:json:*", "COUNT", 500))
 	if err != nil {
 		lg.Warn(err.Error(), fmt.Sprintf("ReadDb [GetAllJson] - Could not get all json from database"))
 		return nil, err

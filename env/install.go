@@ -55,6 +55,12 @@ func ConfigMock(port string) {
 	os.Setenv("SPLUNK_ADDRESS", "http://localhost:8088/services/collector")
 	os.Setenv("SPLUNK_KEY", "a175c5c0-6f2f-44f0-852d-ead0120572f9")
 	os.Setenv("WAIT_SECONDS_RETENTATION_LOG", "1")
+	os.Setenv("CONN_QUEUE", "amqp://guest:guest@localhost:5672/")
+	os.Setenv("ORIGIN_EXCHANGE", "boletorecovery.main.exchange")
+	os.Setenv("ORIGIN_QUEUE", "boletorecovery.main.queue")
+	os.Setenv("ORIGIN_ROUTING_KEY", "*")
+	os.Setenv("TIME_TO_RECOVERY_WITH_QUEUE_IN_SECONDS", "120")
+	os.Setenv("HEARTBEAT", "30")
 
 	config.Install(true, true, false)
 }
@@ -125,6 +131,13 @@ func configFlags(devMode, mockMode, disableLog bool) {
 		os.Setenv("SPLUNK_ADDRESS", "http://localhost:8088/services/collector")
 		os.Setenv("SPLUNK_KEY", "a175c5c0-6f2f-44f0-852d-ead0120572f9")
 		os.Setenv("WAIT_SECONDS_RETENTATION_LOG", "1")
+		os.Setenv("CONN_QUEUE", "amqp://guest:guest@localhost:5672/")
+		os.Setenv("ORIGIN_EXCHANGE", "boletorecovery.main.exchange")
+		os.Setenv("ORIGIN_QUEUE", "boletorecovery.main.queue")
+		os.Setenv("ORIGIN_ROUTING_KEY", "*")
+		os.Setenv("TIME_TO_RECOVERY_WITH_QUEUE_IN_SECONDS", "120")
+		os.Setenv("HEARTBEAT", "30")
 	}
+
 	config.Install(mockMode, devMode, disableLog)
 }
