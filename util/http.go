@@ -25,9 +25,10 @@ var defaultDialer = &net.Dialer{Timeout: 16 * time.Second, KeepAlive: 16 * time.
 
 var (
 	client    = &http.Client{}
+	tlsClient = &http.Client{}
+	once      = &sync.Once{}
 	icpCert   certificate.ICPCertificate
 	transport *http.Transport
-	once      = &sync.Once{}
 )
 
 // DefaultHTTPClient retorna um cliente http configurado para dar um skip na validação do certificado digital
@@ -188,10 +189,8 @@ func parseChainCertificates() (*x509.Certificate, error) {
 }
 
 func doRequestTLS(method, url, body, timeout string, header map[string]string, transport *http.Transport) (string, int, error) {
-	var client *http.Client = &http.Client{
-		Transport: transport,
-	}
-	client.Timeout = GetDurationTimeoutRequest(timeout) * time.Second
+	tlsClient.Transport = transport
+	tlsClient.Timeout = GetDurationTimeoutRequest(timeout) * time.Second
 	b := strings.NewReader(body)
 	req, err := http.NewRequest(method, url, b)
 	if err != nil {
@@ -203,7 +202,7 @@ func doRequestTLS(method, url, body, timeout string, header map[string]string, t
 			req.Header.Add(k, v)
 		}
 	}
-	resp, err := client.Do(req)
+	resp, err := tlsClient.Do(req)
 	if err != nil {
 		return "", 0, err
 	}
