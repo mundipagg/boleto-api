@@ -11,8 +11,8 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"reflect"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/mundipagg/boleto-api/certificate"
@@ -23,24 +23,24 @@ import (
 
 var defaultDialer = &net.Dialer{Timeout: 16 * time.Second, KeepAlive: 16 * time.Second}
 
-var cfg *tls.Config = &tls.Config{
-	InsecureSkipVerify: true,
-}
-var client *http.Client = &http.Client{
-	Transport: &http.Transport{
-		TLSClientConfig:     cfg,
-		Dial:                defaultDialer.Dial,
-		TLSHandshakeTimeout: 16 * time.Second,
-	},
-}
-
 var (
-	icpCert certificate.ICPCertificate
-	sslCert certificate.SSLCertificate
+	client    = &http.Client{}
+	icpCert   certificate.ICPCertificate
+	transport *http.Transport
+	once      = &sync.Once{}
 )
 
 // DefaultHTTPClient retorna um cliente http configurado para dar um skip na validação do certificado digital
 func DefaultHTTPClient() *http.Client {
+	once.Do(func() {
+		client.Transport = &http.Transport{
+			Dial:                defaultDialer.Dial,
+			TLSHandshakeTimeout: 16 * time.Second,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		}
+	})
 	return client
 }
 
@@ -80,26 +80,34 @@ func doRequest(method, url, body, timeout string, header map[string]string) (str
 	return sData, resp.StatusCode, nil
 }
 
-//BuildTLSTransport creates a TLS Client Transport from crt, ca and key files
+// BuildTLSTransport creates a TLS Client Transport from crt, ca and key files
 func BuildTLSTransport() (*http.Transport, error) {
-	if reflect.DeepEqual(sslCert, certificate.SSLCertificate{}) {
+	var errF error
+	once.Do(func() {
+
 		ssl, err := certificate.GetCertificateFromStore(config.Get().CertificateSSLName)
 		if err != nil {
-			return nil, err
+			errF = err
+			return
 		}
-		sslCert = ssl.(certificate.SSLCertificate)
-	}
 
-	cert, err := tls.X509KeyPair(sslCert.PemData, sslCert.PemData)
-	if err != nil {
-		return nil, err
-	}
+		cert, err := tls.X509KeyPair(ssl.(certificate.SSLCertificate).PemData, ssl.(certificate.SSLCertificate).PemData)
+		if err != nil {
+			errF = err
+			return
+		}
 
-	tlsConfig := &tls.Config{
-		Certificates:       []tls.Certificate{cert},
-		InsecureSkipVerify: true,
-	}
-	return &http.Transport{TLSClientConfig: tlsConfig}, nil
+		transport = &http.Transport{
+			Dial:                defaultDialer.Dial,
+			TLSHandshakeTimeout: 16 * time.Second,
+			TLSClientConfig: &tls.Config{
+				Certificates:       []tls.Certificate{cert},
+				InsecureSkipVerify: true,
+			},
+		}
+		return
+	})
+	return transport, errF
 }
 
 //Sign request
