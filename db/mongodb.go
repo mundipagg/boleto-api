@@ -3,15 +3,15 @@ package db
 import (
 	"errors"
 	"fmt"
-	"strings"
-	"sync"
-	"time"
-
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/models"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"net"
+	"strings"
+	"sync"
+	"time"
 )
 
 //MongoDb Struct
@@ -87,16 +87,25 @@ func (e *MongoDb) GetBoletoByID(id, pk string) (models.BoletoView, error) {
 
 	c := session.DB(dbName).C("boletos")
 
-	if len(id) == 24 {
-		d := bson.ObjectIdHex(id)
-		err = c.Find(bson.M{"_id": d}).One(&result)
-	} else {
-		err = c.Find(bson.M{"id": id}).One(&result)
+	for i := 0; i <= config.Get().RetryNumberGetBoleto; i++ {
+
+		if len(id) == 24 {
+			d := bson.ObjectIdHex(id)
+			err = c.Find(bson.M{"_id": d}).One(&result)
+		} else {
+			err = c.Find(bson.M{"id": id}).One(&result)
+		}
+
+		if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {
+			continue
+		} else {
+			break
+		}
 	}
 
-	if err != nil{
+	if err != nil {
 		return models.BoletoView{}, err
-	} else if !hasValidKey(result, pk){
+	} else if !hasValidKey(result, pk) {
 		return models.BoletoView{}, errors.New(InvalidPK)
 	}
 
