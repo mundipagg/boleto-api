@@ -1,6 +1,7 @@
 package util
 
 import (
+	"context"
 	"crypto"
 	"crypto/tls"
 	"crypto/x509"
@@ -24,21 +25,23 @@ import (
 var defaultDialer = &net.Dialer{Timeout: 16 * time.Second, KeepAlive: 16 * time.Second}
 
 var (
-	client    = &http.Client{}
-	tlsClient = &http.Client{}
-	once      = &sync.Once{}
-	icpCert   certificate.ICPCertificate
-	transport *http.Transport
+	client            *http.Client
+	onceDefaultClient = &sync.Once{}
+	onceTransport     = &sync.Once{}
+	icpCert           certificate.ICPCertificate
+	transport         *http.Transport
 )
 
 // DefaultHTTPClient retorna um cliente http configurado para dar um skip na validação do certificado digital
 func DefaultHTTPClient() *http.Client {
-	once.Do(func() {
-		client.Transport = &http.Transport{
-			Dial:                defaultDialer.Dial,
-			TLSHandshakeTimeout: 16 * time.Second,
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
+	onceDefaultClient.Do(func() {
+		client = &http.Client{
+			Transport: &http.Transport{
+				Dial:                defaultDialer.Dial,
+				TLSHandshakeTimeout: 16 * time.Second,
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
 			},
 		}
 	})
@@ -56,10 +59,16 @@ func Get(url, body, timeout string, header map[string]string) (string, int, erro
 }
 
 func doRequest(method, url, body, timeout string, header map[string]string) (string, int, error) {
+	t := GetDurationTimeoutRequest(timeout) * time.Second
+
+	ctx, cls := context.WithTimeout(context.Background(), t)
+	defer cls()
+
 	client := DefaultHTTPClient()
-	client.Timeout = GetDurationTimeoutRequest(timeout) * time.Second
+
 	message := strings.NewReader(body)
-	req, err := http.NewRequest(method, url, message)
+
+	req, err := http.NewRequestWithContext(ctx, method, url, message)
 	if err != nil {
 		return "", http.StatusInternalServerError, err
 	}
@@ -84,7 +93,7 @@ func doRequest(method, url, body, timeout string, header map[string]string) (str
 // BuildTLSTransport creates a TLS Client Transport from crt, ca and key files
 func BuildTLSTransport() (*http.Transport, error) {
 	var errF error
-	once.Do(func() {
+	onceTransport.Do(func() {
 
 		ssl, err := certificate.GetCertificateFromStore(config.Get().CertificateSSLName)
 		if err != nil {
@@ -189,6 +198,7 @@ func parseChainCertificates() (*x509.Certificate, error) {
 }
 
 func doRequestTLS(method, url, body, timeout string, header map[string]string, transport *http.Transport) (string, int, error) {
+	tlsClient := &http.Client{}
 	tlsClient.Transport = transport
 	tlsClient.Timeout = GetDurationTimeoutRequest(timeout) * time.Second
 	b := strings.NewReader(body)
