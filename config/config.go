@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strconv"
 	"sync"
 	"sync/atomic"
 )
@@ -86,6 +87,7 @@ type Config struct {
 	OriginRoutingKey                 string
 	TimeToRecoveryWithQueueInSeconds string
 	Heartbeat                        string
+	RetryNumberGetBoleto             int
 }
 
 var cnf Config
@@ -129,6 +131,7 @@ func Install(mockMode, devMode, disableLog bool) {
 		MongoURL:                         os.Getenv("MONGODB_URL"),
 		MongoUser:                        os.Getenv("MONGODB_USER"),
 		MongoPassword:                    os.Getenv("MONGODB_PASSWORD"),
+		RetryNumberGetBoleto:             getValueInt(os.Getenv("RETRY_NUMBER_GET_BOLETO")),
 		RedisURL:                         os.Getenv("REDIS_URL"),
 		RedisPassword:                    os.Getenv("REDIS_PASSWORD"),
 		RedisDatabase:                    os.Getenv("REDIS_DATABASE"),
@@ -203,4 +206,9 @@ func getHostName() string {
 		return ""
 	}
 	return machineName
+}
+
+func getValueInt(v string) int {
+	t, _ := strconv.Atoi(v)
+	return t
 }

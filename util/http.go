@@ -1,6 +1,7 @@
 package util
 
 import (
+	"context"
 	"crypto"
 	"crypto/tls"
 	"crypto/x509"
@@ -11,8 +12,8 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"reflect"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/mundipagg/boleto-api/certificate"
@@ -23,24 +24,27 @@ import (
 
 var defaultDialer = &net.Dialer{Timeout: 16 * time.Second, KeepAlive: 16 * time.Second}
 
-var cfg *tls.Config = &tls.Config{
-	InsecureSkipVerify: true,
-}
-var client *http.Client = &http.Client{
-	Transport: &http.Transport{
-		TLSClientConfig:     cfg,
-		Dial:                defaultDialer.Dial,
-		TLSHandshakeTimeout: 16 * time.Second,
-	},
-}
-
 var (
-	icpCert certificate.ICPCertificate
-	sslCert certificate.SSLCertificate
+	client            *http.Client
+	onceDefaultClient = &sync.Once{}
+	onceTransport     = &sync.Once{}
+	icpCert           certificate.ICPCertificate
+	transport         *http.Transport
 )
 
 // DefaultHTTPClient retorna um cliente http configurado para dar um skip na validação do certificado digital
 func DefaultHTTPClient() *http.Client {
+	onceDefaultClient.Do(func() {
+		client = &http.Client{
+			Transport: &http.Transport{
+				Dial:                defaultDialer.Dial,
+				TLSHandshakeTimeout: 16 * time.Second,
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
+			},
+		}
+	})
 	return client
 }
 
@@ -55,10 +59,16 @@ func Get(url, body, timeout string, header map[string]string) (string, int, erro
 }
 
 func doRequest(method, url, body, timeout string, header map[string]string) (string, int, error) {
+	t := GetDurationTimeoutRequest(timeout) * time.Second
+
+	ctx, cls := context.WithTimeout(context.Background(), t)
+	defer cls()
+
 	client := DefaultHTTPClient()
-	client.Timeout = GetDurationTimeoutRequest(timeout) * time.Second
+
 	message := strings.NewReader(body)
-	req, err := http.NewRequest(method, url, message)
+
+	req, err := http.NewRequestWithContext(ctx, method, url, message)
 	if err != nil {
 		return "", http.StatusInternalServerError, err
 	}
@@ -80,26 +90,34 @@ func doRequest(method, url, body, timeout string, header map[string]string) (str
 	return sData, resp.StatusCode, nil
 }
 
-//BuildTLSTransport creates a TLS Client Transport from crt, ca and key files
+// BuildTLSTransport creates a TLS Client Transport from crt, ca and key files
 func BuildTLSTransport() (*http.Transport, error) {
-	if reflect.DeepEqual(sslCert, certificate.SSLCertificate{}) {
+	var errF error
+	onceTransport.Do(func() {
+
 		ssl, err := certificate.GetCertificateFromStore(config.Get().CertificateSSLName)
 		if err != nil {
-			return nil, err
+			errF = err
+			return
 		}
-		sslCert = ssl.(certificate.SSLCertificate)
-	}
 
-	cert, err := tls.X509KeyPair(sslCert.PemData, sslCert.PemData)
-	if err != nil {
-		return nil, err
-	}
+		cert, err := tls.X509KeyPair(ssl.(certificate.SSLCertificate).PemData, ssl.(certificate.SSLCertificate).PemData)
+		if err != nil {
+			errF = err
+			return
+		}
 
-	tlsConfig := &tls.Config{
-		Certificates:       []tls.Certificate{cert},
-		InsecureSkipVerify: true,
-	}
-	return &http.Transport{TLSClientConfig: tlsConfig}, nil
+		transport = &http.Transport{
+			Dial:                defaultDialer.Dial,
+			TLSHandshakeTimeout: 16 * time.Second,
+			TLSClientConfig: &tls.Config{
+				Certificates:       []tls.Certificate{cert},
+				InsecureSkipVerify: true,
+			},
+		}
+		return
+	})
+	return transport, errF
 }
 
 //Sign request
@@ -180,10 +198,9 @@ func parseChainCertificates() (*x509.Certificate, error) {
 }
 
 func doRequestTLS(method, url, body, timeout string, header map[string]string, transport *http.Transport) (string, int, error) {
-	var client *http.Client = &http.Client{
-		Transport: transport,
-	}
-	client.Timeout = GetDurationTimeoutRequest(timeout) * time.Second
+	tlsClient := &http.Client{}
+	tlsClient.Transport = transport
+	tlsClient.Timeout = GetDurationTimeoutRequest(timeout) * time.Second
 	b := strings.NewReader(body)
 	req, err := http.NewRequest(method, url, b)
 	if err != nil {
@@ -195,7 +212,7 @@ func doRequestTLS(method, url, body, timeout string, header map[string]string, t
 			req.Header.Add(k, v)
 		}
 	}
-	resp, err := client.Do(req)
+	resp, err := tlsClient.Do(req)
 	if err != nil {
 		return "", 0, err
 	}
