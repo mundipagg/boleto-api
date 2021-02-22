@@ -62,6 +62,9 @@ func ConfigMock(port string) {
 	os.Setenv("ORIGIN_ROUTING_KEY", "*")
 	os.Setenv("TIME_TO_RECOVERY_WITH_QUEUE_IN_SECONDS", "120")
 	os.Setenv("HEARTBEAT", "30")
+	os.Setenv("NEW_RELIC_APP_NAME", "Mundipagg Boleto API - Staging")
+	os.Setenv("NEW_RELIC_LICENCE", "YourLicence")
+	os.Setenv("TELEMETRY_ENABLED", "false")
 
 	config.Install(true, true, false)
 }
@@ -139,6 +142,9 @@ func configFlags(devMode, mockMode, disableLog bool) {
 		os.Setenv("ORIGIN_ROUTING_KEY", "*")
 		os.Setenv("TIME_TO_RECOVERY_WITH_QUEUE_IN_SECONDS", "120")
 		os.Setenv("HEARTBEAT", "30")
+		os.Setenv("NEW_RELIC_APP_NAME", "Mundipagg Boleto API - Staging")
+		os.Setenv("NEW_RELIC_LICENCE", "YourLicence")
+		os.Setenv("TELEMETRY_ENABLED", "false")
 	}
 
 	config.Install(mockMode, devMode, disableLog)

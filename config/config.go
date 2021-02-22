@@ -88,6 +88,9 @@ type Config struct {
 	TimeToRecoveryWithQueueInSeconds string
 	Heartbeat                        string
 	RetryNumberGetBoleto             int
+	NewRelicAppName                  string
+	NewRelicLicence                  string
+	TelemetryEnabled                 bool
 }
 
 var cnf Config
@@ -182,6 +185,9 @@ func Install(mockMode, devMode, disableLog bool) {
 		OriginRoutingKey:                 os.Getenv("ORIGIN_ROUTING_KEY"),
 		TimeToRecoveryWithQueueInSeconds: os.Getenv("TIME_TO_RECOVERY_WITH_QUEUE_IN_SECONDS"),
 		Heartbeat:                        os.Getenv("HEARTBEAT"),
+		NewRelicAppName:                  os.Getenv("NEW_RELIC_APP_NAME"),
+		NewRelicLicence:                  os.Getenv("NEW_RELIC_LICENCE"),
+		TelemetryEnabled:                 os.Getenv("TELEMETRY_ENABLED") == "true",
 	}
 }
 

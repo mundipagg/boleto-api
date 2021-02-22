@@ -1,6 +1,8 @@
 package api
 
 import (
+	"github.com/newrelic/go-agent/v3/integrations/nrgin"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"net/http"
 	"net/http/httputil"
 
@@ -14,10 +16,21 @@ import (
 
 //InstallRestAPI "instala" e sobe o servico de rest
 func InstallRestAPI() {
+
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	router.Use(gin.Recovery())
 	router.Use(executionController())
+
+	if config.Get().TelemetryEnabled {
+		app, _ := newrelic.NewApplication(
+			newrelic.ConfigAppName(config.Get().NewRelicAppName),
+			newrelic.ConfigLicense(config.Get().NewRelicLicence),
+			newrelic.ConfigDistributedTracerEnabled(true),
+		)
+		router.Use(nrgin.Middleware(app))
+	}
+
 	if config.Get().DevMode && !config.Get().MockMode {
 		router.Use(gin.Logger())
 	}
