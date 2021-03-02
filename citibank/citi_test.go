@@ -64,6 +64,42 @@ func TestProcessBoleto_WhenServiceRespondsSuccessfully_ShouldHasSuccessfulBoleto
 	test.AssertProcessBoletoWithSuccess(t, output)
 }
 
+func TestProcessBoleto_WhenServiceRespondsWithDataWhitespaces_ShouldHasBadGatewayErrorResponse(t *testing.T) {
+	mock.StartMockService("9095")
+	input := new(models.BoletoRequest)
+	util.FromJSON(baseMockJSON, input)
+	input.Title.AmountInCents = 100
+	bank, _ := New()
+
+	_, err := bank.ProcessBoleto(input)
+
+	test.AssertError(t, err, models.BadGatewayError{})
+}
+
+func TestProcessBoleto_WhenServiceRespondsWithDataEmpty_ShouldHasBadGatewayErrorResponse(t *testing.T) {
+	mock.StartMockService("9095")
+	input := new(models.BoletoRequest)
+	util.FromJSON(baseMockJSON, input)
+	input.Title.AmountInCents = 101
+	bank, _ := New()
+
+	_, err := bank.ProcessBoleto(input)
+
+	test.AssertError(t, err, models.BadGatewayError{})
+}
+
+func TestProcessBoleto_WhenServiceRespondsWithDataNil_ShouldHasInternalServerErrorResponse(t *testing.T) {
+	mock.StartMockService("9095")
+	input := new(models.BoletoRequest)
+	util.FromJSON(baseMockJSON, input)
+	input.Title.AmountInCents = 102
+	bank, _ := New()
+
+	_, err := bank.ProcessBoleto(input)
+
+	test.AssertError(t, err, models.InternalServerError{})
+}
+
 func TestCalculateOurNumber_WhenCalled_ShouldBeCalcutateOurNumberWithSuccess(t *testing.T) {
 	boleto := models.BoletoRequest{
 		Title: models.Title{
