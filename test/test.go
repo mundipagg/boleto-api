@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/mundipagg/boleto-api/models"
@@ -67,4 +68,11 @@ func AssertProcessBoletoFailed(t *testing.T, response models.BoletoResponse) {
 	assert.NotEmpty(t, response.Errors, "Devem ocorrer erros ")
 	assert.Empty(t, response.BarCodeNumber, "Não deve haver um Barcode")
 	assert.Empty(t, response.DigitableLine, "Não deve haver uma linha digitável")
+}
+
+//AssertError Valida a existência de erros internos
+func AssertError(t *testing.T, err error, errType interface{}) {
+	assert.NotNil(t, err, "Deve haver um erro")
+	assert.NotEmpty(t, err.Error(), "Deve haver uma mensagem de erro")
+	assert.IsType(t, errType, err, "Deve ser um erro do tipo "+fmt.Sprintf("%T", err))
 }

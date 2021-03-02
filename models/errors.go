@@ -121,6 +121,24 @@ func (e FormatError) ErrorCode() string {
 	return e.Code
 }
 
+//BadGatewayError interface para implementar Error
+type BadGatewayError ErrorResponse
+
+//NewBadGatewayError cria um novo objeto de BadGatewayError com descrição do erro
+func NewBadGatewayError(e string) BadGatewayError {
+	return BadGatewayError{Message: e}
+}
+
+//Error Retorna um erro code
+func (e BadGatewayError) Error() string {
+	return e.Message
+}
+
+//ErrorCode Retorna um erro code
+func (e BadGatewayError) ErrorCode() string {
+	return e.Code
+}
+
 //Append adiciona mais um erro na coleção
 func (e *Errors) Append(code, message string) {
 	*e = append(*e, ErrorResponse{Code: code, Message: message})
