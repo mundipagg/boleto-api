@@ -2,13 +2,12 @@ package citibank
 
 import (
 	"testing"
-	"time"
 
-	"github.com/mundipagg/boleto-api/env"
 	"github.com/mundipagg/boleto-api/mock"
 	"github.com/mundipagg/boleto-api/models"
+	"github.com/mundipagg/boleto-api/test"
 	"github.com/mundipagg/boleto-api/util"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 const baseMockJSON = `
@@ -47,62 +46,40 @@ const baseMockJSON = `
 }
 `
 
-func TestShouldProcessBoleto(t *testing.T) {
-	env.Config(true, true, true)
-	input := new(models.BoletoRequest)
-	if err := util.FromJSON(baseMockJSON, input); err != nil {
-		t.Fail()
-	}
-	bank := New()
-	go mock.Run("9095")
-	time.Sleep(2 * time.Second)
-	output, err := bank.ProcessBoleto(input)
-	Convey("deve-se processar um boleto citibank com sucesso", t, func() {
-		So(err, ShouldBeNil)
-		So(output.BarCodeNumber, ShouldNotBeEmpty)
-		So(output.DigitableLine, ShouldNotBeEmpty)
-		So(output.Errors, ShouldBeEmpty)
-	})
+var boletoTypeParameters = []test.Parameter{
+	{Input: models.Title{BoletoType: ""}, Expected: "03"},
+	{Input: models.Title{BoletoType: "NSA"}, Expected: "03"},
+	{Input: models.Title{BoletoType: "BDP"}, Expected: "03"},
+	{Input: models.Title{BoletoType: "DMI"}, Expected: "03"},
 }
-func TestOurNumber(t *testing.T) {
+
+func TestProcessBoleto_WhenServiceRespondsSuccessfully_ShouldHasSuccessfulBoletoResponse(t *testing.T) {
+	mock.StartMockService("9095")
+	input := new(models.BoletoRequest)
+	util.FromJSON(baseMockJSON, input)
+	bank, _ := New()
+
+	output, _ := bank.ProcessBoleto(input)
+
+	test.AssertProcessBoletoWithSuccess(t, output)
+}
+
+func TestCalculateOurNumber_WhenCalled_ShouldBeCalcutateOurNumberWithSuccess(t *testing.T) {
 	boleto := models.BoletoRequest{
 		Title: models.Title{
 			OurNumber: 8605970,
 		},
 	}
-	Convey("deve-se calcular corretamente o nosso numero para o Citi", t, func() {
-		So(calculateOurNumber(&boleto), ShouldEqual, 86059700)
-	})
+	var expected uint = 86059700
+
+	result := calculateOurNumber(&boleto)
+
+	assert.Equal(t, expected, result, "Deve-se calcular corretamente o nosso numero para o Citi")
 }
 
-func TestGetBoletoType(t *testing.T) {
-
-	input := new(models.BoletoRequest)
-	if err := util.FromJSON(baseMockJSON, input); err != nil {
-		t.Fail()
+func TestGetBoletoType_WhenCalled_ShouldBeMapTypeSuccessful(t *testing.T) {
+	for _, fact := range boletoTypeParameters {
+		_, result := getBoletoType()
+		assert.Equal(t, fact.Expected, result, "Deve mapear o boleto type corretamente")
 	}
-
-	input.Title.BoletoType = ""
-	expectBoletoTypeCode := "03"
-
-	Convey("Quando não informado o BoletoType o retorno deve ser 03 - Duplicata Mercantil", t, func() {
-		_, output := getBoletoType(input)
-		So(output, ShouldEqual, expectBoletoTypeCode)
-	})
-
-	input.Title.BoletoType = "NSA"
-	expectBoletoTypeCode = "03"
-
-	Convey("Quando informado o BoletoType Inválido o retorno deve ser 03 - Duplicata Mercantil", t, func() {
-		_, output := getBoletoType(input)
-		So(output, ShouldEqual, expectBoletoTypeCode)
-	})
-
-	input.Title.BoletoType = "BDP"
-	expectBoletoTypeCode = "03"
-
-	Convey("Quando informado o BoletoType BDP o retorno deve ser 03 - Duplicata Mercantil", t, func() {
-		_, output := getBoletoType(input)
-		So(output, ShouldEqual, expectBoletoTypeCode)
-	})
 }

@@ -13,9 +13,7 @@ import (
 //Config Realiza a configuração da aplicação
 func Config(devMode, mockMode, disableLog bool) {
 	configFlags(devMode, mockMode, disableLog)
-	flow.RegisterConnector("log", util.LogConector)
-	flow.RegisterConnector("apierro", models.BoletoErrorConector)
-	flow.RegisterConnector("tls", util.TlsConector)
+	registerFlowConnectors()
 	metrics.Install()
 }
 
@@ -63,7 +61,8 @@ func ConfigMock(port string) {
 	os.Setenv("TIME_TO_RECOVERY_WITH_QUEUE_IN_SECONDS", "120")
 	os.Setenv("HEARTBEAT", "30")
 
-	config.Install(true, true, false)
+	config.Install(true, true, config.Get().DisableLog)
+	registerFlowConnectors()
 }
 
 func configFlags(devMode, mockMode, disableLog bool) {
@@ -142,4 +141,10 @@ func configFlags(devMode, mockMode, disableLog bool) {
 	}
 
 	config.Install(mockMode, devMode, disableLog)
+}
+
+func registerFlowConnectors() {
+	flow.RegisterConnector("log", util.LogConector)
+	flow.RegisterConnector("apierro", models.BoletoErrorConector)
+	flow.RegisterConnector("tls", util.TlsConector)
 }

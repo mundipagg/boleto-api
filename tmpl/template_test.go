@@ -1,188 +1,227 @@
 package tmpl
 
 import (
+	"html/template"
 	"testing"
 
 	"github.com/mundipagg/boleto-api/models"
-
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/mundipagg/boleto-api/test"
+	"github.com/stretchr/testify/assert"
 )
 
+var formatDigitableLineParameters = []test.Parameter{
+	{Input: "34191123456789010111213141516171812345678901112", Expected: "34191.12345 67890.101112 13141.516171 8 12345678901112"},
+}
+
+var truncateParameters = []test.Parameter{
+	{Input: "00000000000000000000", Length: 5, Expected: "00000"},
+	{Input: "00000000000000000000", Length: 50, Expected: "00000000000000000000"},
+	{Input: "Rua de teste para o truncate", Length: 20, Expected: "Rua de teste para o "},
+	{Input: "", Length: 50, Expected: ""},
+}
+
+var clearStringParameters = []test.Parameter{
+	{Input: "óláçñê", Expected: "olacne"},
+	{Input: "ola", Expected: "ola"},
+	{Input: "", Expected: ""},
+	{Input: "Jardim Novo Cambuí ", Expected: "Jardim Novo Cambui"},
+	{Input: "Jardim Novo Cambuí�", Expected: "Jardim Novo Cambui"},
+}
+
+var formatNumberParameters = []test.UInt64TestParameter{
+	{Input: 50332, Expected: "503,32"},
+	{Input: 55, Expected: "0,55"},
+	{Input: 0, Expected: "0,00"},
+}
+
+var toFloatStrParameters = []test.UInt64TestParameter{
+	{Input: 50332, Expected: "503.32"},
+	{Input: 55, Expected: "0.55"},
+	{Input: 0, Expected: "0.00"},
+}
+
+var formatDocParameters = []test.Parameter{
+	{Input: models.Document{Type: "CPF", Number: "12312100100"}, Expected: "123.121.001-00"},
+	{Input: models.Document{Type: "CNPJ", Number: "12123123000112"}, Expected: "12.123.123/0001-12"},
+}
+
+var docTypeParameters = []test.Parameter{
+	{Input: models.Document{Type: "CPF", Number: "12312100100"}, Expected: 1},
+	{Input: models.Document{Type: "CNPJ", Number: "12123123000112"}, Expected: 2},
+}
+
+var sanitizeCepParameters = []test.Parameter{
+	{Input: "25368-100", Expected: "25368100"},
+	{Input: "25368100", Expected: "25368100"},
+}
+
+var mod11BradescoShopFacilDvParameters = []test.Parameter{
+	{Input: "00000000006", Expected: "0"},
+	{Input: "00000000001", Expected: "P"},
+	{Input: "00000000002", Expected: "8"},
+}
+
 func TestShouldPadLeft(t *testing.T) {
-	Convey("O texto deve ter zeros a esqueda e até 5 caracteres", t, func() {
-		s := padLeft("5", "0", 5)
-		So(len(s), ShouldEqual, 5)
-		So(s, ShouldEqual, "00005")
-	})
+	expected := "00005"
+
+	result := padLeft("5", "0", 5)
+
+	assert.Equal(t, expected, result, "O texto deve ter zeros a esqueda e até 5 caracteres")
 }
 
 func TestShouldReturnString(t *testing.T) {
-	Convey("O número deve ser uma string", t, func() {
-		So(toString(5), ShouldEqual, "5")
-	})
+	expected := "5"
+
+	result := toString(5)
+
+	assert.Equal(t, expected, result, "O número deve ser uma string")
 }
+
 func TestFormatDigitableLine(t *testing.T) {
-	Convey("A linha digitável deve ser formatada corretamente", t, func() {
-		s := "34191123456789010111213141516171812345678901112"
-		So(fmtDigitableLine(s), ShouldEqual, "34191.12345 67890.101112 13141.516171 8 12345678901112")
-	})
+	for _, fact := range formatDigitableLineParameters {
+		result := fmtDigitableLine(fact.Input.(string))
+		assert.Equal(t, fact.Expected, result, "A linha digitável deve ser formatada corretamente")
+	}
 }
 
 func TestTruncate(t *testing.T) {
-	Convey("Deve-se truncar uma string", t, func() {
-		s := "00000000000000000000"
-		b := "Rua de teste para o truncate"
-		So(truncateString(b, 20), ShouldEqual, "Rua de teste para o ")
-		So(truncateString(s, 5), ShouldEqual, "00000")
-		So(truncateString(s, 50), ShouldEqual, "00000000000000000000")
-		So(truncateString("", 50), ShouldEqual, "")
-	})
+	for _, fact := range truncateParameters {
+		result := truncateString(fact.Input.(string), fact.Length)
+		assert.Equal(t, fact.Expected, result, "Deve-se truncar uma string corretamente")
+	}
 }
 
 func TestClearString(t *testing.T) {
-	Convey("Deve-se limpar uma string", t, func() {
-		So(clearString("óláçñê"), ShouldEqual, "olacne")
-		So(clearString("ola"), ShouldEqual, "ola")
-		So(clearString(""), ShouldEqual, "")
-		So(clearString("Jardim Novo Cambuí "), ShouldEqual, "Jardim Novo Cambui")
-		So(clearString("Jardim Novo Cambuí�"), ShouldEqual, "Jardim Novo Cambui")
-	})
+	for _, fact := range clearStringParameters {
+		result := clearString(fact.Input.(string))
+		assert.Equal(t, fact.Expected, result, "Deve-se limpar uma string corretamente")
+	}
 }
 
 func TestJoinStringSpace(t *testing.T) {
-	Convey("Deve-se fazer um join em uma string com espaços", t, func() {
-		So(joinSpace("a", "b", "c"), ShouldEqual, "a b c")
-	})
+	expected := "a b c"
+
+	result := joinSpace("a", "b", "c")
+
+	assert.Equal(t, expected, result, "Deve-se fazer um join em uma string com espaços")
 }
 
 func TestFormatCNPJ(t *testing.T) {
-	Convey("O CNPJ deve ser formatado corretamente", t, func() {
-		s := "01000000000100"
-		So(fmtCNPJ(s), ShouldEqual, "01.000.000/0001-00")
-	})
+	expected := "01.000.000/0001-00"
+
+	result := fmtCNPJ("01000000000100")
+
+	assert.Equal(t, expected, result, "O CNPJ deve ser formatado corretamente")
 }
 
 func TestFormatCPF(t *testing.T) {
-	Convey("O CPF deve ser formatado corretamente", t, func() {
-		s := "12312100100"
-		So(fmtCPF(s), ShouldEqual, "123.121.001-00")
-	})
+	expected := "123.121.001-00"
+
+	result := fmtCPF("12312100100")
+
+	assert.Equal(t, expected, result, "O CPF deve ser formatado corretamente")
 }
 
 func TestFormatNumber(t *testing.T) {
-	Convey("O valor em inteiro deve ser convertido para uma string com duas casas decimais separado por vírgula (0,00)", t, func() {
-		So(fmtNumber(50332), ShouldEqual, "503,32")
-		So(fmtNumber(55), ShouldEqual, "0,55")
-		So(fmtNumber(0), ShouldEqual, "0,00")
-	})
+	for _, fact := range formatNumberParameters {
+		result := fmtNumber(fact.Input)
+		assert.Equal(t, fact.Expected, result, "O valor em inteiro deve ser convertido para uma string com duas casas decimais separado por vírgula (0,00)")
+	}
 }
 
 func TestMod11OurNumber(t *testing.T) {
-	Convey("Deve-se calcular o mod11 do nosso número e retornar o digito à esquerda", t, func() {
-		So(calculateOurNumberMod11(12000000114, false), ShouldEqual, 120000001148)
-		So(calculateOurNumberMod11(8423657, false), ShouldEqual, 84236574)
-	})
+	var expected, onlyDigitExpected uint
+	expected = 120000001148
+	onlyDigitExpected = 8
+
+	result := calculateOurNumberMod11(12000000114, false)
+	onlyDigitResult := calculateOurNumberMod11(12000000114, true)
+
+	assert.Equal(t, expected, result, "Deve-se calcular o mod11 do nosso número e retornar o digito à esquerda")
+	assert.Equal(t, onlyDigitExpected, onlyDigitResult, "Deve-se calcular o mod11 do nosso número e retornar o digito à esquerda")
 }
 
 func TestToFloatStr(t *testing.T) {
-	Convey("O valor em inteiro deve ser convertido para uma string com duas casas decimais separado por ponto (0.00)", t, func() {
-		So(toFloatStr(50332), ShouldEqual, "503.32")
-		So(toFloatStr(55), ShouldEqual, "0.55")
-		So(toFloatStr(0), ShouldEqual, "0.00")
-	})
+	for _, fact := range toFloatStrParameters {
+		result := toFloatStr(fact.Input)
+		assert.Equal(t, fact.Expected, result, "O valor em inteiro deve ser convertido para uma string com duas casas decimais separado por ponto (0.00)")
+	}
 }
 
 func TestFormatDoc(t *testing.T) {
-	Convey("O CPF deve ser formatado corretamente", t, func() {
-		d := models.Document{
-			Type:   "CPF",
-			Number: "12312100100",
-		}
-		So(fmtDoc(d), ShouldEqual, "123.121.001-00")
-		Convey("O CNPJ deve ser formatado corretamente", func() {
-			d.Type = "CNPJ"
-			d.Number = "01000000000100"
-			So(fmtDoc(d), ShouldEqual, "01.000.000/0001-00")
-		})
-	})
+	for _, fact := range formatDocParameters {
+		result := fmtDoc(fact.Input.(models.Document))
+		assert.Equal(t, fact.Expected, result, "O documento deve ser formatado corretamente")
+	}
 }
 
 func TestDocType(t *testing.T) {
-	Convey("O tipo retornardo deve ser CPF", t, func() {
-		d := models.Document{
-			Type:   "CPF",
-			Number: "12312100100",
-		}
-		So(docType(d), ShouldEqual, 1)
-		Convey("O tipo retornardo deve ser CNPJ", func() {
-			d.Type = "CNPJ"
-			d.Number = "01000000000100"
-			So(docType(d), ShouldEqual, 2)
-		})
-	})
+	for _, fact := range docTypeParameters {
+		result := docType(fact.Input.(models.Document))
+		assert.Equal(t, fact.Expected, result, "O documento deve ser do tipo correto")
+	}
 }
 
 func TestTrim(t *testing.T) {
-	Convey("O texto não deve ter espaços no início e no final", t, func() {
-		d := " hue br festa "
-		So(trim(d), ShouldEqual, "hue br festa")
-	})
+	expected := "hue br festa"
+
+	result := trim(" hue br festa ")
+
+	assert.Equal(t, expected, result, "O texto não deve ter espaços no início e no final")
 }
 
 func TestSanitizeHtml(t *testing.T) {
-	Convey("O texto não deve conter HTML tags", t, func() {
-		d := "<b>hu3 br festa</b>"
-		So(sanitizeHtmlString(d), ShouldEqual, "hu3 br festa")
-	})
+	expected := "hu3 br festa"
+
+	result := sanitizeHtmlString("<b>hu3 br festa</b>")
+
+	assert.Equal(t, expected, result, "O texto não deve conter HTML tags")
 }
 
 func TestUnscapeHtml(t *testing.T) {
-	Convey("A string não deve ter caracteres Unicode", t, func() {
-		d := "&#243;"
-		So(unescapeHtmlString(d), ShouldEqual, "ó")
-	})
+	var expected template.HTML
+	expected = "ó"
+
+	result := unescapeHtmlString("&#243;")
+
+	assert.Equal(t, expected, result, "A string não deve ter caracteres Unicode")
 }
 
 func TestSanitizeCep(t *testing.T) {
-	zipCodeWithSeparator := extractNumbers("25368-100")
-	zipCodeWithoutSeparator := extractNumbers("25368100")
-
-	Convey("o zipcode deve conter apenas números", t, func() {
-		So(zipCodeWithSeparator, ShouldEqual, "25368100")
-		So(zipCodeWithoutSeparator, ShouldEqual, "25368100")
-	})
+	for _, fact := range sanitizeCepParameters {
+		result := extractNumbers(fact.Input.(string))
+		assert.Equal(t, fact.Expected, result, "o zipcode deve conter apenas números")
+	}
 }
 
 func TestDVOurNumberMod11BradescoShopFacil(t *testing.T) {
-	dvEqualZero := mod11BradescoShopFacilDv("00000000006", "19")
-	dvEqualP := mod11BradescoShopFacilDv("00000000001", "19")
-	dvEqualEight := mod11BradescoShopFacilDv("00000000002", "19")
-
-	Convey("o dígito verificador deve ser equivalente ao OurNumber", t, func() {
-		So(dvEqualZero, ShouldEqual, "0")
-		So(dvEqualP, ShouldEqual, "P")
-		So(dvEqualEight, ShouldEqual, "8")
-	})
+	wallet := "19"
+	for _, fact := range mod11BradescoShopFacilDvParameters {
+		result := mod11BradescoShopFacilDv(fact.Input.(string), wallet)
+		assert.Equal(t, fact.Expected, result, "o dígito verificador deve ser equivalente ao OurNumber")
+	}
 }
 
 func TestEscape(t *testing.T) {
-	escapedText := escapeStringOnJson("KM 5,00 \t \f \r \b")
-	Convey("O texto deve ser escapado", t, func() {
-		So(escapedText, ShouldEqual, "KM 5,00    ")
-	})
+	expected := "KM 5,00    "
+
+	result := escapeStringOnJson("KM 5,00 \t \f \r \b")
+
+	assert.Equal(t, expected, result, "O texto deve ser escapado")
 }
 
 func TestRemoveCharacterSpecial(t *testing.T) {
-	text := removeSpecialCharacter("Texto com \"carácter\" especial * ' -")
-	Convey("Os caracteres especiais devem ser removidos", t, func() {
-		So(text, ShouldEqual, "Texto com carácter especial   -")
-	})
+	expected := "Texto com carácter especial   -"
+
+	result := removeSpecialCharacter("Texto? com \"carácter\" especial * ' -")
+
+	assert.Equal(t, expected, result, "Os caracteres especiais devem ser removidos")
 }
 
 func TestCitBankSanitizeString(t *testing.T) {
-	var result = sanitizeCitibakSpecialCharacteres("Ol@ Mundo. você pode ver uma barra /, mas não uma exclamação!; Nem Isso", 66)
+	expected := "Ol@ Mundo. voce pode ver uma barra / mas nao uma exclamacao;"
 
-	Convey("Caracteres especiais e acendos devem ser removidos", t, func() {
-		So(result, ShouldEqual, "Ol@ Mundo. voce pode ver uma barra / mas nao uma exclamacao;")
-	})
+	result := sanitizeCitibakSpecialCharacteres("Ol@ Mundo. você pode ver uma barra /, mas não uma exclamação!?; Nem Isso", 67)
+
+	assert.Equal(t, expected, result, "Caracteres especiais e acendos devem ser removidos")
 }
