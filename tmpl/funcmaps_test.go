@@ -61,6 +61,16 @@ var mod11BradescoShopFacilDvParameters = []test.Parameter{
 	{Input: "00000000002", Expected: "8"},
 }
 
+var sanitizeCitibankSpecialCharacteresParameters = []test.Parameter{
+	{Input: "", Length: 0, Expected: ""}, //Default string value
+	{Input: "   ", Length: 3, Expected: "   "}, //Whitespaces
+	{Input: "a b", Length: 3, Expected: "a b"},
+	{Input: "/-;@", Length: 4, Expected: "/-;@"}, //Caracteres especiais aceitos pelo Citibank
+	{Input: "???????????????????????????a-zA-Z0-9ÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕáéíóúàèìòùâêîôûãõç.", Length: 45, Expected: "a-zA-Z0-9AEIOUAEIOUAEIOUAOaeiouaeiouaeiouaoc."},
+	{Input: "Ol@ Mundo. você pode ver uma barra /, mas não uma exclamação!?; Nem Isso", Length: 60, Expected: "Ol@ Mundo. voce pode ver uma barra / mas nao uma exclamacao;"},
+	{Input: "Avenida Andr? Rodrigues de Freitas", Length: 33, Expected: "Avenida Andr Rodrigues de Freitas"},
+}
+
 func TestShouldPadLeft(t *testing.T) {
 	expected := "00005"
 
@@ -218,10 +228,11 @@ func TestRemoveCharacterSpecial(t *testing.T) {
 	assert.Equal(t, expected, result, "Os caracteres especiais devem ser removidos")
 }
 
-func TestCitBankSanitizeString(t *testing.T) {
-	expected := "Ol@ Mundo. voce pode ver uma barra / mas nao uma exclamacao;"
-
-	result := sanitizeCitibakSpecialCharacteres("Ol@ Mundo. você pode ver uma barra /, mas não uma exclamação!?; Nem Isso", 67)
-
-	assert.Equal(t, expected, result, "Caracteres especiais e acendos devem ser removidos")
+func TestCitiBankSanitizeString(t *testing.T) {
+	for _, fact := range sanitizeCitibankSpecialCharacteresParameters {
+		input := fact.Input.(string)
+		result := sanitizeCitibankSpecialCharacteres(input, fact.Length)
+		assert.Equal(t, fact.Expected, result, "Caracteres especiais e acentos devem ser removidos")
+		assert.Equal(t, fact.Length, len(result), "O texto deve ser devidamente truncado")
+	}
 }
