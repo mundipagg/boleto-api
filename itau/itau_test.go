@@ -2,13 +2,12 @@ package itau
 
 import (
 	"testing"
-	"time"
 
-	"github.com/mundipagg/boleto-api/env"
 	"github.com/mundipagg/boleto-api/mock"
 	"github.com/mundipagg/boleto-api/models"
+	"github.com/mundipagg/boleto-api/test"
 	"github.com/mundipagg/boleto-api/util"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 const baseMockJSON = `
@@ -46,120 +45,72 @@ const baseMockJSON = `
 }
 `
 
-func TestRegiterBoletoItau(t *testing.T) {
-	env.Config(true, true, true)
+var boletoTypeParameters = []test.Parameter{
+	{Input: models.Title{BoletoType: ""}, Expected: "01"},
+	{Input: models.Title{BoletoType: "NSA"}, Expected: "01"},
+	{Input: models.Title{BoletoType: "BDP"}, Expected: "18"},
+	{Input: models.Title{BoletoType: "DM"}, Expected: "01"},
+	{Input: models.Title{BoletoType: "DS"}, Expected: "08"},
+	{Input: models.Title{BoletoType: "NP"}, Expected: "02"},
+	{Input: models.Title{BoletoType: "RC"}, Expected: "05"},
+	{Input: models.Title{BoletoType: "OUT"}, Expected: "99"},
+}
+
+func TestProcessBoleto_WhenServiceRespondsSuccessfully_ShouldHasSuccessfulBoletoResponse(t *testing.T) {
+	mock.StartMockService("9096")
 	input := new(models.BoletoRequest)
-	if err := util.FromJSON(baseMockJSON, input); err != nil {
-		t.Fail()
-	}
+	util.FromJSON(baseMockJSON, input)
 	bank := New()
-	go mock.Run("9096")
-	time.Sleep(2 * time.Second)
-	Convey("deve-se processar um boleto itau com sucesso", t, func() {
-		output, err := bank.ProcessBoleto(input)
-		So(err, ShouldBeNil)
-		So(output.BarCodeNumber, ShouldNotBeEmpty)
-		So(output.DigitableLine, ShouldNotBeEmpty)
-		So(output.Errors, ShouldBeEmpty)
-	})
+
+	output, _ := bank.ProcessBoleto(input)
+
+	test.AssertProcessBoletoWithSuccess(t, output)
+}
+
+func TestProcessBoleto_WhenServiceRespondsFailed_ShouldHasFailedBoletoResponse(t *testing.T) {
+	mock.StartMockService("9096")
+	input := new(models.BoletoRequest)
+	util.FromJSON(baseMockJSON, input)
 	input.Title.AmountInCents = 400
-	Convey("deve-se processar uma falha no registro de boleto no itau", t, func() {
-		output, err := bank.ProcessBoleto(input)
-		So(err, ShouldBeNil)
-		So(output.BarCodeNumber, ShouldBeEmpty)
-		So(output.DigitableLine, ShouldBeEmpty)
-		So(output.Errors, ShouldNotBeEmpty)
-	})
+	bank := New()
+
+	output, _ := bank.ProcessBoleto(input)
+
+	test.AssertProcessBoletoFailed(t, output)
+}
+
+func TestProcessBoleto_WhenRequestHasInvalidAccountParameters_ShouldHasFailedBoletoResponse(t *testing.T) {
+	mock.StartMockService("9096")
+	input := new(models.BoletoRequest)
+	util.FromJSON(baseMockJSON, input)
 	input.Title.AmountInCents = 200
-	ac := input.Agreement.Account
 	input.Agreement.Account = ""
-	Convey("deve-se tratar uma validacao de conta no itau", t, func() {
-		output, err := bank.ProcessBoleto(input)
-		So(err, ShouldBeNil)
-		So(output.BarCodeNumber, ShouldBeEmpty)
-		So(output.DigitableLine, ShouldBeEmpty)
-		So(output.Errors, ShouldNotBeEmpty)
-	})
-	input.Agreement.Account = ac
+	bank := New()
+
+	output, _ := bank.ProcessBoleto(input)
+
+	test.AssertProcessBoletoFailed(t, output)
+}
+
+func TestProcessBoleto_WhenRequestHasInvalidUserNameParameter_ShouldHasFailedBoletoResponse(t *testing.T) {
+	mock.StartMockService("9096")
+	input := new(models.BoletoRequest)
+	util.FromJSON(baseMockJSON, input)
+	input.Title.AmountInCents = 200
 	input.Authentication.Username = ""
-	Convey("deve-se tratar uma falha de login no itau", t, func() {
-		output, err := bank.ProcessBoleto(input)
-		So(err, ShouldNotBeNil)
-		So(output.BarCodeNumber, ShouldBeEmpty)
-		So(output.DigitableLine, ShouldBeEmpty)
-	})
+	bank := New()
 
-	input.Title.BoletoType = "BDP"
-	Convey("deve-se mapear corretamente o BoletoType de boleto de proposta", t, func() {
-		_, output := getBoletoType(input)
-		So(output, ShouldEqual, "18")
-	})
+	_, err := bank.ProcessBoleto(input)
 
-	input.Title.BoletoType = "ITAU"
-	Convey("deve-se mapear corretamente o BoletoType quando valor enviado não existir", t, func() {
-		_, output := getBoletoType(input)
-		So(output, ShouldEqual, "01")
-	})
+	assert.NotNil(t, err, "Deve ocorrer um erro")
 }
 
-func TestGetBoletoType(t *testing.T) {
-
-	input := new(models.BoletoRequest)
-	if err := util.FromJSON(baseMockJSON, input); err != nil {
-		t.Fail()
+func TestGetBoletoType_WhenCalled_ShouldBeMapTypeSuccessful(t *testing.T) {
+	request := new(models.BoletoRequest)
+	for _, fact := range boletoTypeParameters {
+		request.Title = fact.Input.(models.Title)
+		_, result := getBoletoType(request)
+		assert.Equal(t, fact.Expected, result, "Deve mapear o boleto type corretamente")
 	}
-
-	input.Title.BoletoType = ""
-	expectBoletoTypeCode := "01"
-
-	Convey("Quando não informado o BoletoType o retorno deve ser 01 - Duplicata Mercantil", t, func() {
-		_, output := getBoletoType(input)
-		So(output, ShouldEqual, expectBoletoTypeCode)
-	})
-
-	input.Title.BoletoType = "NSA"
-	expectBoletoTypeCode = "01"
-
-	Convey("Quando informado o BoletoType Inválido o retorno deve ser 01 - Duplicata Mercantil", t, func() {
-		_, output := getBoletoType(input)
-		So(output, ShouldEqual, expectBoletoTypeCode)
-	})
-
-	input.Title.BoletoType = "BDP"
-	expectBoletoTypeCode = "18"
-
-	Convey("Quando informado o BoletoType BDP o retorno deve ser 18 - Boleto de Proposta", t, func() {
-		_, output := getBoletoType(input)
-		So(output, ShouldEqual, expectBoletoTypeCode)
-	})
-
 }
 
-func TestShouldMapItauBoletoType(t *testing.T) {
-	env.Config(true, true, true)
-	input := new(models.BoletoRequest)
-	if err := util.FromJSON(baseMockJSON, input); err != nil {
-		t.Fail()
-	}
-
-	go mock.Run("9097")
-	time.Sleep(2 * time.Second)
-
-	Convey("deve-se mapear corretamente o BoletoType quando informação for vazia", t, func() {
-		_, output := getBoletoType(input)
-		So(input.Title.BoletoType, ShouldEqual, "")
-		So(output, ShouldEqual, "01")
-	})
-
-	input.Title.BoletoType = "BDP"
-	Convey("deve-se mapear corretamente o BoletoType de boleto de proposta", t, func() {
-		_, output := getBoletoType(input)
-		So(output, ShouldEqual, "18")
-	})
-
-	input.Title.BoletoType = "ITAU"
-	Convey("deve-se mapear corretamente o BoletoType quando valor enviado não existir", t, func() {
-		_, output := getBoletoType(input)
-		So(output, ShouldEqual, "01")
-	})
-}

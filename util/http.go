@@ -92,6 +92,11 @@ func doRequest(method, url, body, timeout string, header map[string]string) (str
 
 // BuildTLSTransport creates a TLS Client Transport from crt, ca and key files
 func BuildTLSTransport() (*http.Transport, error) {
+
+	if (config.Get().MockMode){
+		return nil, nil;
+	}
+
 	var errF error
 	onceTransport.Do(func() {
 

@@ -68,7 +68,7 @@ var funcMap = template.FuncMap{
 	"truncateManyFields":                truncateManyFields,
 	"escapeStringOnJson":                escapeStringOnJson,
 	"removeSpecialCharacter":            removeSpecialCharacter,
-	"sanitizeCitibakSpecialCharacteres": sanitizeCitibakSpecialCharacteres,
+	"sanitizeCitibankSpecialCharacteres": sanitizeCitibankSpecialCharacteres,
 }
 
 func GetFuncMaps() template.FuncMap {
@@ -393,11 +393,12 @@ func removeSpecialCharacter(str string) string {
 	return regexp.MustCompile("[^a-zA-Z0-9ÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕáéíóúàèìòùâêîôûãõç,.\\-\\s]+").ReplaceAllString(str, "")
 }
 
-func sanitizeCitibakSpecialCharacteres(str string, num int) string {
+func sanitizeCitibankSpecialCharacteres(str string, num int) string {
+	str = regexp.MustCompile("[^a-zA-Z0-9.;@\\-\\/\\s]+").ReplaceAllString(clearString(str), "")
+	
 	if len(str) > num {
 		str = str[0:num]
 	}
-	str = regexp.MustCompile("[^a-zA-Z0-9.;@\\-\\/\\s]+").ReplaceAllString(clearString(str), "")
-	
+
 	return str
 }

@@ -1,11 +1,16 @@
 package mock
 
-import "github.com/gin-gonic/gin"
-import "github.com/mundipagg/boleto-api/env"
+import (
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/mundipagg/boleto-api/env"
+)
 
 //Run sobe uma aplicação web para mockar a integração com os Bancos
 func Run(port string) {
 	env.ConfigMock(port)
+
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	router.Use(gin.Recovery())
@@ -22,4 +27,11 @@ func Run(port string) {
 	router.POST("/pefisa/gerarToken", getTokenPefisa)
 	router.POST("/pefisa/registrarBoleto", registerPefisa)
 	router.Run(":" + port)
+}
+
+//StartMockService Inicializa servidor de mock para testes unitários
+func StartMockService(port string) {
+	env.Config(true, true, true)
+	go Run(port)
+	time.Sleep(2 * time.Second)
 }

@@ -2,14 +2,13 @@ package bb
 
 import (
 	"testing"
-	"time"
 
-	"github.com/mundipagg/boleto-api/env"
 	"github.com/mundipagg/boleto-api/mock"
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/test"
 	"github.com/mundipagg/boleto-api/util"
-	. "github.com/smartystreets/goconvey/convey"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const baseMockJSON = `
@@ -69,39 +68,51 @@ const baseMockJSON = `
 }
 `
 
-func TestRegiterBoleto(t *testing.T) {
-	env.Config(true, true, true)
+var boletoTypeParameters = []test.Parameter{
+	{Input: models.Title{BoletoType: ""}, Expected: "19"},
+	{Input: models.Title{BoletoType: "NSA"}, Expected: "19"},
+	{Input: models.Title{BoletoType: "BDP"}, Expected: "19"},
+	{Input: models.Title{BoletoType: "CH"}, Expected: "01"},
+	{Input: models.Title{BoletoType: "DM"}, Expected: "02"},
+	{Input: models.Title{BoletoType: "DS"}, Expected: "04"},
+	{Input: models.Title{BoletoType: "NP"}, Expected: "12"},
+	{Input: models.Title{BoletoType: "RC"}, Expected: "17"},
+	{Input: models.Title{BoletoType: "ND"}, Expected: "19"},
+}
+
+func TestProcessBoleto_WhenServiceRespondsSuccessfully_ShouldHasSuccessfulBoletoResponse(t *testing.T) {
+	mock.StartMockService("9091")
 	input := new(models.BoletoRequest)
-	if err := util.FromJSON(baseMockJSON, input); err != nil {
-		t.Fail()
-	}
+	util.FromJSON(baseMockJSON, input)
 	bank := New()
-	go mock.Run("9092")
-	time.Sleep(2 * time.Second)
-	Convey("deve-se processar um boleto BB com sucesso", t, func() {
-		output, err := bank.ProcessBoleto(input)
-		So(err, ShouldBeNil)
-		So(output.BarCodeNumber, ShouldNotBeEmpty)
-		So(output.DigitableLine, ShouldNotBeEmpty)
-		So(output.Errors, ShouldBeEmpty)
-	})
+
+	output, _ := bank.ProcessBoleto(input)
+
+	test.AssertProcessBoletoWithSuccess(t, output)
+}
+
+func TestProcessBoleto_WhenServiceRespondsFailed_ShouldHasFailedBoletoResponse(t *testing.T) {
+	mock.StartMockService("9091")
+	input := new(models.BoletoRequest)
+	util.FromJSON(baseMockJSON, input)
 	input.Title.AmountInCents = 400
-	Convey("deve-se tratar um boleto BB com erro", t, func() {
-		output, err := bank.ProcessBoleto(input)
-		So(err, ShouldBeNil)
-		So(output.BarCodeNumber, ShouldBeEmpty)
-		So(output.DigitableLine, ShouldBeEmpty)
-		So(output.Errors, ShouldNotBeEmpty)
-	})
-	input.Title.AmountInCents = 200
+	bank := New()
+
+	output, _ := bank.ProcessBoleto(input)
+
+	test.AssertProcessBoletoFailed(t, output)
+}
+
+func TestProcessBoleto_WhenAccountInvalid_ShouldHasFailedBoletoResponse(t *testing.T) {
+	mock.StartMockService("9091")
+	input := new(models.BoletoRequest)
+	util.FromJSON(baseMockJSON, input)
 	input.Agreement.Account = ""
-	Convey("deve-se tratar um boleto BB com erro na conta", t, func() {
-		output, err := bank.ProcessBoleto(input)
-		So(err, ShouldBeNil)
-		So(output.BarCodeNumber, ShouldBeEmpty)
-		So(output.DigitableLine, ShouldBeEmpty)
-		So(output.Errors, ShouldNotBeEmpty)
-	})
+	bank := New()
+
+	output, _ := bank.ProcessBoleto(input)
+
+	test.AssertProcessBoletoFailed(t, output)
 }
 
 func TestShouldCalculateAgencyDigitFromBb(t *testing.T) {
@@ -124,27 +135,11 @@ func TestShouldCalculateAccountDigitFromBb(t *testing.T) {
 	test.ExpectTrue(bbAccountDigitCalculator("", "00000787") == "0", t)
 }
 
-func TestGetBoletoType(t *testing.T) {
-
-	input := new(models.BoletoRequest)
-	if err := util.FromJSON(baseMockJSON, input); err != nil {
-		t.Fail()
+func TestGetBoletoType_WhenCalled_ShouldBeMapTypeSuccessful(t *testing.T) {
+	request := new(models.BoletoRequest)
+	for _, fact := range boletoTypeParameters {
+		request.Title = fact.Input.(models.Title)
+		_, result := getBoletoType(request)
+		assert.Equal(t, fact.Expected, result, "Deve mapear o boleto type corretamente")
 	}
-
-	input.Title.BoletoType = ""
-	expectBoletoTypeCode := "19"
-
-	Convey("Quando não informado o BoletoType o padrão deve ser 19 - Nota de Débito", t, func() {
-		_, output := getBoletoType(input)
-		So(output, ShouldEqual, expectBoletoTypeCode)
-	})
-
-	input.Title.BoletoType = "NSA"
-	expectBoletoTypeCode = "19"
-
-	Convey("Quando informado o BoletoType Invalido o padrão deve ser 19 - Nota de Débito", t, func() {
-		_, output := getBoletoType(input)
-		So(output, ShouldEqual, expectBoletoTypeCode)
-	})
-
 }

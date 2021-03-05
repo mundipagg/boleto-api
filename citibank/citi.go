@@ -2,6 +2,7 @@ package citibank
 
 import (
 	"net/http"
+	"regexp"
 	"strconv"
 	"sync"
 
@@ -85,6 +86,9 @@ func (b bankCiti) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoRes
 	switch t := bod.GetBody().(type) {
 	case string:
 		response := util.ParseJSON(t, new(models.BoletoResponse)).(*models.BoletoResponse)
+		if !hasValidResponse(response) {
+			return models.BoletoResponse{}, models.NewBadGatewayError("BadGateway")
+		}
 		return *response, nil
 	case models.BoletoResponse:
 		return t, nil
@@ -130,4 +134,22 @@ func (b bankCiti) GetBankNameIntegration() string {
 
 func getBoletoType() (bt string, btc string) {
 	return "DMI", "03"
+}
+
+func hasValidResponse(response *models.BoletoResponse) bool {
+	return hasValidBarCode(response.BarCodeNumber) && hasValidDigitableLine(response.DigitableLine)
+}
+
+func hasValidBarCode(barCode string) bool {
+	if valid, err := regexp.Match(`\S`, []byte(barCode)); err == nil {
+		return valid
+	}
+	return false
+}
+
+func hasValidDigitableLine(digitableLine string) bool {
+	if valid, err := regexp.Match(`\S`, []byte(digitableLine)); err == nil {
+		return valid
+	}
+	return false
 }

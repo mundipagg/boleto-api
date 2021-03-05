@@ -3,29 +3,50 @@ package bank
 import (
 	"testing"
 
+	"github.com/mundipagg/boleto-api/bb"
+	"github.com/mundipagg/boleto-api/bradescoNetEmpresa"
+	"github.com/mundipagg/boleto-api/bradescoShopFacil"
+	"github.com/mundipagg/boleto-api/caixa"
+	"github.com/mundipagg/boleto-api/citibank"
+	"github.com/mundipagg/boleto-api/itau"
 	"github.com/mundipagg/boleto-api/models"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/mundipagg/boleto-api/santander"
+
+	"github.com/stretchr/testify/assert"
 )
 
+type dataTest struct {
+	request    models.BoletoRequest
+	bankNumber models.BankNumber
+	bank       Bank
+}
+
+var bradescoNetEmpresaInstance = bradescoNetEmpresa.New()
+var bradescoShopFacilInstance = bradescoShopFacil.New()
+var bancoDoBrasilInstance = bb.New()
+var citibankInstance, _ = citibank.New()
+var santanderInstance, _ = santander.New()
+var itauInstance = itau.New()
+var caixaInstance = caixa.New()
+
+var getBankTestData = []dataTest{
+	{models.BoletoRequest{BankNumber: models.Bradesco, Agreement: models.Agreement{Wallet: 9}}, models.Bradesco, bradescoNetEmpresaInstance},
+	{models.BoletoRequest{BankNumber: models.Bradesco, Agreement: models.Agreement{Wallet: 25}}, models.Bradesco, bradescoShopFacilInstance},
+	{models.BoletoRequest{BankNumber: models.BancoDoBrasil}, models.BancoDoBrasil, bancoDoBrasilInstance},
+	{models.BoletoRequest{BankNumber: models.Citibank}, models.Citibank, citibankInstance},
+	{models.BoletoRequest{BankNumber: models.Santander}, models.Santander, santanderInstance},
+	{models.BoletoRequest{BankNumber: models.Itau}, models.Itau, itauInstance},
+	{models.BoletoRequest{BankNumber: models.Caixa}, models.Caixa, caixaInstance},
+}
+
 func TestShouldExecuteBankStrategy(t *testing.T) {
-	assert := func(n models.BoletoRequest) {
-		bank, err := Get(n)
+	for _, fact := range getBankTestData {
+		bank, err := Get(fact.request)
 		number := bank.GetBankNumber()
-		So(err, ShouldBeNil)
-		So(number.IsBankNumberValid(), ShouldBeTrue)
-		So(number, ShouldEqual, n.BankNumber)
+
+		assert.Nil(t, err, "Não deve haver erro")
+		assert.True(t, number.IsBankNumberValid(), "Deve ser um banco válido")
+		assert.Equal(t, fact.bankNumber, number, "Deve conter o bankNumber correto")
+		assert.IsType(t, fact.bank, bank, "Deve ter instaciado o banco correto")
 	}
-	Convey("deve-se verificar o retorno da estrategia de cada banco", t, func() {
-		assert(models.BoletoRequest{BankNumber:models.Bradesco,Agreement:models.Agreement{Wallet:9},})
-		assert(models.BoletoRequest{BankNumber:models.Bradesco,Agreement:models.Agreement{Wallet:25},})
-		assert(models.BoletoRequest{BankNumber:models.BancoDoBrasil})
-		assert(models.BoletoRequest{BankNumber:models.Citibank})
-		assert(models.BoletoRequest{BankNumber:models.Santander})
-		assert(models.BoletoRequest{BankNumber:models.Itau})
-		assert(models.BoletoRequest{BankNumber:models.Caixa})
-
-		_, err := Get(models.BoletoRequest{BankNumber:88})
-		So(err, ShouldNotBeNil)
-	})
-
 }

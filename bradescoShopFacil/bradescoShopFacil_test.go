@@ -4,11 +4,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mundipagg/boleto-api/env"
 	"github.com/mundipagg/boleto-api/mock"
 	"github.com/mundipagg/boleto-api/models"
+	"github.com/mundipagg/boleto-api/test"
 	"github.com/mundipagg/boleto-api/util"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 const baseMockJSON = `
@@ -68,64 +68,43 @@ const baseMockJSON = `
 }
 `
 
-func TestRegiterBoleto(t *testing.T) {
-	env.Config(true, true, true)
-	input := new(models.BoletoRequest)
-	if err := util.FromJSON(baseMockJSON, input); err != nil {
-		t.Fail()
-	}
-	bank := New()
-	go mock.Run("9093")
-	time.Sleep(2 * time.Second)
-
-	Convey("deve-se processar um boleto BradescoShopFacil com sucesso", t, func() {
-		output, err := bank.ProcessBoleto(input)
-		So(err, ShouldBeNil)
-		So(output.BarCodeNumber, ShouldNotBeEmpty)
-		So(output.DigitableLine, ShouldNotBeEmpty)
-		So(output.Errors, ShouldBeEmpty)
-	})
-	input.Title.AmountInCents = 400
-	Convey("deve-se processar um boleto BradescoShopFacil com sucesso", t, func() {
-		output, err := bank.ProcessBoleto(input)
-		So(err, ShouldBeNil)
-		So(output.BarCodeNumber, ShouldBeEmpty)
-		So(output.DigitableLine, ShouldBeEmpty)
-		So(output.Errors, ShouldNotBeEmpty)
-	})
+var boletoTypeParameters = []test.Parameter{
+	{Input: models.Title{BoletoType: ""}, Expected: "01"},
+	{Input: models.Title{BoletoType: "NSA"}, Expected: "01"},
+	{Input: models.Title{BoletoType: "BDP"}, Expected: "01"},
+	{Input: models.Title{BoletoType: "DM"}, Expected: "01"},
+	{Input: models.Title{BoletoType: "DS"}, Expected: "12"},
+	{Input: models.Title{BoletoType: "NP"}, Expected: "02"},
+	{Input: models.Title{BoletoType: "RC"}, Expected: "05"},
+	{Input: models.Title{BoletoType: "OUT"}, Expected: "99"},
 }
 
-func TestShouldMapBradescoNetEmpresaBoletoType(t *testing.T) {
-	env.Config(true, true, true)
+func TestProcessBoleto_WhenServiceRespondsSuccessfully_ShouldHasSuccessfulBoletoResponse(t *testing.T) {
+	mock.StartMockService("9093")
 	input := new(models.BoletoRequest)
-	if err := util.FromJSON(baseMockJSON, input); err != nil {
-		t.Fail()
-	}
+	util.FromJSON(baseMockJSON, input)
+	bank := New()
 
-	go mock.Run("9097")
-	time.Sleep(2 * time.Second)
+	output, _ := bank.ProcessBoleto(input)
 
-	Convey("deve-se mapear corretamente o BoletoType quando informação for vazia", t, func() {
-		_, output := getBoletoType(input)
-		So(input.Title.BoletoType, ShouldEqual, "")
-		So(output, ShouldEqual, "01")
-	})
+	test.AssertProcessBoletoWithSuccess(t, output)
+}
 
-	input.Title.BoletoType = "BDP"
-	Convey("deve-se mapear corretamente o BoletoType de boleto de proposta", t, func() {
-		_, output := getBoletoType(input)
-		So(output, ShouldEqual, "30")
-	})
+func TestProcessBoleto_WhenServiceRespondsFailed_ShouldHasFailedBoletoResponse(t *testing.T) {
+	mock.StartMockService("9092")
+	input := new(models.BoletoRequest)
+	util.FromJSON(baseMockJSON, input)
+	input.Title.AmountInCents = 400
+	bank := New()
 
-	input.Title.BoletoType = "Bradesco"
-	Convey("deve-se mapear corretamente o BoletoType quando valor enviado não existir", t, func() {
-		_, output := getBoletoType(input)
-		So(output, ShouldEqual, "01")
-	})
+	output, _ := bank.ProcessBoleto(input)
+
+	test.AssertProcessBoletoFailed(t, output)
 }
 
 func TestBarcodeGenerationBradescoShopFacil(t *testing.T) {
-	//example := "23795796800000001990001250012446693212345670"
+	const expected = "23795796800000001990001250012446693212345670"
+
 	boleto := models.BoletoRequest{}
 	boleto.BankNumber = models.Bradesco
 	boleto.Agreement = models.Agreement{
@@ -140,12 +119,13 @@ func TestBarcodeGenerationBradescoShopFacil(t *testing.T) {
 		ExpireDateTime: expireDate,
 	}
 	bc := getBarcode(boleto)
-	Convey("deve-se montar o código de barras do BradescoShopFacil", t, func() {
-		So(bc.toString(), ShouldEqual, "23795796800000001990001250012446693212345670")
-	})
+
+	assert.Equal(t, expected, bc.toString(), "Deve-se montar o código de barras do BradescoShopFacil")
 }
 
 func TestRemoveDigitFromAccount(t *testing.T) {
+	const expected = "23791796800000001992372250012446693300056000"
+
 	bc := barcode{
 		account:       "0005600",
 		bankCode:      "237",
@@ -157,39 +137,15 @@ func TestRemoveDigitFromAccount(t *testing.T) {
 		wallet:        "25",
 		value:         "0000000199",
 	}
-	Convey("deve-se montar identificar e remover o digito da conta", t, func() {
-		So(bc.toString(), ShouldEqual, "23791796800000001992372250012446693300056000")
-	})
+
+	assert.Equal(t, expected, bc.toString(), "Deve-se montar identificar e remover o digito da conta")
 }
 
-func TestGetBoletoType(t *testing.T) {
-
-	input := new(models.BoletoRequest)
-	if err := util.FromJSON(baseMockJSON, input); err != nil {
-		t.Fail()
+func TestGetBoletoType_WhenCalled_ShouldBeMapTypeSuccessful(t *testing.T) {
+	request := new(models.BoletoRequest)
+	for _, fact := range boletoTypeParameters {
+		request.Title = fact.Input.(models.Title)
+		_, result := getBoletoType(request)
+		assert.Equal(t, fact.Expected, result, "Deve mapear o boleto type corretamente")
 	}
-
-	input.Title.BoletoType = ""
-	expectBoletoTypeCode := "01"
-
-	Convey("Quando não informado o BoletoType o retorno deve ser 01 - Duplicata Mercantil", t, func() {
-		_, output := getBoletoType(input)
-		So(output, ShouldEqual, expectBoletoTypeCode)
-	})
-
-	input.Title.BoletoType = "NSA"
-	expectBoletoTypeCode = "01"
-
-	Convey("Quando informado o BoletoType Inválido o retorno deve ser 01 - Duplicata Mercantil", t, func() {
-		_, output := getBoletoType(input)
-		So(output, ShouldEqual, expectBoletoTypeCode)
-	})
-
-	input.Title.BoletoType = "BDP"
-	expectBoletoTypeCode = "01"
-
-	Convey("Quando informado o BoletoType BDP o retorno deve ser 01 - Duplicata Mercantil", t, func() {
-		_, output := getBoletoType(input)
-		So(output, ShouldEqual, expectBoletoTypeCode)
-	})
 }
