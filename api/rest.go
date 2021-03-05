@@ -70,7 +70,7 @@ func checkError(c *gin.Context, err error, l *log.Log) bool {
 			c.JSON(http.StatusInternalServerError, errResp)
 
 		case models.BadGatewayError:
-			errResp.Errors.Append("MP500", v.Error())
+			errResp.Errors.Append("MP502", v.Error())
 			l.Warn(errResp, v.Error())
 			c.JSON(http.StatusBadGateway, errResp)
 
