@@ -6,12 +6,11 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/b85953cc9fa84b56822e7e5d91203e91)](https://www.codacy.com/app/mundipagg/boleto-api?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mundipagg/boleto-api&amp;utm_campaign=Badge_Grade)
 [![Maintainability](https://api.codeclimate.com/v1/badges/b9ad683e9d8f87034339/maintainability)](https://codeclimate.com/github/mundipagg/boleto-api/maintainability)
 
-What is the Online Registered "Boleto" API?
---------------
+# Boleto API
 
-BoletoOnline is an API for boleto's online register in banks and boleto's creation for payments.
+É uma API para cadastro online de boleto em bancos e criação de boleto para pagamentos.
 
-Currently, we support the following banks:
+Atualmente, oferecemos suporte aos seguintes bancos:
 * Banco do Brasil
 * Caixa
 * Citibank
@@ -20,71 +19,112 @@ Currently, we support the following banks:
 * BradescoNetEmpresas
 * Itau
 
-The integration order will follow the list above but we may have changes considering our clients demands.
+A ordem de integração seguirá a lista acima, mas podemos ter alterações considerando as demandas de nossos clientes.
 
-API Building
---------------
+## Pré-requisitos
+Abaixo estão todos os pré requisitos para que consiga rodar a aplicação:
+* [GO](https://golang.org/dl/)
+* Container [Docker](https://docs.docker.com/desktop/)
 
-The API was developed using GO language and therefore it is necessary to install the language tools in case you need to compile the application from the source.
+____________________________________________________________
+## Rodando a aplicação
+A API foi desenvolvida em linguagem GO e por isso é necessário instalar as ferramentas de linguagem caso seja necessário compilar a aplicação a partir do código-fonte.
 
-GO can be downloaded [here](https://golang.org/dl/)
-
-Before cloning the Project, you should create the file path inside $GOPATH
-
+Antes de clonar o projeto, você deve criar o caminho do arquivo dentro $GOPATH
+```
 	% mkdir -p "$GOPATH/src/github.com/mundipagg"
 	% cd $GOPATH/src/github.com/mundipagg 
 	% git clone https://github.com/mundipagg/boleto-api
+```
 
+No projeto temos duas formas de inicializar a aplicação que é por meio do Docker ou manualmente por uma linha de comando.
 
-Before compiling the application, you should install the [Glide](http://glide.sh/), which is the application dependency manager.
+### Utilizando Docker
 
-After installing GO, do:
+Execute esse comando para baixar as dependências e iniciar a aplicação, executando o comando:
+```
+ cd .\boleto-api\devops\
+ docker-compose up -d
+```
+Para identificar o container da aplicação basta localizar o nome `devops_boleto-api` através do comando abaixo:
+```
+ docker ps -a
+```
 
-	% cd devops
-	% ./build
+Para visualizar os logs da aplicação basta executar o comando a seguir:
+```
+ docker logs -f ID_CONTAINER
+```
+With that you will have access to the logs of the application that is running through the container.
 
-The build.sh script will download the application dependencies and install wkhtmltox, which is necessary to create boleto's in PDF format.
+### Utilizando linha de comando
 
-Running the application
--------------
+Abra um prompt de comando e digite o comando abaixo para gerar o build da aplicação:
+``` 
+ go build
+``` 
+Após rodar o comando acima com sucesso, será possível identificar o build da aplicação com o nome `boleto-api` que foi gerada dentro da pasta root (pasta onde foi clonado o projeto).
 
-Running the API with default configurations
-Eg:
+Se você estiver utilizando Linux (*NIX), execute o arquivo gerado no build
+```
+ % ./boleto-api -airplane-mode
+```
 
-Linux (*NIX):
+Se você estiver utilizando Windows, execute o arquivo exe gerado no build
+```
+ % .\boletoStone-publisher.exe -airplane-mode
+```
 
-	% ./boleto-api
-	
-Windows:
+Se você deseja executar a API no modo dev, que carregará todas as variáveis ​​de ambiente padrão, você deve executar o aplicativo assim:
+```
+ % ./boleto-api -dev
+```
 
-	% boleto-api.exe
+Caso você queira executar o aplicativo no modo simulado usando um banco de dados de memória em vez de integração com o banco, você deve usar a opção simulada:
+```
+ % ./boleto-api -mock
+```
+Caso queira rodar o aplicativo com o log desligado, deve-se usar a opção -nolog:
+```
+ % ./boleto-api -nolog
+```
+Você pode combinar todas essas opções e, caso queira usá-las todas juntas, você pode simplesmente usar a opção -airplane-mode
+```
+ % ./boleto-api -airplane-mode
+```
 
-If you want to run the API in dev mode, which will load all standard environment variables, you should execute the application like this:
+Por padrão, a api do boleto irá instalar e executar um servidor https, mas você pode executar no modo http com a seguinte opção
+```
+ % ./boleto-api -http-only
+```
 
-	% ./boleto-api -dev
+Para instalação do executável são necessárias apenas as variáveis ​​de ambiente configuradas e a aplicação compilada.
 
-In case you want to run the application in mock mode using in memory database instead of bank integration, you should use the mock option:
+Edite o arquivo $HOME/.bashrc.sh
+```
+    export API_PORT="3000"
+    export API_VERSION="0.0.1"
+    export ENVIRONMENT="Development"
+    export SEQ_URL="http://example.mundipagg.com"
+    export SEQ_API_KEY="API_KEY"
+    export ENABLE_REQUEST_LOG="false"
+    export ENABLE_PRINT_REQUEST="true"
+    export URL_BB_REGISTER_BOLETO="https://cobranca.desenv.bb.com.br:7101/registrarBoleto"
+    export URL_BB_TOKEN="https://oauth.desenv.bb.com.br:43000/oauth/token"
+    export MONGODB_URL="10.0.2.15:27017"
+    export APP_URL="http://localhost:8080/boleto"
+```
 
-	% ./boleto-api -mock
+```
+    % go build && mv boleto-api /usr/local/bin
+``` 
+____________________________________________________________	
 
-In case you want to run the application with log turned off, you should use the option -nolog:
+### Exemplo de utilização da API
 
-	% ./boleto-api -nolog
+Você pode utilizar o [Postman](https://www.postman.com/downloads/) para solicitar os serviços da API ou mesmo o curl
+Veja os exemplos a seguir
 
-You can combine all these options and, in case you want to use them altogether, you can simply use the -airplane-mode option
-
-	% ./boleto-api -airplane-mode
-
-By default, boleto api will up and running a https server but you can run in http mode with the following option
-
-	% ./boleto-api -http-only
-	
-
-Using Boleto API Online
-------------------
-
-You can use [Postman](https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop) to request the API's services or even the curl
-See following examples
 ### Banco do Brasil
 ```curl
 % curl -X POST \
@@ -225,10 +265,10 @@ curl -X POST \
     ]
 }
 ```
-In case of Caixa, the impress of boleto will be handled by Caixa. So API will return the Caixa's boleto URL.
+No caso da Caixa, a impressão do boleto ficará a cargo da Caixa. Assim, a API retornará a URL do boleto da Caixa.
 
 
-The API's response will have the following pattern if any error occur:
+A resposta da API terá o seguinte padrão se ocorrer algum erro:
 ```
 {
   "Errors": [
@@ -240,106 +280,36 @@ The API's response will have the following pattern if any error occur:
 }
 ```
 
-API Installation
------------------
-
-For installation of the executable it's only necessary environment variables configured and the compiled application.
-
-Edit file $HOME/.bashrc.sh
-```
-    export API_PORT="3000"
-    export API_VERSION="0.0.1"
-    export ENVIRONMENT="Development"
-    export SEQ_URL="http://example.mundipagg.com"
-    export SEQ_API_KEY="API_KEY"
-    export ENABLE_REQUEST_LOG="false"
-    export ENABLE_PRINT_REQUEST="true"
-    export URL_BB_REGISTER_BOLETO="https://cobranca.desenv.bb.com.br:7101/registrarBoleto"
-    export URL_BB_TOKEN="https://oauth.desenv.bb.com.br:43000/oauth/token"
-    export MONGODB_URL="10.0.2.15:27017"
-    export APP_URL="http://localhost:8080/boleto"
-```
-    % go build && mv boleto-api /usr/local/bin
-
-Then the application will be installed locally.
-
-API Installation using Docker
------------------
-
-Before deploying, you should open the file [docker-compose](/devops/docker-compose.yml) and configure the information which is relevant to the environment. After setting up the docker-compose, you can install the application using the file deploy.sh
-
-    % cd devops
-    % ./build.sh
-    % ./deploy.sh . local
-
-The script will create the Docker's volume directories, compile the application, mount the API's and MongoDB's images and upload the containers.
-For more information about docker-compose, see [doc](https://docs.docker.com/compose/). 
-
-The parameters sent to the script show that the deploy will run locally and not via TFS. In case you don't send the argument "local", the script will use docker-compose.release.yml.
-
-After being deployed, the application can be stoped or started.
-    
-    % cd devops/
-    % ./stop.sh
-    % ./start.sh
- 
-Backup & Restore
------------------ 
-
-Run the following command to backup the database:
-
-    % cd devops
-    % ./doBackup.sh
-
-The generated backups, by default, will be stored in the diretory `$HOME/backups` with the name `bck_boleto-api-YYYY-MM-DD.tar`.
-To restore a backup:
-    
-    % cd devops
-    % ./doRestore.sh
-
-To do the restoration of the database it'll be asked for the restoration file date in the following pattern: `YYYY-MM-DD`.
-    
-Contributing
------------------
-
-To contribute, see [CONTRIBUTING](CONTRIBUTING.md)
-
-
-Using Mongo in Dev
---------------------
-You can use mongo in dev on Docker by using the following command
-
-     % docker run --name mongo-boleto -p 27017:27017 -d mongo
-
-Source Code Layout
+Layout da aplicação
 ---
 
-The application root contains only the file main.go and some config and documentation files.
+A raiz do aplicativo contém apenas o arquivo main.go e alguns arquivos de configuração e documentação.
 
-In the root, we have the following packages:
+Na raiz, temos os seguintes pacotes:
 
 * `api`: Rest Controllers
-* `auth`: Bank authentication
-* `bank`: Boleto's register interface
-* `bb`: Implementation of Banco do Brasil
-* `caixa`: Implementation of Caixa
-* `citibank`: Implementation of Citibank
-* `boleto`: User boleto's creation
-* `cache`: Database (key value) in-memory used only when the application is running in mock mode
-* `config`: Application config
-* `db`: Database persistency
-* `devops`: Contains the upload, deploy, backup and restore files from the application
-* `validations`: Basic data validations
-* `log`: Application log
-* `models`: Application's data structure
+* `auth`: Autorização com os bancos
+* `bank`: Interface que registra os boletos
+* `bb`: Implementação para o Banco do Brasil
+* `caixa`: Implementação para o Caixa
+* `citibank`: Implementação para o Citibank
+* `boleto`: Criação de um boleto
+* `cache`: Base de dados (Chave/Valor) em memória, usado apenas quando a aplicação está rodando em modo mock
+* `config`: Configuração da aplicação
+* `db`: Base de dados de persistência
+* `devops`: Contém os arquivos de upload/deploy da aplicação
+* `validations`: Validação básia dos dados
+* `log`: Logs da aplicação
+* `models`: Modelo de dados da aplicação
 * `parser`: XML parser
-* `test`: Tests utilitaries
-* `tmpl`: Template utilitaries
-* `util`: Miscellaneous utilitaries
-* `integrationTests`: Contains all black box tests
-* `vendor`: Thirdpart libraries
+* `test`: Utilitário de testes
+* `tmpl`: Utilitário de Template
+* `util`: Utilitário de Miscellaneous
+* `integrationTests`: Contém todos os testes de caixa preta
+* `vendor`: Bibliotecas de tericeiros
 
-For more information
------------------
+## Para mais informações
+Veja o [FAQ](./FAQ.md)
 
-See [FAQ](./FAQ.md)
+## Contribuir
+Veja as regras para [contribuir](CONTRIBUTING.md)
