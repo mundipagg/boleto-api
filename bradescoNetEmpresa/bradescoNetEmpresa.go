@@ -109,10 +109,11 @@ func (b BankBradescoNetEmpresa) RegisterBoleto(boleto *models.BoletoRequest) (mo
 
 	switch t := bod.GetBody().(type) {
 	case *models.BoletoResponse:
-		if !t.HasErrors() {
-			t.BarCodeNumber = getBarcode(*boleto).toString()
+		if t.HasErrors() {
+			return *t, bankError.ParseError(t.Errors[0], b.GetBankNameIntegration())
 		}
-		return *t, bankError.ParseError(t.Errors[0], b.GetBankNameIntegration())
+		t.BarCodeNumber = getBarcode(*boleto).toString()
+		return *t, nil
 	case error:
 		return models.BoletoResponse{}, t
 	}
