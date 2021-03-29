@@ -15,7 +15,7 @@ func TestParseError_WhenErrorCodeIsAKnownErrorAndKnowBank_ThenReturnShouldNotBeN
 	assert.NotNil(t, errorResponse)
 }
 
-func TestParseError_WhenErrorCodeIsAUnknownError_ThenReturnShouldBeNull(t *testing.T) {
+func TestParseError_WhenErrorCodeIsAnUnknownError_ThenReturnShouldBeNull(t *testing.T) {
 
 	err := models.NewErrorResponse("UnknowError", "This is an unknown error")
 	errorResponse := ParseError(err, "BradescoNetEmpresa")
