@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParseError_WhenErrorCodeIsAKnowErrorAndKnowBank_ThenReturnShouldNotBeNull(t *testing.T) {
+func TestParseError_WhenErrorCodeIsAKnownErrorAndKnowBank_ThenReturnShouldNotBeNull(t *testing.T) {
 
 	err := models.NewErrorResponse("810", "Erro de certificado ou formatação de campos")
 	errorResponse := ParseError(err, "BradescoNetEmpresa")
@@ -15,9 +15,9 @@ func TestParseError_WhenErrorCodeIsAKnowErrorAndKnowBank_ThenReturnShouldNotBeNu
 	assert.NotNil(t, errorResponse)
 }
 
-func TestParseError_WhenErrorCodeIsAUnknowError_ThenReturnShouldBeNull(t *testing.T) {
+func TestParseError_WhenErrorCodeIsAUnknownError_ThenReturnShouldBeNull(t *testing.T) {
 
-	err := models.NewErrorResponse("UnknowError", "This is an unkown error")
+	err := models.NewErrorResponse("UnknowError", "This is an unknown error")
 	errorResponse := ParseError(err, "BradescoNetEmpresa")
 
 	assert.Nil(t, errorResponse)

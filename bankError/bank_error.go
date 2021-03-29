@@ -6,7 +6,7 @@ func ParseError(bankError models.ErrorResponse, bankName string) error {
 
 	mapping := getBankMap(bankName)
 
-	if found := mapping[bankError.Code]; found != "" {
+	if mapping[bankError.Code] != "" {
 		err := models.BadGatewayError{
 			Message: bankError.Message,
 		}
