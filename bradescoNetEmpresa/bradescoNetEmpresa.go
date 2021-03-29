@@ -1,13 +1,14 @@
 package bradescoNetEmpresa
 
 import (
-	"sync"
 	"errors"
 	"fmt"
 	"html"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/mundipagg/boleto-api/bankError"
 	"github.com/mundipagg/boleto-api/metrics"
 
 	"github.com/mundipagg/boleto-api/tmpl"
@@ -23,7 +24,7 @@ import (
 var o = &sync.Once{}
 var m map[string]string
 
-type bankBradescoNetEmpresa struct {
+type BankBradescoNetEmpresa struct {
 	validate *models.Validator
 	log      *log.Log
 }
@@ -40,8 +41,8 @@ type barcode struct {
 	zero          string
 }
 
-func New() bankBradescoNetEmpresa {
-	b := bankBradescoNetEmpresa{
+func New() BankBradescoNetEmpresa {
+	b := BankBradescoNetEmpresa{
 		validate: models.NewValidator(),
 		log:      log.CreateLog(),
 	}
@@ -59,11 +60,11 @@ func New() bankBradescoNetEmpresa {
 	return b
 }
 
-func (b bankBradescoNetEmpresa) Log() *log.Log {
+func (b BankBradescoNetEmpresa) Log() *log.Log {
 	return b.log
 }
 
-func (b bankBradescoNetEmpresa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
+func (b BankBradescoNetEmpresa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
 
 	boleto.Title.BoletoType, boleto.Title.BoletoTypeCode = getBoletoType(boleto)
 	r := flow.NewFlow()
@@ -111,14 +112,14 @@ func (b bankBradescoNetEmpresa) RegisterBoleto(boleto *models.BoletoRequest) (mo
 		if !t.HasErrors() {
 			t.BarCodeNumber = getBarcode(*boleto).toString()
 		}
-		return *t, nil
+		return *t, bankError.ParseError(t.Errors[0], b.GetBankNameIntegration())
 	case error:
 		return models.BoletoResponse{}, t
 	}
 	return models.BoletoResponse{}, models.NewInternalServerError("MP500", "Internal error")
 }
 
-func (b bankBradescoNetEmpresa) ProcessBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
+func (b BankBradescoNetEmpresa) ProcessBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
 	errs := b.ValidateBoleto(boleto)
 	if len(errs) > 0 {
 		return models.BoletoResponse{Errors: errs}, nil
@@ -126,15 +127,15 @@ func (b bankBradescoNetEmpresa) ProcessBoleto(boleto *models.BoletoRequest) (mod
 	return b.RegisterBoleto(boleto)
 }
 
-func (b bankBradescoNetEmpresa) ValidateBoleto(boleto *models.BoletoRequest) models.Errors {
+func (b BankBradescoNetEmpresa) ValidateBoleto(boleto *models.BoletoRequest) models.Errors {
 	return models.Errors(b.validate.Assert(boleto))
 }
 
-func (b bankBradescoNetEmpresa) GetBankNumber() models.BankNumber {
+func (b BankBradescoNetEmpresa) GetBankNumber() models.BankNumber {
 	return models.Bradesco
 }
 
-func (b bankBradescoNetEmpresa) GetBankNameIntegration() string {
+func (b BankBradescoNetEmpresa) GetBankNameIntegration() string {
 	return "BradescoNetEmpresa"
 }
 
