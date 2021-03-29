@@ -1,13 +1,14 @@
 package bradescoNetEmpresa
 
 import (
-	"sync"
 	"errors"
 	"fmt"
 	"html"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/mundipagg/boleto-api/bankError"
 	"github.com/mundipagg/boleto-api/metrics"
 
 	"github.com/mundipagg/boleto-api/tmpl"
@@ -108,9 +109,10 @@ func (b bankBradescoNetEmpresa) RegisterBoleto(boleto *models.BoletoRequest) (mo
 
 	switch t := bod.GetBody().(type) {
 	case *models.BoletoResponse:
-		if !t.HasErrors() {
-			t.BarCodeNumber = getBarcode(*boleto).toString()
+		if t.HasErrors() {
+			return *t, bankError.ParseError(t.Errors[0], b.GetBankNameIntegration())
 		}
+		t.BarCodeNumber = getBarcode(*boleto).toString()
 		return *t, nil
 	case error:
 		return models.BoletoResponse{}, t
