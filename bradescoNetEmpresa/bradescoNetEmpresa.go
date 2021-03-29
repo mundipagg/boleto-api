@@ -24,7 +24,7 @@ import (
 var o = &sync.Once{}
 var m map[string]string
 
-type BankBradescoNetEmpresa struct {
+type bankBradescoNetEmpresa struct {
 	validate *models.Validator
 	log      *log.Log
 }
@@ -41,8 +41,8 @@ type barcode struct {
 	zero          string
 }
 
-func New() BankBradescoNetEmpresa {
-	b := BankBradescoNetEmpresa{
+func New() bankBradescoNetEmpresa {
+	b := bankBradescoNetEmpresa{
 		validate: models.NewValidator(),
 		log:      log.CreateLog(),
 	}
@@ -60,11 +60,11 @@ func New() BankBradescoNetEmpresa {
 	return b
 }
 
-func (b BankBradescoNetEmpresa) Log() *log.Log {
+func (b bankBradescoNetEmpresa) Log() *log.Log {
 	return b.log
 }
 
-func (b BankBradescoNetEmpresa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
+func (b bankBradescoNetEmpresa) RegisterBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
 
 	boleto.Title.BoletoType, boleto.Title.BoletoTypeCode = getBoletoType(boleto)
 	r := flow.NewFlow()
@@ -120,7 +120,7 @@ func (b BankBradescoNetEmpresa) RegisterBoleto(boleto *models.BoletoRequest) (mo
 	return models.BoletoResponse{}, models.NewInternalServerError("MP500", "Internal error")
 }
 
-func (b BankBradescoNetEmpresa) ProcessBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
+func (b bankBradescoNetEmpresa) ProcessBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
 	errs := b.ValidateBoleto(boleto)
 	if len(errs) > 0 {
 		return models.BoletoResponse{Errors: errs}, nil
@@ -128,15 +128,15 @@ func (b BankBradescoNetEmpresa) ProcessBoleto(boleto *models.BoletoRequest) (mod
 	return b.RegisterBoleto(boleto)
 }
 
-func (b BankBradescoNetEmpresa) ValidateBoleto(boleto *models.BoletoRequest) models.Errors {
+func (b bankBradescoNetEmpresa) ValidateBoleto(boleto *models.BoletoRequest) models.Errors {
 	return models.Errors(b.validate.Assert(boleto))
 }
 
-func (b BankBradescoNetEmpresa) GetBankNumber() models.BankNumber {
+func (b bankBradescoNetEmpresa) GetBankNumber() models.BankNumber {
 	return models.Bradesco
 }
 
-func (b BankBradescoNetEmpresa) GetBankNameIntegration() string {
+func (b bankBradescoNetEmpresa) GetBankNameIntegration() string {
 	return "BradescoNetEmpresa"
 }
 
