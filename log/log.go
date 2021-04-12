@@ -197,15 +197,40 @@ func (l *Log) EndRobot() {
 
 func (l *Log) defaultProperties(messageType string, content interface{}) LogEntry {
 	props := LogEntry{
-		"MessageType": messageType,
 		"Content":     content,
 		"Recipient":   l.Recipient,
-		"Operation":   l.Operation,
 		"NossoNumero": l.NossoNumero,
 		"RequestKey":  l.RequestKey,
 		"BankName":    l.BankName,
-		"IPAddress":   l.IPAddress,
 		"ServiceUser": l.ServiceUser,
+	}
+
+	for k, v := range l.basicProperties(messageType) {
+		props[k] = v
+	}
+
+	return props
+}
+
+//Warn loga mensagem do leve Warning
+func (l *Log) GetBoleto(msg string, id string) {
+	if config.Get().DisableLog {
+		return
+	}
+	go (func() {
+		props := l.basicProperties("Information")
+		props["Id"] = id
+		m := formatter(msg)
+
+		l.logger.Info(m, props)
+	})()
+}
+
+func (l *Log) basicProperties(messageType string) LogEntry {
+	props := LogEntry{
+		"MessageType": messageType,
+		"Operation":   l.Operation,
+		"IPAddress":   l.IPAddress,
 	}
 	return props
 }

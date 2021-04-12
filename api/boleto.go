@@ -2,8 +2,9 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/mundipagg/boleto-api/queue"
 	"net/http"
+
+	"github.com/mundipagg/boleto-api/queue"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tdewolff/minify"
@@ -15,13 +16,14 @@ import (
 	"strings"
 
 	"fmt"
+	"io/ioutil"
+
 	"github.com/mundipagg/boleto-api/bank"
 	"github.com/mundipagg/boleto-api/boleto"
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/db"
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/models"
-	"io/ioutil"
 )
 
 //Regista um boleto em um determinado banco
@@ -133,6 +135,8 @@ func getBoleto(c *gin.Context) {
 
 		bhtml, err := boleto.HTML(boView, "html")
 		b = minifyString(bhtml, "text/html")
+	} else {
+		log.GetBoleto("Boleto recuperado do cache", id)
 	}
 
 	if format == "html" {
