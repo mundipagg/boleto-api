@@ -4,27 +4,40 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"github.com/mundipagg/boleto-api/config"
 	"strconv"
 	"time"
+
+	"github.com/mundipagg/boleto-api/config"
 
 	"github.com/streadway/amqp"
 )
 
 func openChannel(conn *amqp.Connection, op string) (*amqp.Channel, error) {
-	if conn != nil {
-		channel, err := conn.Channel()
-		failOnError(err, "Failed to open a channel", op)
+	var channel *amqp.Channel
+	var err error
 
-		if err == nil {
-			err = channel.Qos(1, 0, false)
-			failOnError(err, "Error setting qos", op)
-		}
-		return channel, err
+	if conn == nil {
+		err = errors.New("Failed to open a channel. The connection is closed")
+		failOnError(err, "Failed to open a channel. The connection is closed", op)
+		return nil, err
 	}
-	err := errors.New("Failed to open a channel. The connection is closed")
-	failOnError(err, "Failed to open a channel. The connection is closed", op)
-	return nil, err
+
+	if channel, err = conn.Channel(); err != nil {
+		failOnError(err, "Failed to open a channel", op)
+		return nil, err
+	}
+
+	if err = channel.Confirm(false); err != nil {
+		failOnError(err, "Failed to set channel into Confirm Mode", op)
+		return nil, err
+	}
+
+	if err = channel.Qos(1, 0, false); err != nil {
+		failOnError(err, "Error setting qos", op)
+		return nil, err
+	}
+
+	return channel, err
 }
 
 func closeChannel(channel *amqp.Channel, op string) {
@@ -57,6 +70,9 @@ func queueBinding(channel *amqp.Channel, queue, exchange, key string) bool {
 }
 
 func writeMessage(channel *amqp.Channel, p PublisherInterface) error {
+	notifyConfirm := make(chan amqp.Confirmation)
+	channel.NotifyPublish(notifyConfirm)
+
 	err := channel.Publish(
 		p.GetExchangeName(),
 		p.GetRoutingKey(), // queue
@@ -67,6 +83,16 @@ func writeMessage(channel *amqp.Channel, p PublisherInterface) error {
 			ContentType:  "text/plain, charset=UTF-8",
 			Body:         p.GetMessageToPublish(),
 		})
+
+	if err == nil {
+		select {
+			case confirm := <-notifyConfirm:
+				if !confirm.Ack {
+					err = errors.New("Nack received from the server during message posting")
+			}
+		}
+	}
+
 	failOnError(err, "Failed to publish a message", "WriteMessage")
 	return err
 }
