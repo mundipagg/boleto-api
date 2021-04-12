@@ -212,7 +212,7 @@ func (l *Log) defaultProperties(messageType string, content interface{}) LogEntr
 	return props
 }
 
-//Warn loga mensagem do leve Warning
+//GetBoleto Loga mensagem de recuperação de boleto
 func (l *Log) GetBoleto(msg string, id string) {
 	if config.Get().DisableLog {
 		return
