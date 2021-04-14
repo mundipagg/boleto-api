@@ -88,6 +88,9 @@ type Config struct {
 	TimeToRecoveryWithQueueInSeconds string
 	Heartbeat                        string
 	RetryNumberGetBoleto             int
+	QueueMaxTLS                      string
+	QueueMinTLS                      string
+	QueueByPassCertificate           bool
 }
 
 var cnf Config
@@ -182,6 +185,9 @@ func Install(mockMode, devMode, disableLog bool) {
 		OriginRoutingKey:                 os.Getenv("ORIGIN_ROUTING_KEY"),
 		TimeToRecoveryWithQueueInSeconds: os.Getenv("TIME_TO_RECOVERY_WITH_QUEUE_IN_SECONDS"),
 		Heartbeat:                        os.Getenv("HEARTBEAT"),
+		QueueMaxTLS:                      os.Getenv("QUEUE_MAX_TLS"),
+		QueueMinTLS:                      os.Getenv("QUEUE_MIN_TLS"),
+		QueueByPassCertificate:           os.Getenv("QUEUE_BYPASS_CERTIFICATE") == "true",
 	}
 }
 

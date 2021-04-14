@@ -60,6 +60,9 @@ func ConfigMock(port string) {
 	os.Setenv("ORIGIN_ROUTING_KEY", "*")
 	os.Setenv("TIME_TO_RECOVERY_WITH_QUEUE_IN_SECONDS", "120")
 	os.Setenv("HEARTBEAT", "30")
+	os.Setenv("QUEUE_MIN_TLS", "1.2")
+	os.Setenv("QUEUE_MAX_TLS", "1.2")
+	os.Setenv("QUEUE_BYPASS_CERTIFICATE", "false")
 
 	config.Install(true, true, config.Get().DisableLog)
 	registerFlowConnectors()
@@ -138,6 +141,9 @@ func configFlags(devMode, mockMode, disableLog bool) {
 		os.Setenv("ORIGIN_ROUTING_KEY", "*")
 		os.Setenv("TIME_TO_RECOVERY_WITH_QUEUE_IN_SECONDS", "120")
 		os.Setenv("HEARTBEAT", "30")
+		os.Setenv("QUEUE_MIN_TLS", "1.2")
+		os.Setenv("QUEUE_MAX_TLS", "1.2")
+		os.Setenv("QUEUE_BYPASS_CERTIFICATE", "false")
 	}
 
 	config.Install(mockMode, devMode, disableLog)
