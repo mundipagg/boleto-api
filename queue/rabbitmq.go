@@ -20,7 +20,7 @@ func openChannel(conn *amqp.Connection, op string) (*amqp.Channel, error) {
 	var err error
 
 	if conn == nil {
-		err = errors.New("Failed to open a channel. The connection is closed")
+		err = errors.New("failed to open a channel. The connection is closed")
 		failOnError(err, "Failed to open a channel. The connection is closed", op)
 		return nil, err
 	}
@@ -88,11 +88,8 @@ func writeMessage(channel *amqp.Channel, p PublisherInterface) error {
 		})
 
 	if err == nil {
-		select {
-		case confirm := <-notifyConfirm:
-			if !confirm.Ack {
-				err = errors.New("Nack received from the server during message posting")
-			}
+		if confirm := <-notifyConfirm; !confirm.Ack {
+			err = errors.New("nack received from the server during message posting")
 		}
 	}
 
