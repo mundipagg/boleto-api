@@ -14,8 +14,7 @@ import (
 	"github.com/mundipagg/boleto-api/util"
 )
 
-// ReturnHeaders 'seta' os headers padrões de resposta
-func ReturnHeaders() gin.HandlerFunc {
+func returnHeaders() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Content-Type", "application/json")
 		c.Next()
@@ -25,7 +24,7 @@ func ReturnHeaders() gin.HandlerFunc {
 func executionController() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if config.IsRunning() {
-			c.AbortWithError(500, errors.New("A aplicação está sendo finalizada"))
+			c.AbortWithError(500, errors.New("a aplicação está sendo finalizada"))
 			return
 		}
 	}
@@ -43,71 +42,57 @@ func timingMetrics() gin.HandlerFunc {
 }
 
 //ParseBoleto trata a entrada de boleto em todos os requests
-func ParseBoleto() gin.HandlerFunc {
-	return func(c *gin.Context) {
+func ParseBoleto(c *gin.Context) {
+	var ok bool
+	var boleto models.BoletoRequest
+	var bank bank.Bank
 
-		boleto := models.BoletoRequest{}
-		errBind := c.BindJSON(&boleto)
-		if errBind != nil {
-			e := models.NewFormatError(errBind.Error())
-			checkError(c, e, log.CreateLog())
-			metrics.PushBusinessMetric("json_error", 1)
-			return
-		}
-		bank, err := bank.Get(boleto)
-		if checkError(c, err, log.CreateLog()) {
-			c.Set("error", err)
-			return
-		}
-		c.Set("bank", bank)
-		d, errFmt := time.Parse("2006-01-02", boleto.Title.ExpireDate)
-		boleto.Title.ExpireDateTime = d
-		if errFmt != nil {
-			e := models.NewFormatError(errFmt.Error())
-			checkError(c, e, log.CreateLog())
-			metrics.PushBusinessMetric(bank.GetBankNameIntegration()+"-bad-request", 1)
-			return
-		}
-
-		l := log.CreateLog()
-		user, _ := c.Get("serviceuser")
-		l.NossoNumero = boleto.Title.OurNumber
-		l.Operation = "RegisterBoleto"
-		l.Recipient = boleto.Recipient.Name
-		l.RequestKey = boleto.RequestKey
-		l.BankName = bank.GetBankNameIntegration()
-		l.IPAddress = c.ClientIP()
-		l.ServiceUser = user.(string)
-		l.RequestApplication(boleto, c.Request.URL.RequestURI(), util.HeaderToMap(c.Request.Header))
-		c.Set("boleto", boleto)
-		c.Next()
-		resp, _ := c.Get("boletoResponse")
-		l.ResponseApplication(resp, c.Request.URL.RequestURI())
-		tag := bank.GetBankNameIntegration() + "-status"
-		metrics.PushBusinessMetric(tag, c.Writer.Status())
+	if boleto, ok = getBoletoRequest(c); !ok {
+		return
 	}
+
+	if bank, ok = getBank(c, boleto); !ok {
+		return
+	}
+
+	if !parseExpirationDate(c, boleto, bank) {
+		return
+	}
+
+	l := loadLog(c, boleto, bank)
+	
+	l.RequestApplication(boleto, c.Request.URL.RequestURI(), util.HeaderToMap(c.Request.Header))
+
+	c.Set("boleto", boleto)
+	c.Set("bank", bank)
+
+	c.Next()
+
+	resp, _ := c.Get("boletoResponse")
+	l.ResponseApplication(resp, c.Request.URL.RequestURI())
+
+	tag := bank.GetBankNameIntegration() + "-status"
+	metrics.PushBusinessMetric(tag, c.Writer.Status())
 }
 
 //Authentication Trata a autenticação para registro de boleto
-func Authentication() gin.HandlerFunc {
-	return func(c *gin.Context) {
+func Authentication(c *gin.Context) {
 
-		cred := getHeaderCredentials(c)
+	cred := getHeaderCredentials(c)
 
-		if cred == nil {
-			c.AbortWithStatusJSON(401, models.GetBoletoResponseError("MP401", "Unauthorized"))
-			return
-		}
-
-		if !hasValidCredentials(cred) {
-			c.AbortWithStatusJSON(401, models.GetBoletoResponseError("MP401", "Unauthorized"))
-			return
-		}
-
-		c.Set("serviceuser", cred.Username)
-
-		c.Next()
+	if cred == nil {
+		c.AbortWithStatusJSON(401, models.GetBoletoResponseError("MP401", "Unauthorized"))
+		return
 	}
+
+	if !hasValidCredentials(cred) {
+		c.AbortWithStatusJSON(401, models.GetBoletoResponseError("MP401", "Unauthorized"))
+		return
+	}
+
+	c.Set("serviceuser", cred.Username)
+
+	c.Next()
 }
 
 func hasValidCredentials(c *models.Credentials) bool {
@@ -133,4 +118,49 @@ func getHeaderCredentials(c *gin.Context) *models.Credentials {
 		return nil
 	}
 	return models.NewCredentials(userkey, pass)
+}
+
+func getBoletoRequest(c *gin.Context) (models.BoletoRequest, bool) {
+	boleto := models.BoletoRequest{}
+	errBind := c.BindJSON(&boleto)
+	if errBind != nil {
+		e := models.NewFormatError(errBind.Error())
+		checkError(c, e, log.CreateLog())
+		return boleto, false
+	}
+	return boleto, true
+}
+
+func getBank(c *gin.Context, boleto models.BoletoRequest) (bank.Bank, bool) {
+	bank, err := bank.Get(boleto)
+	if checkError(c, err, log.CreateLog()) {
+		c.Set("error", err)
+		return bank, false
+	}
+	return bank, true
+}
+
+func parseExpirationDate(c *gin.Context, boleto models.BoletoRequest, bank bank.Bank) bool {
+	d, errFmt := time.Parse("2006-01-02", boleto.Title.ExpireDate)
+	boleto.Title.ExpireDateTime = d
+	if errFmt != nil {
+		e := models.NewFormatError(errFmt.Error())
+		checkError(c, e, log.CreateLog())
+		metrics.PushBusinessMetric(bank.GetBankNameIntegration()+"-bad-request", 1)
+		return false
+	}
+	return true
+}
+
+func loadLog(c *gin.Context, boleto models.BoletoRequest, bank bank.Bank) *log.Log {
+	l := log.CreateLog()
+	user, _ := c.Get("serviceuser")
+	l.NossoNumero = boleto.Title.OurNumber
+	l.Operation = "RegisterBoleto"
+	l.Recipient = boleto.Recipient.Name
+	l.RequestKey = boleto.RequestKey
+	l.BankName = bank.GetBankNameIntegration()
+	l.IPAddress = c.ClientIP()
+	l.ServiceUser = user.(string)
+	return l
 }

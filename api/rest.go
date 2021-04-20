@@ -21,13 +21,10 @@ func InstallRestAPI() {
 	if config.Get().DevMode && !config.Get().MockMode {
 		router.Use(gin.Logger())
 	}
-	InstallV1(router)
-	router.StaticFile("/favicon.ico", "./boleto/favicon.ico")
-	router.GET("/boleto/memory-check/:unit", memory)
-	router.GET("/boleto/memory-check/", memory)
-	router.GET("/boleto", getBoleto)
-	router.GET("/boleto/confirmation", confirmation)
-	router.POST("/boleto/confirmation", confirmation)
+
+	Base(router)
+	V1(router)
+
 	router.Run(config.Get().APIPort)
 }
 
