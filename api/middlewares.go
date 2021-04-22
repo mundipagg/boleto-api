@@ -14,6 +14,12 @@ import (
 	"github.com/mundipagg/boleto-api/util"
 )
 
+const (
+	boletoKey      = "boleto"
+	bankKey        = "bank"
+	serviceUserKey = "serviceuser"
+)
+
 func returnHeaders() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Content-Type", "application/json")
@@ -59,20 +65,10 @@ func ParseBoleto(c *gin.Context) {
 		return
 	}
 
-	l := loadLog(c, boleto, bank)
-	
-	l.RequestApplication(boleto, c.Request.URL.RequestURI(), util.HeaderToMap(c.Request.Header))
-
-	c.Set("boleto", boleto)
-	c.Set("bank", bank)
+	c.Set(boletoKey, boleto)
+	c.Set(bankKey, bank)
 
 	c.Next()
-
-	resp, _ := c.Get("boletoResponse")
-	l.ResponseApplication(resp, c.Request.URL.RequestURI())
-
-	tag := bank.GetBankNameIntegration() + "-status"
-	metrics.PushBusinessMetric(tag, c.Writer.Status())
 }
 
 //Authentication Trata a autenticação para registro de boleto
@@ -90,9 +86,27 @@ func Authentication(c *gin.Context) {
 		return
 	}
 
-	c.Set("serviceuser", cred.Username)
+	c.Set(serviceUserKey, cred.Username)
 
 	c.Next()
+}
+
+//Logger Middleware de log do request e response da BoletoAPI
+func Logger(c *gin.Context) {
+	boleto := getBoletoFromContext(c)
+	bank := getBankFromContext(c)
+
+	l := loadLog(c, boleto, bank)
+
+	l.RequestApplication(boleto, c.Request.URL.RequestURI(), util.HeaderToMap(c.Request.Header))
+
+	c.Next()
+
+	resp, _ := c.Get("boletoResponse")
+	l.ResponseApplication(resp, c.Request.URL.RequestURI())
+
+	tag := bank.GetBankNameIntegration() + "-status"
+	metrics.PushBusinessMetric(tag, c.Writer.Status())
 }
 
 func hasValidCredentials(c *models.Credentials) bool {
@@ -154,7 +168,7 @@ func parseExpirationDate(c *gin.Context, boleto models.BoletoRequest, bank bank.
 
 func loadLog(c *gin.Context, boleto models.BoletoRequest, bank bank.Bank) *log.Log {
 	l := log.CreateLog()
-	user, _ := c.Get("serviceuser")
+	user, _ := c.Get(serviceUserKey)
 	l.NossoNumero = boleto.Title.OurNumber
 	l.Operation = "RegisterBoleto"
 	l.Recipient = boleto.Recipient.Name
@@ -163,4 +177,22 @@ func loadLog(c *gin.Context, boleto models.BoletoRequest, bank bank.Bank) *log.L
 	l.IPAddress = c.ClientIP()
 	l.ServiceUser = user.(string)
 	return l
+}
+
+func getBoletoFromContext(c *gin.Context) models.BoletoRequest {
+	var exists bool
+	var boleto interface{}
+	if boleto, exists = c.Get(boletoKey); exists {
+		return boleto.(models.BoletoRequest)
+	}
+	return models.BoletoRequest{}
+}
+
+func getBankFromContext(c *gin.Context) bank.Bank {
+	var exists bool
+	var banking interface{}
+	if banking, exists = c.Get(bankKey); exists {
+		return banking.(bank.Bank)
+	}
+	return nil
 }

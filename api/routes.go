@@ -7,7 +7,7 @@ func V1(router *gin.Engine) {
 	v1 := router.Group("v1")
 	v1.Use(timingMetrics())
 	v1.Use(returnHeaders())
-	v1.POST("/boleto/register", Authentication, ParseBoleto, registerBoleto)
+	v1.POST("/boleto/register", Authentication, ParseBoleto, Logger, registerBoleto)
 	v1.GET("/boleto/:id", getBoletoByID)
 }
 
