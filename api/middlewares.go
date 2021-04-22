@@ -67,8 +67,6 @@ func ParseBoleto(c *gin.Context) {
 
 	c.Set(boletoKey, boleto)
 	c.Set(bankKey, bank)
-
-	c.Next()
 }
 
 //Authentication Trata a autenticação para registro de boleto
@@ -87,8 +85,6 @@ func Authentication(c *gin.Context) {
 	}
 
 	c.Set(serviceUserKey, cred.Username)
-
-	c.Next()
 }
 
 //Logger Middleware de log do request e response da BoletoAPI
@@ -107,6 +103,26 @@ func Logger(c *gin.Context) {
 
 	tag := bank.GetBankNameIntegration() + "-status"
 	metrics.PushBusinessMetric(tag, c.Writer.Status())
+}
+
+//ValidateV1 Regra de validação da rota V1
+func ValidateRegisterV1(c *gin.Context) {
+	rules := getBoletoFromContext(c).Title.Rules
+
+	if rules != nil {
+		c.AbortWithStatusJSON(400, models.NewSingleErrorCollection("MP400", "title.rules not available in this version"))
+		return
+	}
+}
+
+func ValidateRegisterV2(c *gin.Context) {
+	r := getBoletoFromContext(c).Title.Rules
+	bn := getBankFromContext(c).GetBankNumber()
+
+	if r != nil && bn != models.Caixa {
+		c.AbortWithStatusJSON(400, models.NewSingleErrorCollection("MP400", "title.rules not available for this bank"))
+		return
+	}
 }
 
 func hasValidCredentials(c *models.Credentials) bool {

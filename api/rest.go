@@ -24,6 +24,7 @@ func InstallRestAPI() {
 
 	Base(router)
 	V1(router)
+	V2(router)
 
 	router.Run(config.Get().APIPort)
 }

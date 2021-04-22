@@ -19,7 +19,7 @@ type Title struct {
 	DocumentNumber string    `json:"documentNumber,omitempty"`
 	NSU            string    `json:"nsu,omitempty"`
 	BoletoType     string    `json:"boletoType,omitempty"`
-	Rules          Rules     `json:"rules,omitempty"`
+	Rules          *Rules    `json:"rules,omitempty"`
 	BoletoTypeCode string
 }
 
