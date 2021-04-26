@@ -68,6 +68,10 @@ func (t *Title) IsAmountInCentsValid() error {
 	return nil
 }
 
+func (t *Title) HasRules() bool {
+	return t.Rules != nil
+}
+
 func parseDate(t string) (time.Time, error) {
 	date, err := time.Parse("2006-01-02", t)
 	if err != nil {
