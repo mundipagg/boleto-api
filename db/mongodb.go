@@ -3,15 +3,16 @@ package db
 import (
 	"errors"
 	"fmt"
+	"net"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/models"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"net"
-	"strings"
-	"sync"
-	"time"
 )
 
 //MongoDb Struct
@@ -19,15 +20,15 @@ type MongoDb struct {
 	m sync.RWMutex
 }
 
-var dbName = "Boleto"
-
 var (
 	dbSession *mgo.Session
 	err       error
 )
 
-const NotFoundDoc = "not found"
-const InvalidPK = "invalid pk"
+const (
+	NotFoundDoc = "not found"
+	InvalidPK   = "invalid pk"
+)
 
 //CreateMongo cria uma nova intancia de conexão com o mongodb
 func CreateMongo(l *log.Log) (*MongoDb, error) {
@@ -51,7 +52,7 @@ func getInfo() *mgo.DialInfo {
 	return &mgo.DialInfo{
 		Addrs:     connMgo,
 		Timeout:   5 * time.Second,
-		Database:  "Boleto",
+		Database:  config.Get().MongoDatabase,
 		PoolLimit: 512,
 		Username:  config.Get().MongoUser,
 		Password:  config.Get().MongoPassword,
@@ -68,7 +69,7 @@ func (e *MongoDb) SaveBoleto(boleto models.BoletoView) error {
 
 	defer session.Close()
 
-	c := session.DB(dbName).C("boletos")
+	c := session.DB(config.Get().MongoDatabase).C(config.Get().MongoBoletoCollection)
 	err = c.Insert(boleto)
 
 	return err
@@ -85,7 +86,7 @@ func (e *MongoDb) GetBoletoByID(id, pk string) (models.BoletoView, error) {
 
 	defer session.Close()
 
-	c := session.DB(dbName).C("boletos")
+	c := session.DB(config.Get().MongoDatabase).C(config.Get().MongoBoletoCollection)
 
 	for i := 0; i <= config.Get().RetryNumberGetBoleto; i++ {
 
@@ -120,7 +121,7 @@ func (e *MongoDb) GetUserCredentials() ([]models.Credentials, error) {
 	session := dbSession.Copy()
 	defer session.Close()
 
-	c := session.DB(dbName).C("credentials")
+	c := session.DB(config.Get().MongoDatabase).C(config.Get().MongoCredentialsCollection)
 	err = c.Find(nil).All(&result)
 
 	if err != nil {

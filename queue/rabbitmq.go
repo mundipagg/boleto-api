@@ -8,16 +8,19 @@ import (
 	"time"
 
 	"github.com/mundipagg/boleto-api/config"
+	"github.com/mundipagg/boleto-api/util"
 
 	"github.com/streadway/amqp"
 )
+
+const HEARTBEAT_DEFAULT = 10
 
 func openChannel(conn *amqp.Connection, op string) (*amqp.Channel, error) {
 	var channel *amqp.Channel
 	var err error
 
 	if conn == nil {
-		err = errors.New("Failed to open a channel. The connection is closed")
+		err = errors.New("failed to open a channel. The connection is closed")
 		failOnError(err, "Failed to open a channel. The connection is closed", op)
 		return nil, err
 	}
@@ -85,11 +88,8 @@ func writeMessage(channel *amqp.Channel, p PublisherInterface) error {
 		})
 
 	if err == nil {
-		select {
-			case confirm := <-notifyConfirm:
-				if !confirm.Ack {
-					err = errors.New("Nack received from the server during message posting")
-			}
+		if confirm := <-notifyConfirm; !confirm.Ack {
+			err = errors.New("nack received from the server during message posting")
 		}
 	}
 
@@ -99,15 +99,20 @@ func writeMessage(channel *amqp.Channel, p PublisherInterface) error {
 
 func openConnection() (*amqp.Connection, error) {
 
-	hb, err := strconv.Atoi(config.Get().Heartbeat)
+	var hb int
+	var err error
 
-	if err != nil {
-		hb = 60
+	if hb, err = strconv.Atoi(config.Get().Heartbeat); err != nil {
+		hb = HEARTBEAT_DEFAULT
 	}
 
 	conn, err := amqp.DialConfig(config.Get().ConnQueue, amqp.Config{
-		Heartbeat:       time.Duration(hb) * time.Second,
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		Heartbeat: time.Duration(hb) * time.Second,
+		TLSClientConfig: &tls.Config{
+			MinVersion:         util.GetTLSVersion(config.Get().QueueMinTLS),
+			MaxVersion:         util.GetTLSVersion(config.Get().QueueMaxTLS),
+			InsecureSkipVerify: config.Get().QueueByPassCertificate,
+		},
 	})
 
 	return conn, err
