@@ -12,28 +12,22 @@ const day = time.Hour * 24
 var expirationDate = time.Now().Add(5 * day)
 
 type stubBoletoRequestCaixa struct {
-	test.BuilderBoletoRequest
-	authentication models.Authentication
-	agreement      models.Agreement
-	title          models.Title
-	recipient      models.Recipient
-	buyer          models.Buyer
+	test.StubBoletoRequest
 }
 
 //newStubBoletoRequestCaixa Cria um novo StubBoletoRequest com valores default validáveis para Caixa
 func newStubBoletoRequestCaixa() *stubBoletoRequestCaixa {
+	base := test.NewStubBoletoRequest(models.Caixa)
 	s := &stubBoletoRequestCaixa{
-		BuilderBoletoRequest: test.NewBuilderBoletoRequest(),
+		StubBoletoRequest: *base,
 	}
 
-	s.authentication = models.Authentication{}
-
-	s.agreement = models.Agreement{
+	s.Agreement = models.Agreement{
 		AgreementNumber: 123456,
 		Agency:          "1234",
 	}
 
-	s.title = models.Title{
+	s.Title = models.Title{
 		ExpireDateTime: expirationDate,
 		ExpireDate:     expirationDate.Format("2006-01-02"),
 		OurNumber:      12345678901234,
@@ -44,14 +38,14 @@ func newStubBoletoRequestCaixa() *stubBoletoRequestCaixa {
 		BoletoTypeCode: "99",
 	}
 
-	s.recipient = models.Recipient{
+	s.Recipient = models.Recipient{
 		Document: models.Document{
 			Type:   "CNPJ",
 			Number: "12123123000112",
 		},
 	}
 
-	s.buyer = models.Buyer{
+	s.Buyer = models.Buyer{
 		Name: "Willian Jadson Bezerra Menezes Tupinambá",
 		Document: models.Document{
 			Type:   "CPF",
@@ -67,57 +61,21 @@ func newStubBoletoRequestCaixa() *stubBoletoRequestCaixa {
 			StateCode:  "PA",
 		},
 	}
-
 	return s
 }
 
-func (s *stubBoletoRequestCaixa) withAmountIsCents(amount uint64) *stubBoletoRequestCaixa {
-	s.title.AmountInCents = amount
-	return s
-}
-
-func (s *stubBoletoRequestCaixa) withOurNumber(ourNumber uint) *stubBoletoRequestCaixa {
-	s.title.OurNumber = ourNumber
-	return s
-}
-
-func (s *stubBoletoRequestCaixa) withRecipientDocumentNumber(docNumber string) *stubBoletoRequestCaixa {
-	s.recipient.Document.Number = docNumber
-	return s
-}
-
-func (s *stubBoletoRequestCaixa) withAgreementNumber(number uint) *stubBoletoRequestCaixa {
-	s.agreement.AgreementNumber = number
-	return s
-}
-
-func (s *stubBoletoRequestCaixa) withExpirationDate(expiredAt time.Time) *stubBoletoRequestCaixa {
-	s.title.ExpireDateTime = expiredAt
-	s.title.ExpireDate = expiredAt.Format("2006-01-02")
-	return s
-}
-
-func (s *stubBoletoRequestCaixa) withStrictRules() *stubBoletoRequestCaixa {
-	s.title.Rules = &models.Rules{
+func (s *stubBoletoRequestCaixa) WithStrictRules() *stubBoletoRequestCaixa {
+	s.Title.Rules = &models.Rules{
 		AcceptDivergentAmount: false,
 		MaxDaysToPayPastDue:   0,
 	}
 	return s
 }
 
-func (s *stubBoletoRequestCaixa) withFlexRules() *stubBoletoRequestCaixa {
-	s.title.Rules = &models.Rules{
+func (s *stubBoletoRequestCaixa) WithFlexRules() *stubBoletoRequestCaixa {
+	s.Title.Rules = &models.Rules{
 		AcceptDivergentAmount: true,
 		MaxDaysToPayPastDue:   60,
 	}
 	return s
-}
-
-func (s *stubBoletoRequestCaixa) Build() *models.BoletoRequest {
-	s.SetAuthentication(s.authentication)
-	s.SetAgreement(s.agreement)
-	s.SetTitle(s.title)
-	s.SetRecipient(s.recipient)
-	s.SetBuyer(s.buyer)
-	return s.BoletoRequest()
 }
