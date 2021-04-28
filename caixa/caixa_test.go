@@ -45,7 +45,7 @@ func TestProcessBoleto_WhenServiceRespondsSuccessfully_ShouldHasSuccessfulBoleto
 func TestProcessBoleto_WhenServiceRespondsFailed_ShouldHasFailedBoletoResponse(t *testing.T) {
 	mock.StartMockService("9092")
 
-	input := newStubBoletoRequestCaixa().withAmountIsCents(400).Build()
+	input := newStubBoletoRequestCaixa().WithAmountIsCents(400).Build()
 	bank := New()
 
 	output, _ := bank.ProcessBoleto(input)
@@ -56,7 +56,7 @@ func TestProcessBoleto_WhenServiceRespondsFailed_ShouldHasFailedBoletoResponse(t
 func TestProcessBoleto_WhenRequestContainsInvalidOurNumberParameter_ShouldHasFailedBoletoResponse(t *testing.T) {
 	largeOurNumber := uint(9999999999999999)
 	mock.StartMockService("9092")
-	input := newStubBoletoRequestCaixa().withOurNumber(largeOurNumber).Build()
+	input := newStubBoletoRequestCaixa().WithOurNumber(largeOurNumber).Build()
 
 	bank := New()
 
@@ -75,7 +75,7 @@ func TestGetCaixaCheckSumInfo(t *testing.T) {
 	expiredAt := time.Date(2017, 8, 30, 12, 12, 12, 12, time.Local)
 	doc := "00732159000109"
 
-	input := newStubBoletoRequestCaixa().withAgreementNumber(agreement).withOurNumber(0).withAmountIsCents(1000).withExpirationDate(expiredAt).withRecipientDocumentNumber(doc).Build()
+	input := newStubBoletoRequestCaixa().WithAgreementNumber(agreement).WithOurNumber(0).WithAmountIsCents(1000).WithExpirationDate(expiredAt).WithRecipientDocumentNumber(doc).Build()
 
 	assert.Equal(t, expectedSumCode, bank.getCheckSumCode(*input), "Deve-se formar uma string seguindo o padrão da documentação")
 	assert.Equal(t, expectedToken, bank.getAuthToken(bank.getCheckSumCode(*input)), "Deve-se fazer um hash sha256 e encodar com base64")
@@ -128,10 +128,9 @@ func TestTemplateRequestCaixa_WhenRequestV1_ParseSuccessful(t *testing.T) {
 
 func TestTemplateRequestCaixa_WhenRequestWithStrictRulesV2_ParseSuccessful(t *testing.T) {
 	f := flow.NewFlow()
-	input := newStubBoletoRequestCaixa().withStrictRules().Build()
+	input := newStubBoletoRequestCaixa().Build()
 
 	b := fmt.Sprintf("%v", f.From("message://?source=inline", input, getRequestCaixa(), tmpl.GetFuncMaps()).GetBody())
-	fmt.Println(input.Title.HasRules())
 	fmt.Println(b)
 
 	for _, expected := range expectedBasicTitleRequestFields {
@@ -149,10 +148,9 @@ func TestTemplateRequestCaixa_WhenRequestWithStrictRulesV2_ParseSuccessful(t *te
 
 func TestTemplateRequestCaixa_WhenRequestWithFlexRulesV2_ParseSuccessful(t *testing.T) {
 	f := flow.NewFlow()
-	input := newStubBoletoRequestCaixa().withFlexRules().Build()
+	input := newStubBoletoRequestCaixa().Build()
 
 	b := fmt.Sprintf("%v", f.From("message://?source=inline", input, getRequestCaixa(), tmpl.GetFuncMaps()).GetBody())
-	fmt.Println(input.Title.HasRules())
 	fmt.Println(b)
 
 	for _, expected := range expectedBasicTitleRequestFields {
