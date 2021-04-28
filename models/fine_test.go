@@ -13,7 +13,7 @@ type testFineParameter struct {
 	AmountInCents interface{}
 }
 
-var isValidFineParameters = []testFineParameter{
+var fineParameters = []testFineParameter{
 	{Input: Fine{Type: "Percentual", Days: 0, Rate: 0.010}, AmountInCents: 0, Expected: true},
 	{Input: Fine{Type: "PERCENTUAL", Days: 0, Rate: 0.010}, AmountInCents: 0, Expected: true},
 	{Input: Fine{Type: "pErCeNtUaL", Days: 0, Rate: 0.010}, AmountInCents: 0, Expected: true},
@@ -33,7 +33,7 @@ var isValidFineParameters = []testFineParameter{
 
 func TestFine_IsValid(t *testing.T) {
 	i := 1
-	for _, fact := range isValidFineParameters {
+	for _, fact := range fineParameters {
 		input := fact.Input.(Fine)
 
 		result := input.IsValid(fact.AmountInCents.(int))

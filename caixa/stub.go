@@ -119,5 +119,5 @@ func (s *stubBoletoRequestCaixa) Build() *models.BoletoRequest {
 	s.SetTitle(s.title)
 	s.SetRecipient(s.recipient)
 	s.SetBuyer(s.buyer)
-	return s.GetRequest()
+	return s.BoletoRequest()
 }

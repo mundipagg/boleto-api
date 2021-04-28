@@ -95,7 +95,6 @@ func TestTemplateRequestCaixa_WhenRequestV1_ParseSuccessful(t *testing.T) {
 	input := newStubBoletoRequestCaixa().Build()
 
 	b := fmt.Sprintf("%v", f.From("message://?source=inline", input, getRequestCaixa(), tmpl.GetFuncMaps()).GetBody())
-	fmt.Println(b)
 
 	for _, expected := range expectedBasicTitleRequestFields {
 		assert.Contains(t, b, expected, "Erro no mapeamento dos campos básicos do Título")
@@ -119,8 +118,6 @@ func TestTemplateRequestCaixa_WhenRequestWithStrictRulesV2_ParseSuccessful(t *te
 	input := newStubBoletoRequestCaixa().withStrictRules().Build()
 
 	b := fmt.Sprintf("%v", f.From("message://?source=inline", input, getRequestCaixa(), tmpl.GetFuncMaps()).GetBody())
-	fmt.Println(input.Title.HasRules())
-	fmt.Println(b)
 
 	for _, expected := range expectedBasicTitleRequestFields {
 		assert.Contains(t, b, expected, "Erro no mapeamento dos campos básicos do Título")
@@ -140,8 +137,6 @@ func TestTemplateRequestCaixa_WhenRequestWithFlexRulesV2_ParseSuccessful(t *test
 	input := newStubBoletoRequestCaixa().withFlexRules().Build()
 
 	b := fmt.Sprintf("%v", f.From("message://?source=inline", input, getRequestCaixa(), tmpl.GetFuncMaps()).GetBody())
-	fmt.Println(input.Title.HasRules())
-	fmt.Println(b)
 
 	for _, expected := range expectedBasicTitleRequestFields {
 		assert.Contains(t, b, expected, "Erro no mapeamento dos campos básicos do Título")

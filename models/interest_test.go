@@ -13,7 +13,7 @@ type testInterestParameter struct {
 	AmountInCents interface{}
 }
 
-var isValidInterestParameters = []testInterestParameter{
+var interestParameters = []testInterestParameter{
 	{Input: Interest{Type: "Percentual", Days: 0, Rate: 0.020}, AmountInCents: 0, Expected: true},
 	{Input: Interest{Type: "PERCENTUAL", Days: 0, Rate: 0.020}, AmountInCents: 0, Expected: true},
 	{Input: Interest{Type: "pErCeNtUaL", Days: 0, Rate: 0.020}, AmountInCents: 0, Expected: true},
@@ -33,7 +33,7 @@ var isValidInterestParameters = []testInterestParameter{
 
 func TestInterest_IsValid(t *testing.T) {
 	i := 1
-	for _, fact := range isValidInterestParameters {
+	for _, fact := range interestParameters {
 		input := fact.Input.(Interest)
 
 		result := input.IsValid(fact.AmountInCents.(int))

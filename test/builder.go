@@ -37,7 +37,7 @@ func (b *BuilderBoletoRequest) SetBuyer(buyer models.Buyer) {
 	b.buyer = buyer
 }
 
-func (b *BuilderBoletoRequest) GetRequest() *models.BoletoRequest {
+func (b *BuilderBoletoRequest) BoletoRequest() *models.BoletoRequest {
 	guid, _ := uuid.NewUUID()
 	return &models.BoletoRequest{
 		Authentication: b.authentication,
