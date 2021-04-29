@@ -15,6 +15,7 @@ func Test_StubBoletoRequest_WhenCreateAndSetBoletoRequest_ReturnBoletoRequestSuc
 	expectedExpirationDate := time.Now()
 	expectedOurNumber := uint(1234567890)
 	expectedRecipientDocument := "12.123.123-0001/11"
+	expectedAcceptDivergentAmount := true
 
 	s := NewStubBoletoRequest(models.BancoDoBrasil)
 	s.WithAgreementNumber(expectedAgreementNumber)
@@ -22,6 +23,7 @@ func Test_StubBoletoRequest_WhenCreateAndSetBoletoRequest_ReturnBoletoRequestSuc
 	s.WithExpirationDate(expectedExpirationDate)
 	s.WithOurNumber(expectedOurNumber)
 	s.WithRecipientDocumentNumber(expectedRecipientDocument)
+	s.WithAcceptDivergentAmount(expectedAcceptDivergentAmount)
 
 	b := s.Build()
 
@@ -30,5 +32,6 @@ func Test_StubBoletoRequest_WhenCreateAndSetBoletoRequest_ReturnBoletoRequestSuc
 	assert.Equal(t, expectedAmountInCents, s.Title.AmountInCents)
 	assert.Equal(t, expectedExpirationDate, s.Title.ExpireDateTime)
 	assert.Equal(t, expectedOurNumber, s.Title.OurNumber)
+	assert.Equal(t, expectedAcceptDivergentAmount, s.Title.Rules.AcceptDivergentAmount)
 	assert.Equal(t, expectedRecipientDocument, s.Recipient.Document.Number)
 }

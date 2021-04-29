@@ -54,6 +54,15 @@ func (s *StubBoletoRequest) WithExpirationDate(expiredAt time.Time) *StubBoletoR
 	return s
 }
 
+func (s *StubBoletoRequest) WithAcceptDivergentAmount(accepted bool) *StubBoletoRequest {
+	if !s.Title.HasRules() {
+		s.Title.Rules = &models.Rules{}
+	}
+
+	s.Title.Rules.AcceptDivergentAmount = accepted
+	return s
+}
+
 func (s *StubBoletoRequest) WithRecipientDocumentNumber(docNumber string) *StubBoletoRequest {
 	s.Recipient.Document.Number = docNumber
 	return s
