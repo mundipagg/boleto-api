@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -47,8 +48,8 @@ func timingMetrics() gin.HandlerFunc {
 	}
 }
 
-//ParseBoleto trata a entrada de boleto em todos os requests
-func ParseBoleto(c *gin.Context) {
+//parseBoleto Middleware de tratamento do request de registro de boleto
+func parseBoleto(c *gin.Context) {
 	var ok bool
 	var boleto models.BoletoRequest
 	var bank bank.Bank
@@ -69,8 +70,8 @@ func ParseBoleto(c *gin.Context) {
 	c.Set(bankKey, bank)
 }
 
-//Authentication Trata a autenticação para registro de boleto
-func Authentication(c *gin.Context) {
+//authentication Middleware de autenticação para registro de boleto
+func authentication(c *gin.Context) {
 
 	cred := getHeaderCredentials(c)
 
@@ -87,8 +88,8 @@ func Authentication(c *gin.Context) {
 	c.Set(serviceUserKey, cred.Username)
 }
 
-//Logger Middleware de log do request e response da BoletoAPI
-func Logger(c *gin.Context) {
+//logger Middleware de log do request e response da BoletoAPI
+func logger(c *gin.Context) {
 	boleto := getBoletoFromContext(c)
 	bank := getBankFromContext(c)
 
@@ -105,8 +106,8 @@ func Logger(c *gin.Context) {
 	metrics.PushBusinessMetric(tag, c.Writer.Status())
 }
 
-//ValidateV1 Regra de validação da rota V1
-func ValidateRegisterV1(c *gin.Context) {
+//validateRegisterV1 Middleware de validação das requisições de registro de boleto na rota V1
+func validateRegisterV1(c *gin.Context) {
 	rules := getBoletoFromContext(c).Title.Rules
 
 	if rules != nil {
@@ -115,7 +116,8 @@ func ValidateRegisterV1(c *gin.Context) {
 	}
 }
 
-func ValidateRegisterV2(c *gin.Context) {
+//validateRegisterV2 Middleware de validação das requisições de registro de boleto na rota V2
+func validateRegisterV2(c *gin.Context) {
 	r := getBoletoFromContext(c).Title.Rules
 	bn := getBankFromContext(c).GetBankNumber()
 
@@ -123,6 +125,52 @@ func ValidateRegisterV2(c *gin.Context) {
 		c.AbortWithStatusJSON(400, models.NewSingleErrorCollection("MP400", "title.rules not available for this bank"))
 		return
 	}
+}
+
+//checkError Middleware de verificação de erros
+func checkError(c *gin.Context, err error, l *log.Log) bool {
+
+	if err != nil {
+		errResp := models.BoletoResponse{
+			Errors: models.NewErrors(),
+		}
+
+		switch v := err.(type) {
+
+		case models.ErrorResponse:
+			errResp.Errors.Append(v.ErrorCode(), v.Error())
+			c.JSON(http.StatusBadRequest, errResp)
+
+		case models.HttpNotFound:
+			errResp.Errors.Append("MP404", v.Error())
+			l.Warn(errResp, v.Error())
+			c.JSON(http.StatusNotFound, errResp)
+
+		case models.InternalServerError:
+			errResp.Errors.Append("MP500", v.Error())
+			l.Warn(errResp, v.Error())
+			c.JSON(http.StatusInternalServerError, errResp)
+
+		case models.BadGatewayError:
+			errResp.Errors.Append("MP502", v.Error())
+			l.Warn(errResp, v.Error())
+			c.JSON(http.StatusBadGateway, errResp)
+
+		case models.FormatError:
+			errResp.Errors.Append("MP400", v.Error())
+			l.Warn(errResp, v.Error())
+			c.JSON(http.StatusBadRequest, errResp)
+
+		default:
+			errResp.Errors.Append("MP500", "Internal Error")
+			l.Fatal(errResp, v.Error())
+			c.JSON(http.StatusInternalServerError, errResp)
+		}
+
+		c.Set("boletoResponse", errResp)
+		return true
+	}
+	return false
 }
 
 func hasValidCredentials(c *models.Credentials) bool {

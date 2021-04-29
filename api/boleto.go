@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"net/http/httputil"
 
 	"github.com/mundipagg/boleto-api/queue"
 
@@ -96,6 +97,7 @@ func registerBoleto(c *gin.Context) {
 	c.Set("boletoResponse", resp)
 }
 
+//Recupera um boleto
 func getBoleto(c *gin.Context) {
 	c.Status(200)
 
@@ -155,7 +157,17 @@ func getBoleto(c *gin.Context) {
 		}
 
 	}
+}
 
+//Confirmation Rota de confirmação da Requisição de Registro. Atualmente apenas o BradescoShopFacil utiliza esse método
+func confirmation(c *gin.Context) {
+	if dump, err := httputil.DumpRequest(c.Request, true); err == nil {
+		l := log.CreateLog()
+		l.BankName = "BradescoShopFacil"
+		l.Operation = "BoletoConfirmation"
+		l.Request(string(dump), c.Request.URL.String(), nil)
+	}
+	c.String(200, "OK")
 }
 
 func toPdf(page string) ([]byte, error) {
