@@ -38,7 +38,7 @@ func (s *StubBoletoRequest) WithAgreementNumber(number uint) *StubBoletoRequest 
 	return s
 }
 
-func (s *StubBoletoRequest) WithAmountIsCents(amount uint64) *StubBoletoRequest {
+func (s *StubBoletoRequest) WithAmountInCents(amount uint64) *StubBoletoRequest {
 	s.Title.AmountInCents = amount
 	return s
 }

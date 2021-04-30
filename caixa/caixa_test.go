@@ -33,7 +33,7 @@ func TestProcessBoleto_WhenServiceRespondsSuccessfully_ShouldHasSuccessfulBoleto
 func TestProcessBoleto_WhenServiceRespondsFailed_ShouldHasFailedBoletoResponse(t *testing.T) {
 	mock.StartMockService("9092")
 
-	input := newStubBoletoRequestCaixa().WithAmountIsCents(400).Build()
+	input := newStubBoletoRequestCaixa().WithAmountInCents(400).Build()
 	bank := New()
 
 	output, _ := bank.ProcessBoleto(input)
@@ -63,7 +63,7 @@ func TestGetCaixaCheckSumInfo(t *testing.T) {
 	expiredAt := time.Date(2017, 8, 30, 12, 12, 12, 12, time.Local)
 	doc := "00732159000109"
 
-	input := newStubBoletoRequestCaixa().WithAgreementNumber(agreement).WithOurNumber(0).WithAmountIsCents(1000).WithExpirationDate(expiredAt).WithRecipientDocumentNumber(doc).Build()
+	input := newStubBoletoRequestCaixa().WithAgreementNumber(agreement).WithOurNumber(0).WithAmountInCents(1000).WithExpirationDate(expiredAt).WithRecipientDocumentNumber(doc).Build()
 
 	assert.Equal(t, expectedSumCode, bank.getCheckSumCode(*input), "Deve-se formar uma string seguindo o padrão da documentação")
 	assert.Equal(t, expectedToken, bank.getAuthToken(bank.getCheckSumCode(*input)), "Deve-se fazer um hash sha256 e encodar com base64")

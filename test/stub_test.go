@@ -19,7 +19,7 @@ func Test_StubBoletoRequest_WhenCreateAndSetBoletoRequest_ReturnBoletoRequestSuc
 
 	s := NewStubBoletoRequest(models.BancoDoBrasil)
 	s.WithAgreementNumber(expectedAgreementNumber)
-	s.WithAmountIsCents(uint64(expectedAmountInCents))
+	s.WithAmountInCents(uint64(expectedAmountInCents))
 	s.WithExpirationDate(expectedExpirationDate)
 	s.WithOurNumber(expectedOurNumber)
 	s.WithRecipientDocumentNumber(expectedRecipientDocument)
