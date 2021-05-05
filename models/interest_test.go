@@ -15,6 +15,7 @@ type testInterestParameter struct {
 
 var interestParameters = []testInterestParameter{
 	{Input: Interest{Type: "Percentual", Days: 0, Rate: 0.020}, AmountInCents: 0, Expected: true},
+	{Input: Interest{Type: "Percentual ", Days: 0, Rate: 0.020}, AmountInCents: 0, Expected: false},
 	{Input: Interest{Type: "PERCENTUAL", Days: 0, Rate: 0.020}, AmountInCents: 0, Expected: true},
 	{Input: Interest{Type: "pErCeNtUaL", Days: 0, Rate: 0.020}, AmountInCents: 0, Expected: true},
 	{Input: Interest{Type: "Porcentagem", Days: 0, Rate: 0.020}, AmountInCents: 0, Expected: false},

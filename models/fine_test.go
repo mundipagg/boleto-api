@@ -15,6 +15,7 @@ type testFineParameter struct {
 
 var fineParameters = []testFineParameter{
 	{Input: Fine{Type: "Percentual", Days: 0, Rate: 0.010}, AmountInCents: 0, Expected: true},
+	{Input: Fine{Type: "Percentual ", Days: 0, Rate: 0.010}, AmountInCents: 0, Expected: false},
 	{Input: Fine{Type: "PERCENTUAL", Days: 0, Rate: 0.010}, AmountInCents: 0, Expected: true},
 	{Input: Fine{Type: "pErCeNtUaL", Days: 0, Rate: 0.010}, AmountInCents: 0, Expected: true},
 	{Input: Fine{Type: "Porcentagem", Days: 0, Rate: 0.010}, AmountInCents: 0, Expected: false},

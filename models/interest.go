@@ -3,7 +3,8 @@ package models
 import "strings"
 
 const (
-	MaxInterestRate = 0.020
+	MaxInterestRate                = 0.020
+	MinDaysToStartChargingInterest = 0
 )
 
 //Interest Representa as informações sobre Multa
@@ -15,7 +16,7 @@ type Interest struct {
 
 //IsValid Valida as regras de negócio sobre Juros
 func (i *Interest) IsValid(amountInCents int) bool {
-	if i.Days < 0 {
+	if i.Days < MinDaysToStartChargingInterest {
 		return false
 	}
 

@@ -3,7 +3,8 @@ package models
 import "strings"
 
 const (
-	MaxFineRate = 0.010
+	MaxFineRate                = 0.010
+	MinDaysToStartChargingFine = 0
 )
 
 //Fine Representa as informações sobre Juros
@@ -15,7 +16,7 @@ type Fine struct {
 
 //IsValid Valida as regras de negócio sobre Juros
 func (f *Fine) IsValid(amountInCents int) bool {
-	if f.Days < 0 {
+	if f.Days < MinDaysToStartChargingFine {
 		return false
 	}
 

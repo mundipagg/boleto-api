@@ -13,7 +13,7 @@ func Base(router *gin.Engine) {
 	router.POST("/boleto/confirmation", confirmation)
 }
 
-//V1 instala a api versao 1
+//V1 configura as rotas da v1
 func V1(router *gin.Engine) {
 	v1 := router.Group("v1")
 	v1.Use(timingMetrics())
@@ -22,7 +22,7 @@ func V1(router *gin.Engine) {
 	v1.GET("/boleto/:id", getBoletoByID)
 }
 
-//V2 intala a api versao 2
+//V2 configura as rotas da v2
 func V2(router *gin.Engine) {
 	v2 := router.Group("v2")
 	v2.Use(timingMetrics())
