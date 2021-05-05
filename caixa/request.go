@@ -75,27 +75,27 @@ const incluiBoleto = `
                   <PAGADOR>
                      {{if eq .Buyer.Document.Type "CPF"}}
 					 	<CPF>{{.Buyer.Document.Number}}</CPF>
-                     	<NOME>{{truncate .Buyer.Name 40}}</NOME>
+                     	<NOME>{{truncate (clearStringCaixa .Buyer.Name) 40}}</NOME>
                      {{else}}
 					 	<CNPJ>{{.Buyer.Document.Number}}</CNPJ>
-                     	<RAZAO_SOCIAL>{{truncate .Buyer.Name 40}}</RAZAO_SOCIAL>
-					 {{end}}
+                     	<RAZAO_SOCIAL>{{truncate (clearStringCaixa .Buyer.Name) 40}}</RAZAO_SOCIAL>
+					      {{end}}
                      <ENDERECO>
-                     <LOGRADOURO>{{clearString (truncateManyFields 40 .Buyer.Address.Street .Buyer.Address.Number .Buyer.Address.Complement)}}</LOGRADOURO>
-                        <BAIRRO>{{clearString (truncate .Buyer.Address.District 15)}}</BAIRRO>
-                        <CIDADE>{{clearString (truncate .Buyer.Address.City 15)}}</CIDADE>
-                        <UF>{{clearString (truncate .Buyer.Address.StateCode 2)}}</UF>
-                        <CEP>{{clearString (truncate .Buyer.Address.ZipCode 8)}}</CEP>
+                     <LOGRADOURO>{{truncateManyFields 40 (clearStringCaixa .Buyer.Address.Street) (clearStringCaixa .Buyer.Address.Number) (clearStringCaixa .Buyer.Address.Complement)}}</LOGRADOURO>
+                        <BAIRRO>{{truncate (clearStringCaixa .Buyer.Address.District) 15}}</BAIRRO>
+                        <CIDADE>{{truncate (clearStringCaixa .Buyer.Address.City) 15}}</CIDADE>
+                        <UF>{{truncate (clearStringCaixa .Buyer.Address.StateCode) 2}}</UF>
+                        <CEP>{{truncate (clearStringCaixa .Buyer.Address.ZipCode) 8}}</CEP>
                      </ENDERECO>
                   </PAGADOR>
                   <FICHA_COMPENSACAO>
                      <MENSAGENS>
-                        <MENSAGEM>{{clearString (truncate .Title.Instructions 40)}}</MENSAGEM>
+                        <MENSAGEM>{{truncate (clearStringCaixa .Title.Instructions) 40}}</MENSAGEM>
                         </MENSAGENS>
                   </FICHA_COMPENSACAO>
                   <RECIBO_PAGADOR>
                      <MENSAGENS>
-                        <MENSAGEM>{{clearString (truncate .Title.Instructions 40)}}</MENSAGEM>
+                        <MENSAGEM>{{truncate (clearStringCaixa .Title.Instructions) 40}}</MENSAGEM>
                      </MENSAGENS>
                   </RECIBO_PAGADOR>
                {{if .Title.HasRules}} 

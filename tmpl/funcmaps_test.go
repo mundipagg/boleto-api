@@ -26,6 +26,15 @@ var clearStringParameters = []test.Parameter{
 	{Input: "", Expected: ""},
 	{Input: "Jardim Novo Cambuí ", Expected: "Jardim Novo Cambui"},
 	{Input: "Jardim Novo Cambuí�", Expected: "Jardim Novo Cambui"},
+	{Input: "CaixaAccepted:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,/()*&=-+!:?<>.;_\"", Expected: "CaixaAccepted:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,/()*&=-+!:?<>.;_\""},
+	{Input: "CaixaNotAccepted:ÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕáéíóúàèìòùâêîôûãõç", Expected: "CaixaNotAccepted:AEIOUAEIOUAEIOUAOaeiouaeiouaeiouaoc"},
+	{Input: "{|}", Expected: ""},
+}
+
+var clearStringCaixaParameters = []test.Parameter{
+	{Input: "CaixaAccepted:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,/()*&=-+!:?<>.;_\"", Expected: "CaixaAccepted:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,/()*&=-+!:?<>.;_\""},
+	{Input: "CaixaClearCharacter:ÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕáéíóúàèìòùâêîôûãõç", Expected: "CaixaClearCharacter:AEIOUAEIOUAEIOUAOaeiouaeiouaeiouaoc"},
+	{Input: "@#$%¨{}[]^~|ºª§°¹²³£¢¬\\�", Expected: "                        "},
 }
 
 var formatNumberParameters = []test.UInt64TestParameter{
@@ -62,7 +71,7 @@ var mod11BradescoShopFacilDvParameters = []test.Parameter{
 }
 
 var sanitizeCitibankSpecialCharacteresParameters = []test.Parameter{
-	{Input: "", Length: 0, Expected: ""}, //Default string value
+	{Input: "", Length: 0, Expected: ""},       //Default string value
 	{Input: "   ", Length: 3, Expected: "   "}, //Whitespaces
 	{Input: "a b", Length: 3, Expected: "a b"},
 	{Input: "/-;@", Length: 4, Expected: "/-;@"}, //Caracteres especiais aceitos pelo Citibank
@@ -104,6 +113,13 @@ func TestTruncate(t *testing.T) {
 func TestClearString(t *testing.T) {
 	for _, fact := range clearStringParameters {
 		result := clearString(fact.Input.(string))
+		assert.Equal(t, fact.Expected, result, "Deve-se limpar uma string corretamente")
+	}
+}
+
+func TestClearStringCaixa(t *testing.T) {
+	for _, fact := range clearStringCaixaParameters {
+		result := clearStringCaixa(fact.Input.(string))
 		assert.Equal(t, fact.Expected, result, "Deve-se limpar uma string corretamente")
 	}
 }
