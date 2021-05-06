@@ -228,3 +228,49 @@ func minifyString(mString, tp string) string {
 
 	return s
 }
+
+//checkError
+func checkError(c *gin.Context, err error, l *log.Log) bool {
+
+	if err != nil {
+		errResp := models.BoletoResponse{
+			Errors: models.NewErrors(),
+		}
+
+		switch v := err.(type) {
+
+		case models.ErrorResponse:
+			errResp.Errors.Append(v.ErrorCode(), v.Error())
+			c.JSON(http.StatusBadRequest, errResp)
+
+		case models.HttpNotFound:
+			errResp.Errors.Append("MP404", v.Error())
+			l.Warn(errResp, v.Error())
+			c.JSON(http.StatusNotFound, errResp)
+
+		case models.InternalServerError:
+			errResp.Errors.Append("MP500", v.Error())
+			l.Warn(errResp, v.Error())
+			c.JSON(http.StatusInternalServerError, errResp)
+
+		case models.BadGatewayError:
+			errResp.Errors.Append("MP502", v.Error())
+			l.Warn(errResp, v.Error())
+			c.JSON(http.StatusBadGateway, errResp)
+
+		case models.FormatError:
+			errResp.Errors.Append("MP400", v.Error())
+			l.Warn(errResp, v.Error())
+			c.JSON(http.StatusBadRequest, errResp)
+
+		default:
+			errResp.Errors.Append("MP500", "Internal Error")
+			l.Fatal(errResp, v.Error())
+			c.JSON(http.StatusInternalServerError, errResp)
+		}
+
+		c.Set("boletoResponse", errResp)
+		return true
+	}
+	return false
+}
