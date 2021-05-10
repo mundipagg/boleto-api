@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"crypto/tls"
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/models"
@@ -30,7 +31,7 @@ const (
 	InvalidPK   = "invalid pk"
 )
 
-//CreateMongo cria uma nova intancia de conexão com o mongodb
+//CreateMongo cria uma nova instancia de conexão com o mongodb
 func CreateMongo(l *log.Log) (*MongoDb, error) {
 
 	if dbSession == nil {
@@ -56,6 +57,9 @@ func getInfo() *mgo.DialInfo {
 		PoolLimit: 512,
 		Username:  config.Get().MongoUser,
 		Password:  config.Get().MongoPassword,
+		DialServer: func(addr *mgo.ServerAddr) (net.Conn, error) {
+			return tls.Dial("tcp", addr.String(), &tls.Config{})
+		},
 	}
 }
 
