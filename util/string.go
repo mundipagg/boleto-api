@@ -55,16 +55,25 @@ func IsBasicCharacter(r rune) bool {
 
 //IsCaixaSpecialCharacter Verifica se um caracter especial é aceito Caixa Econômica, de acordo com o  código decimal da Tabela ASCII
 // sendo aceito os seguinte caracteres:
-//	esp	32	&	38	 :	58	 _  95
-//	!	33	'	39   ;	59
-//			(	40   <	60
+//	esp	32	'	39   :	58
+//	!	33	(	40   ;	59
 //			)	41   =	61
-//			*	42   >	62
+//			*	42
 //			+	43   ?	63
 //			,	44
-//			-	45
+//			-	45   _  95
 //			.	46
 //			/	47
+//
+// OBS: Apesar de descritos como aceitos, os caracteres & (38)  < (60) e > (62) foram removidos pois não
+// estão disponíveis para XML. Testamos seus respectivos encodes: &amp; &lt; &gt; entretanto recebemos a
+// resposta (66) CARACTER INVALIDO.
 func IsCaixaSpecialCharacter(r rune) bool {
-	return (r >= 32 && r <= 33) || (r >= 38 && r <= 47) || (r >= 58 && r <= 63) || r == 95
+	caixaSpecialCharacters := []rune{32, 33, 39, 40, 41, 42, 43, 44, 45, 46, 47, 58, 59, 61, 63, 95}
+	for _, c := range caixaSpecialCharacters {
+		if r == c {
+			return true
+		}
+	}
+	return false
 }
