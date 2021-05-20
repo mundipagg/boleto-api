@@ -1,12 +1,15 @@
 package caixa
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
+	"github.com/PMoneda/flow"
 	"github.com/mundipagg/boleto-api/mock"
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/test"
+	"github.com/mundipagg/boleto-api/tmpl"
 	"github.com/mundipagg/boleto-api/util"
 	"github.com/stretchr/testify/assert"
 )
@@ -54,6 +57,18 @@ var boletoTypeParameters = []test.Parameter{
 	{Input: models.Title{BoletoType: ""}, Expected: "99"},
 	{Input: models.Title{BoletoType: "NSA"}, Expected: "99"},
 	{Input: models.Title{BoletoType: "BDP"}, Expected: "99"},
+}
+
+var boletoBuyerNameParameters = []test.Parameter{
+	{Input: "Leonardo Jasmim", Expected: "<NOME>Leonardo Jasmim</NOME>"},
+	{Input: "Ântôníõ Tùpìnâmbáú", Expected: "<NOME>Antonio Tupinambau</NOME>"},
+	{Input: "Accepted , / ( ) * = - + ! : ? . ; _ ' ", Expected: "<NOME>Accepted , / ( ) * = - &#43; ! : ? . ; _ &#39; </NOME>"},
+	{Input: "NotAccepted @#$%¨{}[]^~\"&<>\\", Expected: "<NOME>NotAccepted                 </NOME>"},
+}
+
+var boletoInstructionsParameters = []test.Parameter{
+	{Input: ", / ( ) * = - + ! : ? . ; _ ' ", Expected: "<MENSAGEM>, / ( ) * = - &#43; ! : ? . ; _ &#39; </MENSAGEM>"},
+	{Input: "@ # $ % ¨ { } [ ] ^ ~ \" & < > \\", Expected: "                              "},
 }
 
 func TestProcessBoleto_WhenServiceRespondsSuccessfully_ShouldHasSuccessfulBoletoResponse(t *testing.T) {
@@ -135,5 +150,31 @@ func TestGetBoletoType_WhenCalled_ShouldBeMapTypeSuccessful(t *testing.T) {
 		request.Title = fact.Input.(models.Title)
 		_, result := getBoletoType(request)
 		assert.Equal(t, fact.Expected, result, "Deve mapear o boleto type corretamente")
+	}
+}
+
+func TestTempletaRequestCaixa_WhenParseBuyerName_ShouldParseSucessfully(t *testing.T) {
+	f := flow.NewFlow()
+
+	request := new(models.BoletoRequest)
+	util.FromJSON(baseMockJSON, request)
+
+	for _, fact := range boletoBuyerNameParameters {
+		request.Buyer.Name = fact.Input.(string)
+		result := fmt.Sprintf("%v", f.From("message://?source=inline", request, getRequestCaixa(), tmpl.GetFuncMaps()).GetBody())
+		assert.Contains(t, result, fact.Expected, "Conversão não realizada como esperado")
+	}
+}
+
+func TestTempletaRequestCaixa_WhenParseInstruction_ShouldParseSucessfully(t *testing.T) {
+	f := flow.NewFlow()
+
+	request := new(models.BoletoRequest)
+	util.FromJSON(baseMockJSON, request)
+
+	for _, fact := range boletoInstructionsParameters {
+		request.Title.Instructions = fact.Input.(string)
+		result := fmt.Sprintf("%v", f.From("message://?source=inline", request, getRequestCaixa(), tmpl.GetFuncMaps()).GetBody())
+		assert.Contains(t, result, fact.Expected, "Conversão não realizada como esperado")
 	}
 }

@@ -1,6 +1,6 @@
 package caixa
 
-const responseCaixa = `
+const responseFromCaixa = `
 <?xml version="1.0" encoding="utf-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
     <soapenv:Body>
@@ -30,7 +30,7 @@ const responseCaixa = `
 </soapenv:Envelope>
 `
 
-const incluiBoleto = `
+const requestToCaixa = `
 
 ## SOAPAction:IncluiBoleto
 ## Content-Type:text/xml
@@ -52,7 +52,7 @@ const incluiBoleto = `
               <CODIGO_BENEFICIARIO>{{padLeft (toString .Agreement.AgreementNumber) "0" 7}}</CODIGO_BENEFICIARIO>
                <TITULO>
                   <NOSSO_NUMERO>{{toString .Title.OurNumber}}</NOSSO_NUMERO>
-                  <NUMERO_DOCUMENTO>{{truncate .Title.DocumentNumber 11}}</NUMERO_DOCUMENTO>
+                  <NUMERO_DOCUMENTO>{{truncateOnly .Title.DocumentNumber 11}}</NUMERO_DOCUMENTO>
                   <DATA_VENCIMENTO>{{enDate .Title.ExpireDateTime "-"}}</DATA_VENCIMENTO>
                   <VALOR>{{toFloatStr .Title.AmountInCents}}</VALOR>
                   <TIPO_ESPECIE>{{.Title.BoletoTypeCode}}</TIPO_ESPECIE>
@@ -65,33 +65,33 @@ const incluiBoleto = `
                   <VALOR_ABATIMENTO>0</VALOR_ABATIMENTO>
                   <POS_VENCIMENTO>
                      <ACAO>DEVOLVER</ACAO>
-                    <NUMERO_DIAS>0</NUMERO_DIAS>
+                     <NUMERO_DIAS>0</NUMERO_DIAS>
                   </POS_VENCIMENTO>
                   <CODIGO_MOEDA>9</CODIGO_MOEDA>
                   <PAGADOR>
-                     {{if eq .Buyer.Document.Type "CPF"}}
-					 	<CPF>{{.Buyer.Document.Number}}</CPF>
-                     	<NOME>{{truncate .Buyer.Name 40}}</NOME>
-                     {{else}}
-					 	<CNPJ>{{.Buyer.Document.Number}}</CNPJ>
-                     	<RAZAO_SOCIAL>{{truncate .Buyer.Name 40}}</RAZAO_SOCIAL>
-					 {{end}}
+                  {{if eq .Buyer.Document.Type "CPF"}}
+					 	   <CPF>{{.Buyer.Document.Number}}</CPF>
+                     <NOME>{{truncateOnly (clearStringCaixa .Buyer.Name) 40}}</NOME>
+                  {{else}}
+					 	   <CNPJ>{{.Buyer.Document.Number}}</CNPJ>
+                     <RAZAO_SOCIAL>{{truncateOnly (clearStringCaixa .Buyer.Name) 40}}</RAZAO_SOCIAL>
+					   {{end}}
                      <ENDERECO>
-                     <LOGRADOURO>{{clearString (truncateManyFields 40 .Buyer.Address.Street .Buyer.Address.Number .Buyer.Address.Complement)}}</LOGRADOURO>
-                        <BAIRRO>{{clearString (truncate .Buyer.Address.District 15)}}</BAIRRO>
-                        <CIDADE>{{clearString (truncate .Buyer.Address.City 15)}}</CIDADE>
-                        <UF>{{clearString (truncate .Buyer.Address.StateCode 2)}}</UF>
-                        <CEP>{{clearString (truncate .Buyer.Address.ZipCode 8)}}</CEP>
+                        <LOGRADOURO>{{truncateOnly (joinSpace (clearStringCaixa .Buyer.Address.Street) (clearStringCaixa .Buyer.Address.Number) (clearStringCaixa .Buyer.Address.Complement)) 40}}</LOGRADOURO>
+                        <BAIRRO>{{truncateOnly (clearStringCaixa .Buyer.Address.District) 15}}</BAIRRO>
+                        <CIDADE>{{truncateOnly (clearStringCaixa .Buyer.Address.City) 15}}</CIDADE>
+                        <UF>{{truncateOnly (clearStringCaixa .Buyer.Address.StateCode) 2}}</UF>
+                        <CEP>{{truncateOnly (clearStringCaixa .Buyer.Address.ZipCode) 8}}</CEP>
                      </ENDERECO>
                   </PAGADOR>
                   <FICHA_COMPENSACAO>
                      <MENSAGENS>
-                        <MENSAGEM>{{clearString (truncate .Title.Instructions 40)}}</MENSAGEM>
-                        </MENSAGENS>
+                        <MENSAGEM>{{truncateOnly (clearStringCaixa .Title.Instructions) 40}}</MENSAGEM>
+                     </MENSAGENS>
                   </FICHA_COMPENSACAO>
                   <RECIBO_PAGADOR>
                      <MENSAGENS>
-                        <MENSAGEM>{{clearString (truncate .Title.Instructions 40)}}</MENSAGEM>
+                        <MENSAGEM>{{truncateOnly (clearStringCaixa .Title.Instructions) 40}}</MENSAGEM>
                      </MENSAGENS>
                   </RECIBO_PAGADOR>                 
                </TITULO>
@@ -103,9 +103,9 @@ const incluiBoleto = `
 `
 
 func getRequestCaixa() string {
-	return incluiBoleto
+	return requestToCaixa
 }
 
 func getResponseCaixa() string {
-	return responseCaixa
+	return responseFromCaixa
 }

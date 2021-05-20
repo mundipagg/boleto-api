@@ -62,13 +62,38 @@ var mod11BradescoShopFacilDvParameters = []test.Parameter{
 }
 
 var sanitizeCitibankSpecialCharacteresParameters = []test.Parameter{
-	{Input: "", Length: 0, Expected: ""}, //Default string value
+	{Input: "", Length: 0, Expected: ""},       //Default string value
 	{Input: "   ", Length: 3, Expected: "   "}, //Whitespaces
 	{Input: "a b", Length: 3, Expected: "a b"},
 	{Input: "/-;@", Length: 4, Expected: "/-;@"}, //Caracteres especiais aceitos pelo Citibank
 	{Input: "???????????????????????????a-zA-Z0-9ÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕáéíóúàèìòùâêîôûãõç.", Length: 45, Expected: "a-zA-Z0-9AEIOUAEIOUAEIOUAOaeiouaeiouaeiouaoc."},
 	{Input: "Ol@ Mundo. você pode ver uma barra /, mas não uma exclamação!?; Nem Isso", Length: 60, Expected: "Ol@ Mundo. voce pode ver uma barra / mas nao uma exclamacao;"},
 	{Input: "Avenida Andr? Rodrigues de Freitas", Length: 33, Expected: "Avenida Andr Rodrigues de Freitas"},
+}
+
+var clearStringCaixaParameters = []test.Parameter{
+	{Input: "CaixaAccepted:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,/()*=-+!:?.;_'", Expected: "CaixaAccepted:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,/()*=-+!:?.;_'"},
+	{Input: "CaixaAccepted:,/()*=-+!:?.;_'", Expected: "CaixaAccepted:,/()*=-+!:?.;_'"},
+	{Input: "XMLNotAccepted:&<>", Expected: "XMLNotAccepted:   "},
+	{Input: "CaixaClearCharacter:ÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕáéíóúàèìòùâêîôûãõç", Expected: "CaixaClearCharacter:AEIOUAEIOUAEIOUAOaeiouaeiouaeiouaoc"},
+	{Input: "@#$%¨{}[]^~|ºª§°¹²³£¢¬\\�\"", Expected: "                         "},
+}
+
+var truncateOnlyParameters = []test.Parameter{
+	{Input: "0000000000000000000", Length: 5, Expected: "00000"},
+	{Input: "0000000000000000000", Length: 50, Expected: "0000000000000000000"},
+	{Input: "Rua de teste para o truncate", Length: 20, Expected: "Rua de teste para o "},
+	{Input: "", Length: 50, Expected: ""},
+	{Input: "ÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕáéíóúàèìòùâêîôûãõç,/()*&=-+!:?<>.;_'@#$%¨{}[]^~|ºª§°¹²³£¢¬\\\"", Length: 80, Expected: "ÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕáéíóúàèìòùâêîôûãõç,/()*&=-+!:?<>.;_'@#$%¨{}[]^~|ºª§°¹²³£¢¬\\\""},
+	{Input: "ÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕáéíóúàèìòùâêîôûãõç,/()*&=-+!:?<>.;_'@#$%¨{}[]^~|ºª§°¹²³£¢¬\\\"", Length: 75, Expected: "ÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕáéíóúàèìòùâêîôûãõç,/()*&=-+!:?<>.;_'@#$%¨{}[]^~|ºª§°¹²³£¢¬"},
+}
+
+var joinStringsParameters = []test.Parameter{
+	{Input: []string{"a", "b", "c"}, Expected: "a b c"},
+	{Input: []string{"abc", "d", "efgh"}, Expected: "abc d efgh"},
+	{Input: []string{" ", " ", " "}, Expected: "     "},
+	{Input: []string{"", "", "", "", ""}, Expected: "    "},
+	{Input: []string{"ÁÉÍÓÚÀ", "()*&=-+!:?<", "^~|ºª§°¹²³£¢¬\\\"", "@#$%"}, Expected: "ÁÉÍÓÚÀ ()*&=-+!:?< ^~|ºª§°¹²³£¢¬\\\" @#$%"},
 }
 
 func TestShouldPadLeft(t *testing.T) {
@@ -108,12 +133,12 @@ func TestClearString(t *testing.T) {
 	}
 }
 
-func TestJoinStringSpace(t *testing.T) {
-	expected := "a b c"
-
-	result := joinSpace("a", "b", "c")
-
-	assert.Equal(t, expected, result, "Deve-se fazer um join em uma string com espaços")
+func TestJoinSpace(t *testing.T) {
+	for _, fact := range joinStringsParameters {
+		params := fact.Input.([]string)
+		result := joinSpace(params...)
+		assert.Equal(t, fact.Expected, result, "Deve-se limpar uma string corretamente")
+	}
 }
 
 func TestFormatCNPJ(t *testing.T) {
@@ -234,5 +259,19 @@ func TestCitiBankSanitizeString(t *testing.T) {
 		result := sanitizeCitibankSpecialCharacteres(input, fact.Length)
 		assert.Equal(t, fact.Expected, result, "Caracteres especiais e acentos devem ser removidos")
 		assert.Equal(t, fact.Length, len(result), "O texto deve ser devidamente truncado")
+	}
+}
+
+func TestClearStringCaixa(t *testing.T) {
+	for _, fact := range clearStringCaixaParameters {
+		result := clearStringCaixa(fact.Input.(string))
+		assert.Equal(t, fact.Expected, result, "Deve-se limpar uma string corretamente")
+	}
+}
+
+func TestTruncateOnly(t *testing.T) {
+	for _, fact := range truncateOnlyParameters {
+		result := truncateOnly(fact.Input.(string), fact.Length)
+		assert.Equal(t, fact.Expected, result, "Deve-se truncar uma string corretamente")
 	}
 }
