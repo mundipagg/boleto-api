@@ -9,6 +9,11 @@ import (
 	"github.com/mundipagg/boleto-api/config"
 )
 
+const (
+	FailGetBoletoMessage    = "Falha ao recuperar Boleto"
+	SuccessGetBoletoMessage = "Boleto recuperado com sucesso"
+)
+
 type LogEntry = map[string]interface{}
 
 var logger tracer.Logger
@@ -213,16 +218,22 @@ func (l *Log) defaultProperties(messageType string, content interface{}) LogEntr
 }
 
 //GetBoleto Loga mensagem de recuperação de boleto
-func (l *Log) GetBoleto(msg string, id string) {
+func (l *Log) GetBoleto(content interface{}, msgType string) {
 	if config.Get().DisableLog {
 		return
 	}
 	go (func() {
-		props := l.basicProperties("Information")
-		props["Id"] = id
-		m := formatter(msg)
+		props := l.basicProperties(msgType)
+		props["Content"] = content
 
-		l.logger.Info(m, props)
+		switch msgType {
+		case "Warning":
+			l.logger.Warn(formatter(FailGetBoletoMessage), props)
+		case "Error":
+			l.logger.Error(formatter(FailGetBoletoMessage), props)
+		default:
+			l.logger.Info(formatter(SuccessGetBoletoMessage), props)
+		}
 	})()
 }
 
