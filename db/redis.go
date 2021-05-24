@@ -67,6 +67,7 @@ func (r *Redis) SetBoletoHTML(b, mID, pk string, lg *log.Log) {
 }
 
 //GetBoletoHTMLByID busca um boleto pelo ID que vem na URL
+//O retorno será um objeto HTML do Boleto (caso ainda esteja em cache) e o tempo decorrido da operação (em milisegundos)
 func (r *Redis) GetBoletoHTMLByID(id string, pk string, lg *log.Log) (string, int64) {
 
 	start := time.Now()

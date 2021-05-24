@@ -76,6 +76,7 @@ func (e *MongoDb) SaveBoleto(boleto models.BoletoView) error {
 }
 
 //GetBoletoByID busca um boleto pelo ID que vem na URL
+//O retorno será um objeto BoletoView, o tempo decorrido da operação (em milisegundos) e algum erro ocorrido durante a operação
 func (e *MongoDb) GetBoletoByID(id, pk string) (models.BoletoView, int64, error) {
 
 	start := time.Now()
