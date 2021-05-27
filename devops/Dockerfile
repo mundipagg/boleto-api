@@ -1,21 +1,18 @@
 # build stage
-FROM golang:alpine AS build-env
+FROM golang:1.16-alpine
 WORKDIR /go/src/github.com/mundipagg/boleto-api
 COPY . .
-RUN mkdir -p "deploy"
 
-RUN go build -o /deploy/boleto-api
+RUN go build -o /home/mundipagg/boleto-api
 
-COPY devops/time "/deploy/lib/time/"
-COPY boleto/favicon.ico "/deploy/boleto/"
-COPY boleto/Arial.ttf "/deploy/boleto/"
+COPY devops/time "/home/mundipagg/lib/time/"
+COPY boleto/favicon.ico "/home/mundipagg/boleto/"
+COPY boleto/Arial.ttf "/home/mundipagg/boleto/"
 
-FROM alpine:3.7
 WORKDIR /home/mundipagg
-COPY --from=build-env ./deploy/ .
 RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 
-ENV GOROOT="/home/mundipagg/"
+ENV CGO_ENABLED 0
 ENV INFLUXDB_HOST="http://influxdb"
 ENV INFLUXDB_PORT="8086"
 ENV PDF_API="http://localhost:7070/topdf"
