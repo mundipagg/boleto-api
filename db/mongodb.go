@@ -76,7 +76,10 @@ func (e *MongoDb) SaveBoleto(boleto models.BoletoView) error {
 }
 
 //GetBoletoByID busca um boleto pelo ID que vem na URL
-func (e *MongoDb) GetBoletoByID(id, pk string) (models.BoletoView, error) {
+//O retorno será um objeto BoletoView, o tempo decorrido da operação (em milisegundos) e algum erro ocorrido durante a operação
+func (e *MongoDb) GetBoletoByID(id, pk string) (models.BoletoView, int64, error) {
+
+	start := time.Now()
 
 	e.m.Lock()
 	defer e.m.Unlock()
@@ -105,12 +108,12 @@ func (e *MongoDb) GetBoletoByID(id, pk string) (models.BoletoView, error) {
 	}
 
 	if err != nil {
-		return models.BoletoView{}, err
+		return models.BoletoView{}, time.Since(start).Milliseconds(), err
 	} else if !hasValidKey(result, pk) {
-		return models.BoletoView{}, errors.New(InvalidPK)
+		return models.BoletoView{}, time.Since(start).Milliseconds(), errors.New(InvalidPK)
 	}
 
-	return result, nil
+	return result, time.Since(start).Milliseconds(), nil
 }
 
 //GetUserCredentials Busca as Credenciais dos Usuários
