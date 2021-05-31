@@ -5,6 +5,8 @@ import (
 	"net/http/httputil"
 
 	"github.com/mundipagg/boleto-api/metrics"
+	"github.com/newrelic/go-agent/v3/integrations/nrgin"
+	"github.com/newrelic/go-agent/v3/newrelic"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mundipagg/boleto-api/config"
@@ -21,6 +23,15 @@ func InstallRestAPI() {
 	if config.Get().DevMode && !config.Get().MockMode {
 		router.Use(gin.Logger())
 	}
+
+	app, _ := newrelic.NewApplication(
+		newrelic.ConfigAppName("boleto-api"),
+		newrelic.ConfigLicense("5764dd9962827f07c9f7555928ae768b070aNRAL"),
+		newrelic.ConfigDistributedTracerEnabled(true),
+	)
+
+	router.Use(nrgin.Middleware(app))
+
 	InstallV1(router)
 	router.StaticFile("/favicon.ico", "./boleto/favicon.ico")
 	router.GET("/boleto/memory-check/:unit", memory)
