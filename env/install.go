@@ -66,9 +66,9 @@ func ConfigMock(port string) {
 	os.Setenv("QUEUE_MIN_TLS", "1.2")
 	os.Setenv("QUEUE_MAX_TLS", "1.2")
 	os.Setenv("QUEUE_BYPASS_CERTIFICATE", "false")
-	os.Setenv("NEW_RELIC_APP_NAME", "Mundipagg Boleto API - Staging")
-	os.Setenv("NEW_RELIC_LICENCE", "YourLicence")
-	os.Setenv("TELEMETRY_ENABLED", "false")
+	os.Setenv("NEW_RELIC_APP_NAME", "")
+	os.Setenv("NEW_RELIC_LICENCE", "")
+	os.Setenv("TELEMETRY_ENABLED", "")
 
 	config.Install(true, true, config.Get().DisableLog)
 	registerFlowConnectors()
@@ -153,9 +153,9 @@ func configFlags(devMode, mockMode, disableLog bool) {
 		os.Setenv("QUEUE_MIN_TLS", "1.2")
 		os.Setenv("QUEUE_MAX_TLS", "1.2")
 		os.Setenv("QUEUE_BYPASS_CERTIFICATE", "false")
-		os.Setenv("NEW_RELIC_APP_NAME", "Mundipagg Boleto API - Staging")
-		os.Setenv("NEW_RELIC_LICENCE", "YourLicence")
-		os.Setenv("TELEMETRY_ENABLED", "false")
+		os.Setenv("NEW_RELIC_APP_NAME", "")
+		os.Setenv("NEW_RELIC_LICENCE", "")
+		os.Setenv("TELEMETRY_ENABLED", "")
 	}
 
 	config.Install(mockMode, devMode, disableLog)
