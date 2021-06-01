@@ -9,6 +9,11 @@ import (
 	"github.com/mundipagg/boleto-api/config"
 )
 
+const (
+	FailGetBoletoMessage    = "Falha ao recuperar Boleto"
+	SuccessGetBoletoMessage = "Boleto recuperado com sucesso"
+)
+
 type LogEntry = map[string]interface{}
 
 var logger tracer.Logger
@@ -197,15 +202,46 @@ func (l *Log) EndRobot() {
 
 func (l *Log) defaultProperties(messageType string, content interface{}) LogEntry {
 	props := LogEntry{
-		"MessageType": messageType,
 		"Content":     content,
 		"Recipient":   l.Recipient,
-		"Operation":   l.Operation,
 		"NossoNumero": l.NossoNumero,
 		"RequestKey":  l.RequestKey,
 		"BankName":    l.BankName,
-		"IPAddress":   l.IPAddress,
 		"ServiceUser": l.ServiceUser,
+	}
+
+	for k, v := range l.basicProperties(messageType) {
+		props[k] = v
+	}
+
+	return props
+}
+
+//GetBoleto Loga mensagem de recuperação de boleto
+func (l *Log) GetBoleto(content interface{}, msgType string) {
+	if config.Get().DisableLog {
+		return
+	}
+	go (func() {
+		props := l.basicProperties(msgType)
+		props["Content"] = content
+
+		switch msgType {
+		case "Warning":
+			l.logger.Warn(formatter(FailGetBoletoMessage), props)
+		case "Error":
+			l.logger.Error(formatter(FailGetBoletoMessage), props)
+		default:
+			l.logger.Info(formatter(SuccessGetBoletoMessage), props)
+		}
+	})()
+}
+
+func (l *Log) basicProperties(messageType string) LogEntry {
+	props := LogEntry{
+		"MessageType": messageType,
+		"Operation":   l.Operation,
+		"IPAddress":   l.IPAddress,
 	}
 	return props
 }

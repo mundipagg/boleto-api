@@ -2,8 +2,10 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/mundipagg/boleto-api/queue"
 	"net/http"
+	"time"
+
+	"github.com/mundipagg/boleto-api/queue"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tdewolff/minify"
@@ -15,13 +17,14 @@ import (
 	"strings"
 
 	"fmt"
+	"io/ioutil"
+
 	"github.com/mundipagg/boleto-api/bank"
 	"github.com/mundipagg/boleto-api/boleto"
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/db"
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/models"
-	"io/ioutil"
 )
 
 //Regista um boleto em um determinado banco
@@ -95,63 +98,77 @@ func registerBoleto(c *gin.Context) {
 }
 
 func getBoleto(c *gin.Context) {
+	start := time.Now()
+	var boletoHtml string
+
 	c.Status(200)
-
-	id := c.Query("id")
-	format := c.Query("fmt")
-	pk := c.Query("pk")
-
 	log := log.CreateLog()
 	log.Operation = "GetBoleto"
 	log.IPAddress = c.ClientIP()
 
-	redis := db.CreateRedis()
-	b := redis.GetBoletoHTMLByID(id, pk, log)
+	var result = models.NewGetBoletoResult(c)
 
-	if b == "" {
+	defer logResult(result, log, start)
+
+	if !result.HasValidKeys() {
+		result.SetErrorResponse(c, models.NewErrorResponse("MP404", "Not Found"), http.StatusNotFound)
+		result.LogSeverity = "Warning"
+		return
+	}
+
+	redis := db.CreateRedis()
+	boletoHtml, result.CacheElapsedTimeInMilliseconds = redis.GetBoletoHTMLByID(result.Id, result.PrivateKey, log)
+
+	if boletoHtml == "" {
+		var err error
+		var boView models.BoletoView
 		mongo, errMongo := db.CreateMongo(log)
-		if checkError(c, errMongo, log) {
+
+		if errMongo != nil {
+			result.SetErrorResponse(c, models.NewErrorResponse("MP500", errMongo.Error()), http.StatusInternalServerError)
+			result.LogSeverity = "Error"
 			return
 		}
 
-		boView, err := mongo.GetBoletoByID(id, pk)
+		boView, result.DatabaseElapsedTimeInMilliseconds, err = mongo.GetBoletoByID(result.Id, result.PrivateKey)
 
-		if err != nil && err.Error() == db.NotFoundDoc {
-			e := fmt.Sprintf("%s - %s", err.Error(), c.Request.RequestURI)
-			log.Warn(e, fmt.Sprintf("Boleto notfound - %s", id))
-			checkError(c, models.NewHTTPNotFound("MP404", "Not Found"), log)
-			return
-		} else if err != nil && err.Error() == db.InvalidPK {
-			e := fmt.Sprintf("%s - %s", err.Error(), c.Request.RequestURI)
-			log.Warn(e, fmt.Sprintf("Boleto with invalid pk - %s", id))
-			checkError(c, models.NewHTTPNotFound("MP404", "Not Found"), log)
+		if err != nil && (err.Error() == db.NotFoundDoc || err.Error() == db.InvalidPK) {
+			result.SetErrorResponse(c, models.NewErrorResponse("MP404", "Not Found"), http.StatusNotFound)
+			result.LogSeverity = "Warning"
 			return
 		} else if err != nil {
-			checkError(c, models.NewInternalServerError("MP500", err.Error()), log)
+			result.SetErrorResponse(c, models.NewErrorResponse("MP500", err.Error()), http.StatusInternalServerError)
+			result.LogSeverity = "Error"
 			return
 		}
-
-		bhtml, err := boleto.HTML(boView, "html")
-		b = minifyString(bhtml, "text/html")
+		result.BoletoSource = "mongo"
+		html, err := boleto.HTML(boView, "html")
+		boletoHtml = minifyString(html, "text/html")
+	} else {
+		result.BoletoSource = "redis"
 	}
 
-	if format == "html" {
+	if result.Format == "html" {
 		c.Header("Content-Type", "text/html; charset=utf-8")
-		c.Writer.WriteString(b)
+		c.Writer.WriteString(boletoHtml)
 	} else {
 		c.Header("Content-Type", "application/pdf")
-		bpdf, err := toPdf(b)
-
-		if err != nil {
-			c.Header("Content-Type", "application/json")
-			checkError(c, models.NewInternalServerError(err.Error(), "Internal error"), log)
-			c.Abort()
+		if boletoPdf, err := toPdf(boletoHtml); err == nil {
+			c.Writer.Write(boletoPdf)
 		} else {
-			c.Writer.Write(bpdf)
+			c.Header("Content-Type", "application/json")
+			result.SetErrorResponse(c, models.NewErrorResponse("MP500", err.Error()), http.StatusInternalServerError)
+			result.LogSeverity = "Error"
+			return
 		}
-
 	}
 
+	result.LogSeverity = "Information"
+}
+
+func logResult(result *models.GetBoletoResult, log *log.Log, start time.Time) {
+	result.TotalElapsedTimeInMilliseconds = time.Since(start).Milliseconds()
+	log.GetBoleto(result, result.LogSeverity)
 }
 
 func toPdf(page string) ([]byte, error) {
@@ -177,7 +194,7 @@ func getBoletoByID(c *gin.Context) {
 	if errDb != nil {
 		checkError(c, models.NewInternalServerError("MP500", "Internal error"), log)
 	}
-	boleto, err := mongo.GetBoletoByID(id, pk)
+	boleto, _, err := mongo.GetBoletoByID(id, pk)
 	if err != nil {
 		checkError(c, models.NewHTTPNotFound("MP404", "Boleto não encontrado"), nil)
 		return

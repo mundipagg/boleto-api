@@ -26,3 +26,5 @@ debug
 
 go.mod
 go.sum
+
+.scannerwork/

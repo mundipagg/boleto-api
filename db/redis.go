@@ -67,13 +67,16 @@ func (r *Redis) SetBoletoHTML(b, mID, pk string, lg *log.Log) {
 }
 
 //GetBoletoHTMLByID busca um boleto pelo ID que vem na URL
-func (r *Redis) GetBoletoHTMLByID(id string, pk string, lg *log.Log) string {
+//O retorno será um objeto HTML do Boleto (caso ainda esteja em cache) e o tempo decorrido da operação (em milisegundos)
+func (r *Redis) GetBoletoHTMLByID(id string, pk string, lg *log.Log) (string, int64) {
+
+	start := time.Now()
 
 	err := r.openConnection()
 
 	if err != nil {
 		lg.Warn(err.Error(), fmt.Sprintf("OpenConnection [GetBoletoHTMLByID] - Could not connection to Redis Database"))
-		return ""
+		return "", time.Since(start).Milliseconds()
 	}
 
 	key := fmt.Sprintf("%s:%s:%s", "boleto:html", id, pk)
@@ -81,10 +84,10 @@ func (r *Redis) GetBoletoHTMLByID(id string, pk string, lg *log.Log) string {
 	r.closeConnection()
 
 	if ret == nil {
-		return ""
+		return "", time.Since(start).Milliseconds()
 	}
 
-	return fmt.Sprintf("%s", ret)
+	return fmt.Sprintf("%s", ret), time.Since(start).Milliseconds()
 }
 
 //SetBoletoJSON Grava um boleto em formato JSON no Redis

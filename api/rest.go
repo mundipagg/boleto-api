@@ -82,6 +82,11 @@ func checkError(c *gin.Context, err error, l *log.Log) bool {
 			l.Warn(errResp, v.Error())
 			c.JSON(http.StatusInternalServerError, errResp)
 
+		case models.BadGatewayError:
+			errResp.Errors.Append("MP502", v.Error())
+			l.Warn(errResp, v.Error())
+			c.JSON(http.StatusBadGateway, errResp)
+
 		case models.FormatError:
 			errResp.Errors.Append("MP400", v.Error())
 			l.Warn(errResp, v.Error())

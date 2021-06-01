@@ -36,6 +36,9 @@ type Config struct {
 	MongoURL                         string
 	MongoUser                        string
 	MongoPassword                    string
+	MongoDatabase                    string
+	MongoBoletoCollection            string
+	MongoCredentialsCollection       string
 	RedisURL                         string
 	RedisPassword                    string
 	RedisDatabase                    string
@@ -88,6 +91,9 @@ type Config struct {
 	TimeToRecoveryWithQueueInSeconds string
 	Heartbeat                        string
 	RetryNumberGetBoleto             int
+	QueueMaxTLS                      string
+	QueueMinTLS                      string
+	QueueByPassCertificate           bool
 	NewRelicAppName                  string
 	NewRelicLicence                  string
 	TelemetryEnabled                 bool
@@ -134,6 +140,9 @@ func Install(mockMode, devMode, disableLog bool) {
 		MongoURL:                         os.Getenv("MONGODB_URL"),
 		MongoUser:                        os.Getenv("MONGODB_USER"),
 		MongoPassword:                    os.Getenv("MONGODB_PASSWORD"),
+		MongoDatabase:                    os.Getenv("MONGODB_DATABASE"),
+		MongoBoletoCollection:            os.Getenv("MONGODB_BOLETO_COLLECTION"),
+		MongoCredentialsCollection:       os.Getenv("MONGODB_CREDENTIALS_COLLECTION"),
 		RetryNumberGetBoleto:             getValueInt(os.Getenv("RETRY_NUMBER_GET_BOLETO")),
 		RedisURL:                         os.Getenv("REDIS_URL"),
 		RedisPassword:                    os.Getenv("REDIS_PASSWORD"),
@@ -185,6 +194,9 @@ func Install(mockMode, devMode, disableLog bool) {
 		OriginRoutingKey:                 os.Getenv("ORIGIN_ROUTING_KEY"),
 		TimeToRecoveryWithQueueInSeconds: os.Getenv("TIME_TO_RECOVERY_WITH_QUEUE_IN_SECONDS"),
 		Heartbeat:                        os.Getenv("HEARTBEAT"),
+		QueueMaxTLS:                      os.Getenv("QUEUE_MAX_TLS"),
+		QueueMinTLS:                      os.Getenv("QUEUE_MIN_TLS"),
+		QueueByPassCertificate:           os.Getenv("QUEUE_BYPASS_CERTIFICATE") == "true",
 		NewRelicAppName:                  os.Getenv("NEW_RELIC_APP_NAME"),
 		NewRelicLicence:                  os.Getenv("NEW_RELIC_LICENCE"),
 		TelemetryEnabled:                 os.Getenv("TELEMETRY_ENABLED") == "true",

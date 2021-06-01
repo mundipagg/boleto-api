@@ -21,54 +21,55 @@ import (
 )
 
 var funcMap = template.FuncMap{
-	"today":                             today,
-	"todayCiti":                         todayCiti,
-	"brdate":                            brDate,
-	"replace":                           replace,
-	"docType":                           docType,
-	"trim":                              trim,
-	"padLeft":                           padLeft,
-	"clearString":                       clearString,
-	"toString":                          toString,
-	"toString64":                        toString64,
-	"fmtDigitableLine":                  fmtDigitableLine,
-	"fmtCNPJ":                           fmtCNPJ,
-	"fmtCPF":                            fmtCPF,
-	"fmtDoc":                            fmtDoc,
-	"truncate":                          truncateString,
-	"fmtNumber":                         fmtNumber,
-	"joinSpace":                         joinSpace,
-	"brDateWithoutDelimiter":            brDateWithoutDelimiter,
-	"enDateWithoutDelimiter":            enDateWithoutDelimiter,
-	"fullDate":                          fulldate,
-	"enDate":                            enDate,
-	"hasErrorTags":                      hasErrorTags,
-	"toFloatStr":                        toFloatStr,
-	"concat":                            concat,
-	"base64":                            base64,
-	"unscape":                           unscape,
-	"unescapeHtmlString":                unescapeHtmlString,
-	"trimLeft":                          trimLeft,
-	"santanderNSUPrefix":                santanderNSUPrefix,
-	"santanderEnv":                      santanderEnv,
-	"formatSingleLine":                  formatSingleLine,
-	"diff":                              diff,
-	"mod11dv":                           calculateOurNumberMod11,
-	"mod10ItauDv":                       mod10Itau,
-	"printIfNotProduction":              printIfNotProduction,
-	"itauEnv":                           itauEnv,
-	"caixaEnv":                          caixaEnv,
-	"extractNumbers":                    extractNumbers,
-	"splitValues":                       splitValues,
-	"brDateDelimiter":                   brDateDelimiter,
-	"brDateDelimiterTime":               brDateDelimiterTime,
-	"toString16":                        toString16,
-	"mod11BradescoShopFacilDv":          mod11BradescoShopFacilDv,
-	"bsonMongoToString":                 bsonMongoToString,
-	"truncateManyFields":                truncateManyFields,
-	"escapeStringOnJson":                escapeStringOnJson,
-	"removeSpecialCharacter":            removeSpecialCharacter,
-	"sanitizeCitibakSpecialCharacteres": sanitizeCitibakSpecialCharacteres,
+	"today":                              today,
+	"todayCiti":                          todayCiti,
+	"brdate":                             brDate,
+	"replace":                            replace,
+	"docType":                            docType,
+	"trim":                               trim,
+	"padLeft":                            padLeft,
+	"clearString":                        clearString,
+	"toString":                           toString,
+	"toString64":                         toString64,
+	"fmtDigitableLine":                   fmtDigitableLine,
+	"fmtCNPJ":                            fmtCNPJ,
+	"fmtCPF":                             fmtCPF,
+	"fmtDoc":                             fmtDoc,
+	"truncate":                           truncateString,
+	"fmtNumber":                          fmtNumber,
+	"joinSpace":                          joinSpace,
+	"brDateWithoutDelimiter":             brDateWithoutDelimiter,
+	"enDateWithoutDelimiter":             enDateWithoutDelimiter,
+	"fullDate":                           fulldate,
+	"enDate":                             enDate,
+	"hasErrorTags":                       hasErrorTags,
+	"toFloatStr":                         toFloatStr,
+	"concat":                             concat,
+	"base64":                             base64,
+	"unscape":                            unscape,
+	"unescapeHtmlString":                 unescapeHtmlString,
+	"trimLeft":                           trimLeft,
+	"santanderNSUPrefix":                 santanderNSUPrefix,
+	"santanderEnv":                       santanderEnv,
+	"formatSingleLine":                   formatSingleLine,
+	"diff":                               diff,
+	"mod11dv":                            calculateOurNumberMod11,
+	"mod10ItauDv":                        mod10Itau,
+	"printIfNotProduction":               printIfNotProduction,
+	"itauEnv":                            itauEnv,
+	"caixaEnv":                           caixaEnv,
+	"extractNumbers":                     extractNumbers,
+	"splitValues":                        splitValues,
+	"brDateDelimiter":                    brDateDelimiter,
+	"brDateDelimiterTime":                brDateDelimiterTime,
+	"toString16":                         toString16,
+	"mod11BradescoShopFacilDv":           mod11BradescoShopFacilDv,
+	"bsonMongoToString":                  bsonMongoToString,
+	"escapeStringOnJson":                 escapeStringOnJson,
+	"removeSpecialCharacter":             removeSpecialCharacter,
+	"sanitizeCitibankSpecialCharacteres": sanitizeCitibankSpecialCharacteres,
+	"clearStringCaixa":                   clearStringCaixa,
+	"truncateOnly":                       truncateOnly,
 }
 
 func GetFuncMaps() template.FuncMap {
@@ -375,15 +376,6 @@ func bsonMongoToString(bsonId bson.ObjectId) string {
 	return string(idBson)
 }
 
-func truncateManyFields(num int, values ...string) string {
-	buf := bytes.Buffer{}
-	for _, item := range values {
-		buf.WriteString(" " + item)
-	}
-	str := strings.Trim(buf.String(), " ")
-	return truncateString(str, num)
-}
-
 func escapeStringOnJson(field string) string {
 	field = strings.Replace(field, "\b", "", -1)
 	return regexp.MustCompile(`[\t\f\r\\]`).ReplaceAllString(field, "")
@@ -393,11 +385,34 @@ func removeSpecialCharacter(str string) string {
 	return regexp.MustCompile("[^a-zA-Z0-9ÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕáéíóúàèìòùâêîôûãõç,.\\-\\s]+").ReplaceAllString(str, "")
 }
 
-func sanitizeCitibakSpecialCharacteres(str string, num int) string {
+func sanitizeCitibankSpecialCharacteres(str string, num int) string {
+	str = regexp.MustCompile("[^a-zA-Z0-9.;@\\-\\/\\s]+").ReplaceAllString(clearString(str), "")
+
 	if len(str) > num {
 		str = str[0:num]
 	}
-	str = regexp.MustCompile("[^a-zA-Z0-9.;@\\-\\/\\s]+").ReplaceAllString(clearString(str), "")
-	
+
+	return str
+}
+
+//clearStringCaixa Define os caracteres aceitos de acordo com a documentação da caixa.
+func clearStringCaixa(str string) string {
+	s := sanitize.Accents(str)
+	var buffer bytes.Buffer
+	for _, ch := range s {
+		if util.IsDigit(ch) || util.IsBasicCharacter(ch) || util.IsCaixaSpecialCharacter(ch) {
+			buffer.WriteString(string(ch))
+		} else {
+			buffer.WriteString(" ")
+		}
+	}
+	return buffer.String()
+}
+
+//truncateOnly Realiza o truncate da string
+func truncateOnly(str string, num int) string {
+	if len([]rune(str)) > num {
+		str = string([]rune(str)[0:num])
+	}
 	return str
 }

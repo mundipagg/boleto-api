@@ -13,9 +13,7 @@ import (
 //Config Realiza a configuração da aplicação
 func Config(devMode, mockMode, disableLog bool) {
 	configFlags(devMode, mockMode, disableLog)
-	flow.RegisterConnector("log", util.LogConector)
-	flow.RegisterConnector("apierro", models.BoletoErrorConector)
-	flow.RegisterConnector("tls", util.TlsConector)
+	registerFlowConnectors()
 	metrics.Install()
 }
 
@@ -36,6 +34,9 @@ func ConfigMock(port string) {
 	os.Setenv("MONGODB_URL", "localhost:27017")
 	os.Setenv("MONGODB_USER", "")
 	os.Setenv("MONGODB_PASSWORD", "")
+	os.Setenv("MONGODB_DATABASE", "Boleto")
+	os.Setenv("MONGODB_BOLETO_COLLECTION", "boletos")
+	os.Setenv("MONGODB_CREDENTIALS_COLLECTION", "credentials")
 	os.Setenv("RETRY_NUMBER_GET_BOLETO", "2")
 	os.Setenv("REDIS_URL", "localhost:6379")
 	os.Setenv("REDIS_PASSWORD", "")
@@ -62,11 +63,15 @@ func ConfigMock(port string) {
 	os.Setenv("ORIGIN_ROUTING_KEY", "*")
 	os.Setenv("TIME_TO_RECOVERY_WITH_QUEUE_IN_SECONDS", "120")
 	os.Setenv("HEARTBEAT", "30")
+	os.Setenv("QUEUE_MIN_TLS", "1.2")
+	os.Setenv("QUEUE_MAX_TLS", "1.2")
+	os.Setenv("QUEUE_BYPASS_CERTIFICATE", "false")
 	os.Setenv("NEW_RELIC_APP_NAME", "Mundipagg Boleto API - Staging")
 	os.Setenv("NEW_RELIC_LICENCE", "YourLicence")
 	os.Setenv("TELEMETRY_ENABLED", "false")
 
-	config.Install(true, true, false)
+	config.Install(true, true, config.Get().DisableLog)
+	registerFlowConnectors()
 }
 
 func configFlags(devMode, mockMode, disableLog bool) {
@@ -92,6 +97,9 @@ func configFlags(devMode, mockMode, disableLog bool) {
 		os.Setenv("MONGODB_URL", "localhost:27017")
 		os.Setenv("MONGODB_USER", "")
 		os.Setenv("MONGODB_PASSWORD", "")
+		os.Setenv("MONGODB_DATABASE", "Boleto")
+		os.Setenv("MONGODB_BOLETO_COLLECTION", "boletos")
+		os.Setenv("MONGODB_CREDENTIALS_COLLECTION", "credentials")
 		os.Setenv("RETRY_NUMBER_GET_BOLETO", "2")
 		os.Setenv("REDIS_URL", "localhost:6379")
 		os.Setenv("REDIS_PASSWORD", "")
@@ -142,10 +150,19 @@ func configFlags(devMode, mockMode, disableLog bool) {
 		os.Setenv("ORIGIN_ROUTING_KEY", "*")
 		os.Setenv("TIME_TO_RECOVERY_WITH_QUEUE_IN_SECONDS", "120")
 		os.Setenv("HEARTBEAT", "30")
+		os.Setenv("QUEUE_MIN_TLS", "1.2")
+		os.Setenv("QUEUE_MAX_TLS", "1.2")
+		os.Setenv("QUEUE_BYPASS_CERTIFICATE", "false")
 		os.Setenv("NEW_RELIC_APP_NAME", "Mundipagg Boleto API - Staging")
 		os.Setenv("NEW_RELIC_LICENCE", "YourLicence")
 		os.Setenv("TELEMETRY_ENABLED", "false")
 	}
 
 	config.Install(mockMode, devMode, disableLog)
+}
+
+func registerFlowConnectors() {
+	flow.RegisterConnector("log", util.LogConector)
+	flow.RegisterConnector("apierro", models.BoletoErrorConector)
+	flow.RegisterConnector("tls", util.TlsConector)
 }

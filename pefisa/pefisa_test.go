@@ -2,13 +2,12 @@ package pefisa
 
 import (
 	"testing"
-	"time"
 
-	"github.com/mundipagg/boleto-api/env"
 	"github.com/mundipagg/boleto-api/mock"
 	"github.com/mundipagg/boleto-api/models"
+	"github.com/mundipagg/boleto-api/test"
 	"github.com/mundipagg/boleto-api/util"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 const baseMockJSON = `
@@ -64,85 +63,45 @@ const baseMockJSON = `
 }
 `
 
-func TestRegisterBoleto(t *testing.T) {
-	env.Config(true, true, true)
+var boletoTypeParameters = []test.Parameter{
+	{Input: models.Title{BoletoType: ""}, Expected: "1"},
+	{Input: models.Title{BoletoType: "NSA"}, Expected: "1"},
+	{Input: models.Title{BoletoType: "DM"}, Expected: "1"},
+	{Input: models.Title{BoletoType: "DS"}, Expected: "2"},
+	{Input: models.Title{BoletoType: "NP"}, Expected: "3"},
+	{Input: models.Title{BoletoType: "SE"}, Expected: "4"},
+	{Input: models.Title{BoletoType: "CH"}, Expected: "10"},
+	{Input: models.Title{BoletoType: "OUT"}, Expected: "99"},
+}
+
+func TestProcessBoleto_WhenServiceRespondsSuccessfully_ShouldHasSuccessfulBoletoResponse(t *testing.T) {
+	mock.StartMockService("9097")
 	input := new(models.BoletoRequest)
-	if err := util.FromJSON(baseMockJSON, input); err != nil {
-		t.Fail()
-	}
+	util.FromJSON(baseMockJSON, input)
 	bank := New()
-	go mock.Run("9065")
-	time.Sleep(2 * time.Second)
 
-	Convey("Deve-se processar um boleto Pefisa com sucesso", t, func() {
-		output, err := bank.ProcessBoleto(input)
-		So(err, ShouldBeNil)
-		So(output.BarCodeNumber, ShouldNotBeEmpty)
-		So(output.DigitableLine, ShouldNotBeEmpty)
-		So(output.Errors, ShouldBeEmpty)
-	})
+	output, _ := bank.ProcessBoleto(input)
 
-	Convey("Deve-se exibir uma mensagem de erro, caso o registro não aconteça com sucesso", t, func() {
-		input.Title.AmountInCents = 201
-		output, err := bank.ProcessBoleto(input)
-		So(err, ShouldBeNil)
-		So(output.BarCodeNumber, ShouldBeEmpty)
-		So(output.DigitableLine, ShouldBeEmpty)
-		So(output.Errors, ShouldNotBeEmpty)
-	})
+	test.AssertProcessBoletoWithSuccess(t, output)
 }
 
-func TestShouldMapPefisaBoletoType(t *testing.T) {
-	env.Config(true, true, true)
+func TestProcessBoleto_WhenServiceRespondsFailed_ShouldHasFailedBoletoResponse(t *testing.T) {
+	mock.StartMockService("9097")
 	input := new(models.BoletoRequest)
-	if err := util.FromJSON(baseMockJSON, input); err != nil {
-		t.Fail()
-	}
+	util.FromJSON(baseMockJSON, input)
+	input.Title.AmountInCents = 201
+	bank := New()
 
-	go mock.Run("9097")
-	time.Sleep(2 * time.Second)
+	output, _ := bank.ProcessBoleto(input)
 
-	Convey("deve-se mapear corretamente o BoletoType quando informação for vazia", t, func() {
-		_, output := getBoletoType(input)
-		So(input.Title.BoletoType, ShouldEqual, "")
-		So(output, ShouldEqual, "1")
-	})
-
-	input.Title.BoletoType = "Pefisa"
-	Convey("deve-se mapear corretamente o BoletoType quando valor enviado não existir", t, func() {
-		_, output := getBoletoType(input)
-		So(output, ShouldEqual, "1")
-	})
+	test.AssertProcessBoletoFailed(t, output)
 }
 
-func TestGetBoletoType(t *testing.T) {
-
-	input := new(models.BoletoRequest)
-	if err := util.FromJSON(baseMockJSON, input); err != nil {
-		t.Fail()
+func TestGetBoletoType_WhenCalled_ShouldBeMapTypeSuccessful(t *testing.T) {
+	request := new(models.BoletoRequest)
+	for _, fact := range boletoTypeParameters {
+		request.Title = fact.Input.(models.Title)
+		_, result := getBoletoType(request)
+		assert.Equal(t, fact.Expected, result, "Deve mapear o boleto type corretamente")
 	}
-
-	input.Title.BoletoType = ""
-	expectBoletoTypeCode := "1"
-
-	Convey("Quando não informado o BoletoType o retorno deve ser 1 - Duplicata Mercantil", t, func() {
-		_, output := getBoletoType(input)
-		So(output, ShouldEqual, expectBoletoTypeCode)
-	})
-
-	input.Title.BoletoType = "NSA"
-	expectBoletoTypeCode = "1"
-
-	Convey("Quando informado o BoletoType Inválido o retorno deve ser 1 - Duplicata Mercantil", t, func() {
-		_, output := getBoletoType(input)
-		So(output, ShouldEqual, expectBoletoTypeCode)
-	})
-
-	input.Title.BoletoType = "BDP"
-	expectBoletoTypeCode = "1"
-
-	Convey("Quando informado o BoletoType BDP o retorno deve ser 1 - Duplicata Mercantil", t, func() {
-		_, output := getBoletoType(input)
-		So(output, ShouldEqual, expectBoletoTypeCode)
-	})
 }

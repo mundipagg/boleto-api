@@ -1,6 +1,8 @@
 package app
 
 import (
+	"time"
+
 	"github.com/mundipagg/boleto-api/api"
 	"github.com/mundipagg/boleto-api/certificate"
 	"github.com/mundipagg/boleto-api/config"
@@ -28,6 +30,7 @@ func Run(params *Params) {
 
 	if config.Get().MockMode {
 		go mock.Run("9091")
+		time.Sleep(2 * time.Second)
 	}
 	log.Install()
 
