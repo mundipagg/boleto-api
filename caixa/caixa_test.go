@@ -140,10 +140,6 @@ func TestTemplateRequestCaixa_WhenRequestWithStrictRulesV2_ParseSuccessful(t *te
 	for _, expected := range expectedBuyerRequestFields {
 		assert.Contains(t, b, expected, "Erro no mapeamento dos campos básicos do Comprador")
 	}
-
-	for _, expected := range expectedStrictRulesFieldsV2 {
-		assert.Contains(t, b, expected, "Erro no mapeamento das regras de pagamento")
-	}
 }
 
 func TestTemplateRequestCaixa_WhenRequestWithFlexRulesV2_ParseSuccessful(t *testing.T) {
@@ -159,9 +155,5 @@ func TestTemplateRequestCaixa_WhenRequestWithFlexRulesV2_ParseSuccessful(t *test
 
 	for _, expected := range expectedBuyerRequestFields {
 		assert.Contains(t, b, expected, "Erro no mapeamento dos campos básicos do Comprador")
-	}
-
-	for _, expected := range expectedFlexRulesFieldsV2 {
-		assert.Contains(t, b, expected, "Erro no mapeamento das regras de pagamento")
 	}
 }
