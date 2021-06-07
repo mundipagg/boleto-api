@@ -34,7 +34,7 @@ const (
 func CreateMongo(l *log.Log) (*MongoDb, error) {
 
 	if dbSession == nil {
-		dbSession, err = mgo.DialWithInfo(getInfo())
+		dbSession, err = mgo.Dial(config.Get().MongoURL)
 
 		if err != nil {
 			l.Warn(err.Error(), fmt.Sprintf("Error create connection with mongo %s", err.Error()))
@@ -130,6 +130,37 @@ func (e *MongoDb) GetUserCredentials() ([]models.Credentials, error) {
 	if err != nil {
 		return nil, err
 	}
+	return result, nil
+}
+
+//GetBoletoByDocumentNumber busca um boleto pelo nosso numero
+//O retorno será um objeto BoletoView, o tempo decorrido da operação (em milisegundos) e algum erro ocorrido durante a operação
+//Este método foi criado para fins de teste
+func (e *MongoDb) GetBoletoByDocumentNumber(docNum string) (models.BoletoView, error) {
+	e.m.Lock()
+	defer e.m.Unlock()
+	result := models.BoletoView{}
+
+	session := dbSession.Copy()
+
+	defer session.Close()
+
+	c := session.DB(config.Get().MongoDatabase).C(config.Get().MongoBoletoCollection)
+
+	for i := 0; i <= config.Get().RetryNumberGetBoleto; i++ {
+		c.Find(bson.M{"boleto.title.documentnumber": docNum}).One(&result)
+
+		if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {
+			continue
+		} else {
+			break
+		}
+	}
+
+	if err != nil {
+		return models.BoletoView{}, err
+	}
+
 	return result, nil
 }
 

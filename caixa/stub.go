@@ -15,8 +15,8 @@ type stubBoletoRequestCaixa struct {
 	test.StubBoletoRequest
 }
 
-//newStubBoletoRequestCaixa Cria um novo StubBoletoRequest com valores default validáveis para Caixa
-func newStubBoletoRequestCaixa() *stubBoletoRequestCaixa {
+//NewStubBoletoRequestCaixa Cria um novo StubBoletoRequest com valores default validáveis para Caixa
+func NewStubBoletoRequestCaixa() *stubBoletoRequestCaixa {
 	base := test.NewStubBoletoRequest(models.Caixa)
 	s := &stubBoletoRequestCaixa{
 		StubBoletoRequest: *base,
