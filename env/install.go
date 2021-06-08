@@ -66,6 +66,9 @@ func ConfigMock(port string) {
 	os.Setenv("QUEUE_MIN_TLS", "1.2")
 	os.Setenv("QUEUE_MAX_TLS", "1.2")
 	os.Setenv("QUEUE_BYPASS_CERTIFICATE", "false")
+	os.Setenv("NEW_RELIC_APP_NAME", "boleto-api")
+	os.Setenv("NEW_RELIC_LICENCE", "API_KEY")
+	os.Setenv("TELEMETRY_ENABLED", "false")
 
 	config.Install(true, true, config.Get().DisableLog)
 	registerFlowConnectors()
@@ -150,6 +153,9 @@ func configFlags(devMode, mockMode, disableLog bool) {
 		os.Setenv("QUEUE_MIN_TLS", "1.2")
 		os.Setenv("QUEUE_MAX_TLS", "1.2")
 		os.Setenv("QUEUE_BYPASS_CERTIFICATE", "false")
+		os.Setenv("NEW_RELIC_APP_NAME", "boleto-api")
+		os.Setenv("NEW_RELIC_LICENCE", "API_KEY")
+		os.Setenv("TELEMETRY_ENABLED", "false")
 	}
 
 	config.Install(mockMode, devMode, disableLog)

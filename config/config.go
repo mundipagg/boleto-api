@@ -94,6 +94,9 @@ type Config struct {
 	QueueMaxTLS                      string
 	QueueMinTLS                      string
 	QueueByPassCertificate           bool
+	NewRelicAppName                  string
+	NewRelicLicence                  string
+	TelemetryEnabled                 bool
 }
 
 var cnf Config
@@ -194,6 +197,9 @@ func Install(mockMode, devMode, disableLog bool) {
 		QueueMaxTLS:                      os.Getenv("QUEUE_MAX_TLS"),
 		QueueMinTLS:                      os.Getenv("QUEUE_MIN_TLS"),
 		QueueByPassCertificate:           os.Getenv("QUEUE_BYPASS_CERTIFICATE") == "true",
+		NewRelicAppName:                  os.Getenv("NEW_RELIC_APP_NAME"),
+		NewRelicLicence:                  os.Getenv("NEW_RELIC_LICENCE"),
+		TelemetryEnabled:                 os.Getenv("TELEMETRY_ENABLED") == "true",
 	}
 }
 

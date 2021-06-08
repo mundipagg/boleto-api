@@ -4,6 +4,9 @@ import (
 	"net/http"
 	"net/http/httputil"
 
+	"github.com/newrelic/go-agent/v3/integrations/nrgin"
+	"github.com/newrelic/go-agent/v3/newrelic"
+
 	"github.com/mundipagg/boleto-api/metrics"
 
 	"github.com/gin-gonic/gin"
@@ -14,10 +17,13 @@ import (
 
 //InstallRestAPI "instala" e sobe o servico de rest
 func InstallRestAPI() {
+
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	router.Use(gin.Recovery())
 	router.Use(executionController())
+	useNewRelic(router)
+
 	if config.Get().DevMode && !config.Get().MockMode {
 		router.Use(gin.Logger())
 	}
@@ -29,6 +35,20 @@ func InstallRestAPI() {
 	router.GET("/boleto/confirmation", confirmation)
 	router.POST("/boleto/confirmation", confirmation)
 	router.Run(config.Get().APIPort)
+}
+
+func useNewRelic(router *gin.Engine) {
+	if !config.Get().TelemetryEnabled {
+		return
+	}
+
+	app, _ := newrelic.NewApplication(
+		newrelic.ConfigAppName(config.Get().NewRelicAppName),
+		newrelic.ConfigLicense(config.Get().NewRelicLicence),
+		newrelic.ConfigDistributedTracerEnabled(true),
+	)
+
+	router.Use(nrgin.Middleware(app))
 }
 
 func memory(c *gin.Context) {
