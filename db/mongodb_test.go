@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/mundipagg/boleto-api/caixa"
+	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/mock"
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/stretchr/testify/assert"
@@ -52,13 +53,13 @@ func TestGetBoletoById(t *testing.T) {
 	mongo, err := CreateMongo(lg)
 	assert.Nil(t, err)
 
-	err = mongo.deleteById(newID)
+	err = mongo.deleteBoletoById(newID)
 	assert.Nil(t, err)
 
 	err = mongo.SaveBoleto(boView)
 	assert.Nil(t, err)
 
-	b, err := mongo.GetBoletoByDocumentNumber(boView.Boleto.Title.DocumentNumber)
+	b, _, err := mongo.GetBoletoByID(newID, newPk)
 	assert.Nil(t, err)
 	createDateZone, _ := b.CreateDate.Zone()
 	expireDateTimeZone, _ := b.Boleto.Title.ExpireDateTime.Zone()
@@ -125,4 +126,52 @@ func TestGetBoletoById(t *testing.T) {
 	assert.Equal(t, "http://localhost:3000/boleto?fmt=pdf&id=60be988b3193b131b8061835&pk=4f5316763275cc72e6313017171512a5c0d6f4710436a8a9cb506c36655be7f2", b.Links[1].Href, fmt.Sprintf("RecoveryBoleto Links[1].Href error: expected [%s] got [%s]", "http://localhost:3000/boleto?fmt=pdf&id=60be988b3193b131b8061835&pk=4f5316763275cc72e6313017171512a5c0d6f4710436a8a9cb506c36655be7f2", b.Links[1].Href))
 	assert.Equal(t, "pdf", b.Links[1].Rel, fmt.Sprintf("RecoveryBoleto Links[1].Rel error: expected [%s] got [%s]", "pdf", b.Links[1].Rel))
 	assert.Equal(t, "GET", b.Links[1].Method, fmt.Sprintf("RecoveryBoleto Links[1].Method error: expected [%s] got [%s]", "GET", b.Links[1].Method))
+}
+
+func TestMongoDb_GetUserCredentials(t *testing.T) {
+	mock.StartMockService("9093")
+	log := log.CreateLog()
+
+	mongo, err := CreateMongo(log)
+	assert.Nil(t, err)
+
+	gandalfID := "60c293944808daa6fdf2f3b1"
+	cGandalf := models.Credentials{
+		ID:       bson.ObjectIdHex(gandalfID),
+		Username: "gandalf",
+		Password: "grey",
+	}
+	mongo.deleteCredentialById(gandalfID)
+	err = mongo.saveCredential(cGandalf)
+	assert.Nil(t, err)
+
+	sarumanID := "60c293944808daa6fdf2f3b3"
+	cSaruman := models.Credentials{
+		ID:       bson.ObjectIdHex(sarumanID),
+		Username: "saruman",
+		Password: "white",
+	}
+	mongo.deleteCredentialById(sarumanID)
+	err = mongo.saveCredential(cSaruman)
+	assert.Nil(t, err)
+
+	c, err := mongo.GetUserCredentials()
+	assert.Nil(t, err)
+	assert.GreaterOrEqual(t, len(c), 2)
+
+	g, err := mongo.getUserCredentialByID(gandalfID)
+	assert.Nil(t, err)
+
+	assert.Equal(t, "60c293944808daa6fdf2f3b1", g.ID.Hex(), fmt.Sprintf("Gandalf ID error: expected [%s] got [%s]", "60c293944808daa6fdf2f3b1", g.ID.Hex()))
+	assert.Equal(t, "gandalf", g.Username, fmt.Sprintf("Gandalf Username error: expected [%s] got [%s]", "gandalf", g.Username))
+	assert.Equal(t, "grey", g.Password, fmt.Sprintf("Gandalf Password error: expected [%s] got [%s]", "grey", g.Password))
+
+	s, err := mongo.getUserCredentialByID(sarumanID)
+	assert.Nil(t, err)
+	assert.Equal(t, "60c293944808daa6fdf2f3b3", s.ID.Hex(), fmt.Sprintf("Saruman ID error: expected [%s] got [%s]", "60c293944808daa6fdf2f3b3", s.ID.Hex()))
+	assert.Equal(t, "saruman", s.Username, fmt.Sprintf("Saruman Username error: expected [%s] got [%s]", "saruman", s.Username))
+	assert.Equal(t, "white", s.Password, fmt.Sprintf("Saruman Password error: expected [%s] got [%s]", "white", s.Password))
+
+	mongo.deleteCredentialById(gandalfID)
+	mongo.deleteCredentialById(sarumanID)
 }

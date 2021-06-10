@@ -142,7 +142,7 @@ func hasValidKey(r models.BoletoView, pk string) bool {
 	return r.SecretKey == "" || r.PublicKey == pk
 }
 
-func (e *MongoDb) deleteById(id string) error {
+func (e *MongoDb) deleteBoletoById(id string) error {
 	e.m.Lock()
 	defer e.m.Unlock()
 
@@ -160,4 +160,69 @@ func (e *MongoDb) deleteById(id string) error {
 	}
 
 	return c.Remove(filter)
+}
+
+// saveCredential salva uma credencial no mongoDB
+// Usado apenas para fins de teste
+func (e *MongoDb) saveCredential(credential models.Credentials) error {
+
+	e.m.Lock()
+	defer e.m.Unlock()
+
+	session := dbSession.Copy()
+
+	defer session.Close()
+
+	c := session.DB(config.Get().MongoDatabase).C(config.Get().MongoCredentialsCollection)
+	err = c.Insert(credential)
+
+	return err
+}
+
+func (e *MongoDb) deleteCredentialById(id string) error {
+	e.m.Lock()
+	defer e.m.Unlock()
+
+	session := dbSession.Copy()
+	defer session.Close()
+
+	c := session.DB(config.Get().MongoDatabase).C(config.Get().MongoCredentialsCollection)
+
+	filter := bson.M{}
+	if len(id) == 24 {
+		d := bson.ObjectIdHex(id)
+		filter = bson.M{"_id": d}
+	} else {
+		filter = bson.M{"id": id}
+	}
+
+	return c.Remove(filter)
+}
+
+// getUserCredentialByID busca uma credencial pelo ID
+// método apenas para fim de teste
+func (e *MongoDb) getUserCredentialByID(id string) (models.Credentials, error) {
+	e.m.Lock()
+	defer e.m.Unlock()
+	result := models.Credentials{}
+
+	session := dbSession.Copy()
+	defer session.Close()
+
+	c := session.DB(config.Get().MongoDatabase).C(config.Get().MongoCredentialsCollection)
+
+	filter := bson.M{}
+	if len(id) == 24 {
+		d := bson.ObjectIdHex(id)
+		filter = bson.M{"_id": d}
+	} else {
+		filter = bson.M{"id": id}
+	}
+
+	err := c.Find(filter).One(&result)
+	if err != nil {
+		return result, err
+	}
+
+	return result, nil
 }
