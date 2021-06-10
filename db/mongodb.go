@@ -172,3 +172,23 @@ func (e *MongoDb) Close() {
 func hasValidKey(r models.BoletoView, pk string) bool {
 	return r.SecretKey == "" || r.PublicKey == pk
 }
+
+func (e *MongoDb) deleteById(id string) error {
+	e.m.Lock()
+	defer e.m.Unlock()
+
+	session := dbSession.Copy()
+	defer session.Close()
+
+	c := session.DB(config.Get().MongoDatabase).C(config.Get().MongoBoletoCollection)
+
+	filter := bson.M{}
+	if len(id) == 24 {
+		d := bson.ObjectIdHex(id)
+		filter = bson.M{"_id": d}
+	} else {
+		filter = bson.M{"id": id}
+	}
+
+	return c.Remove(filter)
+}
