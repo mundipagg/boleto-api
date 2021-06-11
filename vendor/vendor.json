@@ -399,6 +399,13 @@
 			"revisionTime": "2019-11-26T20:52:39Z"
 		},
 		{
+			"checksumSHA1": "1wInfC5t5mvdL5pRz9IQSEitA7k=",
+			"path": "github.com/newrelic/go-agent",
+			"revision": "df4d9c2454c718fb0aa8b78abc6d318547012ab1",
+			"revisionTime": "2021-02-08T22:44:19Z",
+			"tree": true
+		},
+		{
 			"checksumSHA1": "R3yk3OJzuq4MVfVGX5AhkkYv1ko=",
 			"path": "github.com/pmezard/go-difflib/difflib",
 			"revision": "5d4384ee4fb2527b0a1256a821ebfc92f91efefc",
@@ -595,6 +602,19 @@
 			"path": "golang.org/x/net/html/atom",
 			"revision": "f9ce57c11b242f0f1599cf25c89d8cb02c45295a",
 			"revisionTime": "2018-08-07T09:33:54Z"
+		},
+		{
+			"checksumSHA1": "y1FASIqV6vQbdWGTK76/A9luhdU=",
+			"path": "golang.org/x/sys/internal",
+			"revision": "9a76102bfb4322425a1228caa377974426e82c84",
+			"revisionTime": "2021-02-20T03:57:36Z",
+			"tree": true
+		},
+		{
+			"checksumSHA1": "u19u6ZAWI/P8pAETvNMjIVB2SsU=",
+			"path": "golang.org/x/sys/unix",
+			"revision": "9a76102bfb4322425a1228caa377974426e82c84",
+			"revisionTime": "2021-02-20T03:57:36Z"
 		},
 		{
 			"checksumSHA1": "ziMb9+ANGRJSSIuxYdRbA+cDRBQ=",
