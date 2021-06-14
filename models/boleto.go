@@ -92,9 +92,9 @@ func NewBoletoView(boleto BoletoRequest, response BoletoResponse, bankName strin
 //EncodeURL tranforma o boleto view na forma que será escrito na url
 func (b *BoletoView) EncodeURL(format string) string {
 	idBson := b.ID.Hex()
-	_url := fmt.Sprintf("%s?fmt=%s&id=%s&pk=%s", config.Get().AppURL, format, idBson, b.PublicKey)
+	url := fmt.Sprintf("%s?fmt=%s&id=%s&pk=%s", config.Get().AppURL, format, idBson, b.PublicKey)
 
-	return _url
+	return url
 }
 
 //CreateLinks cria a lista de links com os formatos suportados
