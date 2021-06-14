@@ -568,10 +568,44 @@
 			"revisionTime": "2018-02-27T16:17:03Z"
 		},
 		{
+			"checksumSHA1": "mwhaccie0lbRNZdhkGtKdldb8og=",
+			"origin": "go.mongodb.org/mongo-driver/vendor/github.com/xdg-go/pbkdf2",
+			"path": "github.com/xdg-go/pbkdf2",
+			"revision": "7790c430f46470916eb661e1d4c34acb13a19b29",
+			"revisionTime": "2021-05-20T16:36:43Z"
+		},
+		{
+			"checksumSHA1": "uBmymbloxNNpAW3kBc5u/xCaMqk=",
+			"origin": "go.mongodb.org/mongo-driver/vendor/github.com/xdg-go/scram",
+			"path": "github.com/xdg-go/scram",
+			"revision": "7790c430f46470916eb661e1d4c34acb13a19b29",
+			"revisionTime": "2021-05-20T16:36:43Z"
+		},
+		{
+			"checksumSHA1": "OA70b72Rx/y+PEvd31XbqxKgDW0=",
+			"origin": "go.mongodb.org/mongo-driver/vendor/github.com/xdg-go/stringprep",
+			"path": "github.com/xdg-go/stringprep",
+			"revision": "7790c430f46470916eb661e1d4c34acb13a19b29",
+			"revisionTime": "2021-05-20T16:36:43Z"
+		},
+		{
+			"checksumSHA1": "96j56lZ1NsPpwOAQ/oKQDDPQEKU=",
+			"origin": "go.mongodb.org/mongo-driver/vendor/github.com/youmark/pkcs8",
+			"path": "github.com/youmark/pkcs8",
+			"revision": "7790c430f46470916eb661e1d4c34acb13a19b29",
+			"revisionTime": "2021-05-20T16:36:43Z"
+		},
+		{
 			"checksumSHA1": "PCjQHUl3BnNPVZAapFi8/FUqUqw=",
 			"path": "go.mongodb.org/mongo-driver/mongo",
 			"revision": "49af6e279ffe534210dca95e375d372517145e44",
 			"revisionTime": "2021-06-10T15:52:25Z"
+		},
+		{
+			"checksumSHA1": "ojSmQiuymryHPI0uFcVDE9ZU4m0=",
+			"path": "go.mongodb.org/mongo-driver/x/mongo/driver/auth/internal/awsv4",
+			"revision": "7790c430f46470916eb661e1d4c34acb13a19b29",
+			"revisionTime": "2021-05-20T16:36:43Z"
 		},
 		{
 			"checksumSHA1": "PJY7uCr3UnX4/Mf/RoWnbieSZ8o=",
