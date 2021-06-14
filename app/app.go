@@ -7,6 +7,7 @@ import (
 	"github.com/mundipagg/boleto-api/certificate"
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/env"
+	"github.com/mundipagg/boleto-api/healthcheck"
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/mock"
 	"github.com/mundipagg/boleto-api/usermanagement"
@@ -32,7 +33,10 @@ func Run(params *Params) {
 		go mock.Run("9091")
 		time.Sleep(2 * time.Second)
 	}
+
 	log.Install()
+
+	healthcheck.EnsureDependencies()
 
 	installCertificates()
 
