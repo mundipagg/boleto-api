@@ -315,8 +315,20 @@
 			"revisionTime": "2018-08-06T07:34:57Z"
 		},
 		{
+			"checksumSHA1": "Rn2pynuq/eS95/GIgGdp9m+lSQU=",
+			"path": "github.com/klauspost/compress/huff0",
+			"revision": "d1ca57f194283dfc2a7e5ff038f257d04cee2f01",
+			"revisionTime": "2021-06-14T09:44:21Z"
+		},
+		{
 			"checksumSHA1": "hTQrRavHfrAISYM5Vn44jKrZDeE=",
 			"path": "github.com/klauspost/compress/zstd",
+			"revision": "d1ca57f194283dfc2a7e5ff038f257d04cee2f01",
+			"revisionTime": "2021-06-14T09:44:21Z"
+		},
+		{
+			"checksumSHA1": "e8kyonoHHVgdusN5daTpm45mWnM=",
+			"path": "github.com/klauspost/compress/zstd/internal/xxhash",
 			"revision": "d1ca57f194283dfc2a7e5ff038f257d04cee2f01",
 			"revisionTime": "2021-06-14T09:44:21Z"
 		},
