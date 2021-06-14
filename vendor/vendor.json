@@ -608,6 +608,18 @@
 			"revisionTime": "2021-06-10T15:52:25Z"
 		},
 		{
+			"checksumSHA1": "fRfiyCCSriAnCA0EDsEl4DpYD2g=",
+			"path": "go.mongodb.org/mongo-driver/bson/bsonoptions",
+			"revision": "49af6e279ffe534210dca95e375d372517145e44",
+			"revisionTime": "2021-06-10T15:52:25Z"
+		},
+		{
+			"checksumSHA1": "mSo2BKf6YOTyg4NEfmCOqUXexBk=",
+			"path": "go.mongodb.org/mongo-driver/bson/bsonrw",
+			"revision": "49af6e279ffe534210dca95e375d372517145e44",
+			"revisionTime": "2021-06-10T15:52:25Z"
+		},
+		{
 			"checksumSHA1": "hzN0akImO2BhW9TFM5Dx6/j9DqA=",
 			"path": "go.mongodb.org/mongo-driver/bson/bsontype",
 			"revision": "49af6e279ffe534210dca95e375d372517145e44",
@@ -638,6 +650,12 @@
 			"revisionTime": "2021-06-10T15:52:25Z"
 		},
 		{
+			"checksumSHA1": "ubm51NSLhZzNmttgDzrKee32COA=",
+			"path": "go.mongodb.org/mongo-driver/mongo/address",
+			"revision": "49af6e279ffe534210dca95e375d372517145e44",
+			"revisionTime": "2021-06-10T15:52:25Z"
+		},
+		{
 			"checksumSHA1": "QKAW/3K8EcEx+jJWa97OYf0Gvz0=",
 			"path": "go.mongodb.org/mongo-driver/mongo/description",
 			"revision": "49af6e279ffe534210dca95e375d372517145e44",
@@ -664,6 +682,18 @@
 		{
 			"checksumSHA1": "29E5+z8fysqKONn9PEPMFUeCGsY=",
 			"path": "go.mongodb.org/mongo-driver/mongo/writeconcern",
+			"revision": "49af6e279ffe534210dca95e375d372517145e44",
+			"revisionTime": "2021-06-10T15:52:25Z"
+		},
+		{
+			"checksumSHA1": "LBuHBVYoPstbjK1vZWZ8Xm2SP8g=",
+			"path": "go.mongodb.org/mongo-driver/tag",
+			"revision": "49af6e279ffe534210dca95e375d372517145e44",
+			"revisionTime": "2021-06-10T15:52:25Z"
+		},
+		{
+			"checksumSHA1": "2hBvFz1uo/C+hqHJ+W8e2lb6myk=",
+			"path": "go.mongodb.org/mongo-driver/version",
 			"revision": "49af6e279ffe534210dca95e375d372517145e44",
 			"revisionTime": "2021-06-10T15:52:25Z"
 		},
@@ -700,6 +730,12 @@
 		{
 			"checksumSHA1": "ZecI0dFEWuzOZgv9nsSpTCtRp9I=",
 			"path": "go.mongodb.org/mongo-driver/x/mongo/driver/connstring",
+			"revision": "49af6e279ffe534210dca95e375d372517145e44",
+			"revisionTime": "2021-06-10T15:52:25Z"
+		},
+		{
+			"checksumSHA1": "v6CnfCm1BPN8qwAw5GxmriA1ihY=",
+			"path": "go.mongodb.org/mongo-driver/x/mongo/driver/dns",
 			"revision": "49af6e279ffe534210dca95e375d372517145e44",
 			"revisionTime": "2021-06-10T15:52:25Z"
 		},
@@ -742,6 +778,12 @@
 		{
 			"checksumSHA1": "JFvMdP5wv8eWjjPs7FrbWI/bJLs=",
 			"path": "go.mongodb.org/mongo-driver/x/mongo/driver/uuid",
+			"revision": "49af6e279ffe534210dca95e375d372517145e44",
+			"revisionTime": "2021-06-10T15:52:25Z"
+		},
+		{
+			"checksumSHA1": "nIKbDc5egkN8DWDnVJkG0xhuzHE=",
+			"path": "go.mongodb.org/mongo-driver/x/mongo/driver/wiremessage",
 			"revision": "49af6e279ffe534210dca95e375d372517145e44",
 			"revisionTime": "2021-06-10T15:52:25Z"
 		},
