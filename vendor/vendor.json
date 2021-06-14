@@ -568,6 +568,12 @@
 			"revisionTime": "2018-02-27T16:17:03Z"
 		},
 		{
+			"checksumSHA1": "PCjQHUl3BnNPVZAapFi8/FUqUqw=",
+			"path": "go.mongodb.org/mongo-driver/mongo",
+			"revision": "49af6e279ffe534210dca95e375d372517145e44",
+			"revisionTime": "2021-06-10T15:52:25Z"
+		},
+		{
 			"checksumSHA1": "PJY7uCr3UnX4/Mf/RoWnbieSZ8o=",
 			"path": "golang.org/x/crypto/pkcs12",
 			"revision": "057139ce5d2bdbe6fe73c53679e24e9cf007f637",
