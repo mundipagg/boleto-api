@@ -12,6 +12,7 @@ import (
 
 	"github.com/mundipagg/boleto-api/app"
 	"github.com/mundipagg/boleto-api/config"
+	"github.com/mundipagg/boleto-api/healthcheck"
 	"github.com/mundipagg/boleto-api/log"
 )
 
@@ -56,6 +57,8 @@ func main() {
 		// robot.GoRobots()
 		<-w
 	} else {
+		healthcheck.EnsureDependencies()
+
 		params := app.NewParams()
 		if *airPlaneMode {
 			params.DevMode = true
