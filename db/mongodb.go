@@ -28,7 +28,7 @@ var (
 )
 
 const (
-	NotFoundDoc = "not found"
+	NotFoundDoc = "mongo: no documents in result"
 	InvalidPK   = "invalid pk"
 )
 
