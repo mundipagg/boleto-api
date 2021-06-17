@@ -63,13 +63,18 @@ func registerBoleto(c *gin.Context) {
 		}
 
 	} else {
+		mongo, errMongo := db.CreateMongo(lg)
+
 		boView := models.NewBoletoView(bol, resp, bank.GetBankNameIntegration())
-		resp.ID = boView.ID.Hex()
+		mID, _ := boView.ID.MarshalText()
+		resp.ID = string(mID)
 		resp.Links = boView.Links
 
 		redis := db.CreateRedis()
 
-		errMongo := db.SaveBoleto(boView)
+		if errMongo == nil {
+			errMongo = mongo.SaveBoleto(boView)
+		}
 
 		if errMongo != nil {
 			lg.Warn(errMongo.Error(), fmt.Sprintf("Error saving to mongo - %s", errMongo.Error()))
@@ -117,8 +122,15 @@ func getBoleto(c *gin.Context) {
 	if boletoHtml == "" {
 		var err error
 		var boView models.BoletoView
+		mongo, errMongo := db.CreateMongo(log)
 
-		boView, result.DatabaseElapsedTimeInMilliseconds, err = db.GetBoletoByID(result.Id, result.PrivateKey)
+		if errMongo != nil {
+			result.SetErrorResponse(c, models.NewErrorResponse("MP500", errMongo.Error()), http.StatusInternalServerError)
+			result.LogSeverity = "Error"
+			return
+		}
+
+		boView, result.DatabaseElapsedTimeInMilliseconds, err = mongo.GetBoletoByID(result.Id, result.PrivateKey)
 
 		if err != nil && (err.Error() == db.NotFoundDoc || err.Error() == db.InvalidPK) {
 			result.SetErrorResponse(c, models.NewErrorResponse("MP404", "Not Found"), http.StatusNotFound)
@@ -178,7 +190,11 @@ func getBoletoByID(c *gin.Context) {
 	log := log.CreateLog()
 	log.Operation = "GetBoletoV1"
 
-	boleto, _, err := db.GetBoletoByID(id, pk)
+	mongo, errDb := db.CreateMongo(log)
+	if errDb != nil {
+		checkError(c, models.NewInternalServerError("MP500", "Internal error"), log)
+	}
+	boleto, _, err := mongo.GetBoletoByID(id, pk)
 	if err != nil {
 		checkError(c, models.NewHTTPNotFound("MP404", "Boleto não encontrado"), nil)
 		return

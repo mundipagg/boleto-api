@@ -7,10 +7,11 @@ import (
 	"github.com/mundipagg/boleto-api/models"
 )
 
+
 //SaveBoleto salva o boleto num cache local em memoria
 func SaveBoletoMock(boleto models.BoletoView) error {
-	idBson := boleto.ID.Hex()
-	cache.Set(idBson, boleto)
+	idBson, _ := boleto.ID.MarshalText()
+	cache.Set(string(idBson), boleto)
 	return nil
 }
 

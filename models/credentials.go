@@ -1,12 +1,10 @@
 package models
 
-import (
-	"go.mongodb.org/mongo-driver/bson/primitive"
-)
+import "gopkg.in/mgo.v2/bson"
 
 //Credentials Credenciais para requisição de Registro de Boleto
 type Credentials struct {
-	ID       primitive.ObjectID `bson:"_id,omitempty"`
+	ID       bson.ObjectId `bson:"_id,omitempty"`
 	UserKey  string
 	Username string `bson:"username,omitempty"`
 	Password string `bson:"password,omitempty"`

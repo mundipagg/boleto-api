@@ -26,14 +26,21 @@ func GetUser(key string) (interface{}, bool) {
 func LoadUserCredentials() {
 	log := log.CreateLog()
 
-	c, err := db.GetUserCredentials()
+	mongo, errMongo := db.CreateMongo(log)
+	if errMongo != nil {
+		log.Error(errMongo.Error(), "Error in connection to MongoDB")
+		return
+	}
+
+	c, err := mongo.GetUserCredentials()
 	if err != nil {
 		log.Error(err.Error(), fmt.Sprintf("Error in get user crendentials - %s", err.Error()))
 		return
 	}
 
 	for _, u := range c {
-		u.UserKey = u.ID.Hex()
+		uk, _ := u.ID.MarshalText()
+		u.UserKey = string(uk)
 		addUser(u.UserKey, u)
 	}
 }
