@@ -3,7 +3,6 @@ package config
 import (
 	"os"
 	"strconv"
-	"strings"
 	"sync"
 	"sync/atomic"
 )
@@ -40,7 +39,6 @@ type Config struct {
 	MongoDatabase                    string
 	MongoBoletoCollection            string
 	MongoCredentialsCollection       string
-	MongoAuthSource                  string
 	RedisURL                         string
 	RedisPassword                    string
 	RedisDatabase                    string
@@ -96,7 +94,6 @@ type Config struct {
 	QueueMaxTLS                      string
 	QueueMinTLS                      string
 	QueueByPassCertificate           bool
-	ForceTLS                         bool
 	NewRelicAppName                  string
 	NewRelicLicence                  string
 	TelemetryEnabled                 bool
@@ -146,7 +143,6 @@ func Install(mockMode, devMode, disableLog bool) {
 		MongoDatabase:                    os.Getenv("MONGODB_DATABASE"),
 		MongoBoletoCollection:            os.Getenv("MONGODB_BOLETO_COLLECTION"),
 		MongoCredentialsCollection:       os.Getenv("MONGODB_CREDENTIALS_COLLECTION"),
-		MongoAuthSource:                  os.Getenv("MONGODB_AUTH_SOURCE"),
 		RetryNumberGetBoleto:             getValueInt(os.Getenv("RETRY_NUMBER_GET_BOLETO")),
 		RedisURL:                         os.Getenv("REDIS_URL"),
 		RedisPassword:                    os.Getenv("REDIS_PASSWORD"),
@@ -201,7 +197,6 @@ func Install(mockMode, devMode, disableLog bool) {
 		QueueMaxTLS:                      os.Getenv("QUEUE_MAX_TLS"),
 		QueueMinTLS:                      os.Getenv("QUEUE_MIN_TLS"),
 		QueueByPassCertificate:           os.Getenv("QUEUE_BYPASS_CERTIFICATE") == "true",
-		ForceTLS:                         strings.ToLower(os.Getenv("FORCE_TLS")) == "true",
 		NewRelicAppName:                  os.Getenv("NEW_RELIC_APP_NAME"),
 		NewRelicLicence:                  os.Getenv("NEW_RELIC_LICENCE"),
 		TelemetryEnabled:                 os.Getenv("TELEMETRY_ENABLED") == "true",
