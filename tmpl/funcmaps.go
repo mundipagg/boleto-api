@@ -8,8 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/mgo.v2/bson"
-
 	"strconv"
 
 	"fmt"
@@ -18,6 +16,8 @@ import (
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/util"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var funcMap = template.FuncMap{
@@ -371,9 +371,8 @@ func mod11BradescoShopFacilDv(number string, wallet string) string {
 	return util.OurNumberDv(buffer.String(), util.MOD11, 7)
 }
 
-func bsonMongoToString(bsonId bson.ObjectId) string {
-	idBson, _ := bsonId.MarshalText()
-	return string(idBson)
+func bsonMongoToString(bsonId primitive.ObjectID) string {
+	return bsonId.Hex()
 }
 
 func escapeStringOnJson(field string) string {
