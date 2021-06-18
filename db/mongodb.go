@@ -55,14 +55,12 @@ func CreateMongo() (*mongo.Client, error) {
 		l.Error(err.Error(), "mongodb.CreateMongo - Error creating mongo connection")
 		return conn, err
 	}
-	l.Info("mongodb.CreateMongo - Connection created successfully")
 
 	err = conn.Ping(ctx, readpref.Primary())
 	if err != nil {
 		l.Error(err.Error(), "mongodb.CreateMongo - Mongo ping fails")
 		return conn, err
 	}
-	l.Info("mongodb.CreateMongo - Mongo ping was done successfully")
 
 	return conn, nil
 }
@@ -121,7 +119,6 @@ func SaveBoleto(boleto models.BoletoView) error {
 
 	collection := conn.Database(config.Get().MongoDatabase).Collection(config.Get().MongoBoletoCollection)
 	_, err = collection.InsertOne(ctx, boleto)
-	l.Info(fmt.Sprintf("mongodb.SaveBoleto - Boleto %v saved successfully", boleto))
 
 	return err
 }
@@ -176,8 +173,6 @@ func GetBoletoByID(id, pk string) (models.BoletoView, int64, error) {
 	result.Boleto.Title.CreateDate = util.TimeToLocalTime(result.Boleto.Title.CreateDate)
 	result.CreateDate = util.TimeToLocalTime(result.CreateDate)
 
-	l.Info(fmt.Sprintf("mongodb.GetBoletoByID - id [%s] and pk [%s] fetch successfully result [%v]", id, pk, result))
-
 	return result, time.Since(start).Milliseconds(), nil
 }
 
@@ -205,8 +200,6 @@ func GetUserCredentials() ([]models.Credentials, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	l.Info("mongodb.GetUserCredentials - Credential fetched successfully")
 
 	return result, nil
 }
