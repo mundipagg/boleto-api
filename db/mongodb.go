@@ -30,7 +30,18 @@ var (
 const (
 	NotFoundDoc = "mongo: no documents in result"
 	InvalidPK   = "invalid pk"
+	emptyConn   = "Connection is empty"
 )
+
+// CheckMongo checks if Mongo is up and running
+func CheckMongo() error {
+	_, err := CreateMongo()
+	if err != nil {
+		return err
+	}
+
+	return ping()
+}
 
 // CreateMongo cria uma nova instancia de conexão com o mongodb
 func CreateMongo() (*mongo.Client, error) {
@@ -40,25 +51,11 @@ func CreateMongo() (*mongo.Client, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), ConnectionTimeout)
 	defer cancel()
 
-	if conn != nil {
-		err := conn.Ping(ctx, readpref.Primary())
-		if err == nil {
-			return conn, nil
-		}
-	}
-
 	var err error
-
 	l := log.CreateLog()
 	conn, err = mongo.Connect(ctx, getClientOptions())
 	if err != nil {
 		l.Error(err.Error(), "mongodb.CreateMongo - Error creating mongo connection")
-		return conn, err
-	}
-
-	err = conn.Ping(ctx, readpref.Primary())
-	if err != nil {
-		l.Error(err.Error(), "mongodb.CreateMongo - Mongo ping fails")
 		return conn, err
 	}
 
@@ -206,4 +203,20 @@ func GetUserCredentials() ([]models.Credentials, error) {
 
 func hasValidKey(r models.BoletoView, pk string) bool {
 	return r.SecretKey == "" || r.PublicKey == pk
+}
+
+func ping() error {
+	if conn == nil {
+		return fmt.Errorf(emptyConn)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), ConnectionTimeout)
+	defer cancel()
+
+	err := conn.Ping(ctx, readpref.Primary())
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

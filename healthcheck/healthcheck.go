@@ -14,7 +14,7 @@ func EnsureDependencies() {
 
 func ensureMongo() {
 	l := log.CreateLog()
-	_, err := db.CreateMongo()
+	err := db.CheckMongo()
 	if err != nil {
 		l.Error(err.Error(), "healthcheck.ensureMongo - Error creating mongo connection")
 		time.Sleep(10 * time.Second)
