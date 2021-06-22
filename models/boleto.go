@@ -175,6 +175,9 @@ const (
 
 	// Pefisa constante do Pefisa
 	Pefisa = 174
+
+	// StoneBank constante do StoneBank
+	StoneBank = 197
 )
 
 // BoletoErrorConector é um connector flow para criar um objeto de erro
