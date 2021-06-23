@@ -44,3 +44,11 @@ func GetDurationTimeoutRequest(t string) time.Duration {
 	tOut := time.Duration(tTime)
 	return tOut
 }
+
+func TimeToLocalTime(t time.Time) time.Time {
+	loc, err := time.LoadLocation("Local")
+	if err != nil {
+		panic(err)
+	}
+	return t.In(loc)
+}

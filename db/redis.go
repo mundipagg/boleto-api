@@ -80,8 +80,14 @@ func (r *Redis) GetBoletoHTMLByID(id string, pk string, lg *log.Log) (string, in
 	}
 
 	key := fmt.Sprintf("%s:%s:%s", "boleto:html", id, pk)
-	ret, _ := r.conn.Do("GET", key)
+	ret, err := r.conn.Do("GET", key)
 	r.closeConnection()
+
+	// TODO: handle error better than just log and return an empty string
+	if err != nil {
+		lg.Error(err.Error(), fmt.Sprintf("OpenConnection [GetBoletoHTMLByID] - Error executing redis command %s", err))
+		return "", time.Since(start).Milliseconds()
+	}
 
 	if ret == nil {
 		return "", time.Since(start).Milliseconds()
