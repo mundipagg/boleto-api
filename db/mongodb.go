@@ -48,6 +48,10 @@ func CreateMongo() (*mongo.Client, error) {
 	mu.Lock()
 	defer mu.Unlock()
 
+	if conn != nil {
+		return conn, nil
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), ConnectionTimeout)
 	defer cancel()
 
@@ -70,7 +74,7 @@ func getClientOptions() *options.ClientOptions {
 
 	co.SetConnectTimeout(5 * time.Second)
 	co.SetMaxConnIdleTime(10 * time.Second)
-	co.SetMaxPoolSize(512)
+	co.SetMaxPoolSize(100)
 
 	if config.Get().ForceTLS {
 		co.SetTLSConfig(&tls.Config{})
