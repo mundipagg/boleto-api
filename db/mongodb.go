@@ -74,7 +74,7 @@ func getClientOptions() *options.ClientOptions {
 
 	co.SetConnectTimeout(5 * time.Second)
 	co.SetMaxConnIdleTime(10 * time.Second)
-	co.SetMaxPoolSize(100)
+	co.SetMaxPoolSize(512)
 
 	if config.Get().ForceTLS {
 		co.SetTLSConfig(&tls.Config{})
