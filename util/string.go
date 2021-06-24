@@ -7,6 +7,12 @@ import (
 
 	"encoding/json"
 
+	"github.com/tdewolff/minify"
+	"github.com/tdewolff/minify/css"
+	"github.com/tdewolff/minify/html"
+	"github.com/tdewolff/minify/js"
+	jm "github.com/tdewolff/minify/json"
+
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
 )
@@ -76,4 +82,26 @@ func IsCaixaSpecialCharacter(r rune) bool {
 		}
 	}
 	return false
+}
+
+//MinifyString Minifica uma string de acordo com um determinado formato
+func MinifyString(mString, tp string) string {
+	m := minify.New()
+	m.Add("text/html", &html.Minifier{
+		KeepDocumentTags:        true,
+		KeepEndTags:             true,
+		KeepWhitespace:          false,
+		KeepConditionalComments: true,
+	})
+	m.AddFunc("text/css", css.Minify)
+	m.AddFunc("text/javascript", js.Minify)
+	m.AddFunc("application/json", jm.Minify)
+
+	s, err := m.String(tp, mString)
+
+	if err != nil {
+		return mString
+	}
+
+	return s
 }

@@ -12,6 +12,7 @@ import (
 
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/tmpl"
+	"github.com/mundipagg/boleto-api/util"
 )
 
 type HTMLBoleto struct {
@@ -48,6 +49,12 @@ func HTML(boletoView models.BoletoView, format string) (string, error) {
 		return "", err
 	}
 	return s, nil
+}
+
+//MinifyHTML Minifica o HTML do um boleto a partir de um boletoView
+func MinifyHTML(bv models.BoletoView) string {
+	bhtml, _ := HTML(bv, "html")
+	return util.MinifyString(bhtml, "text/html")
 }
 
 func getTemplateBank(bv models.BoletoView) (string, string) {
