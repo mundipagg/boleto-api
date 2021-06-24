@@ -37,17 +37,6 @@ func executionController() gin.HandlerFunc {
 	}
 }
 
-func timingMetrics() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		start := time.Now()
-		c.Next()
-		end := time.Now()
-		total := end.Sub(start)
-		s := float64(total.Seconds())
-		metrics.PushTimingMetric("request-time", s)
-	}
-}
-
 //parseBoleto Middleware de tratamento do request de registro de boleto
 func parseBoleto(c *gin.Context) {
 	var ok bool

@@ -22,7 +22,7 @@ func TestGetBoleto_WhenInvalidKeys_ShouldReturnNotFound(t *testing.T) {
 	r.ServeHTTP(w, c.Request)
 
 	var response models.BoletoResponse
-	json.Unmarshal([]byte(w.Body.String()), &response)
+	json.Unmarshal(w.Body.Bytes(), &response)
 
 	assert.Equal(t, 404, w.Code)
 	assert.Equal(t, 1, len(response.Errors))
@@ -41,7 +41,7 @@ func TestGetBoleto_WhenFail_ShouldReturnInternalError(t *testing.T) {
 	r.ServeHTTP(w, c.Request)
 
 	var response models.BoletoResponse
-	json.Unmarshal([]byte(w.Body.String()), &response)
+	json.Unmarshal(w.Body.Bytes(), &response)
 
 	assert.Equal(t, 500, w.Code)
 	assert.Equal(t, 1, len(response.Errors))
