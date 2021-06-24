@@ -65,7 +65,11 @@ const requestToCaixa = `
                   <VALOR_ABATIMENTO>0</VALOR_ABATIMENTO>
                   <POS_VENCIMENTO>
                      <ACAO>DEVOLVER</ACAO>
+                  {{if .Title.HasRules}}       
+                     <NUMERO_DIAS>{{.Title.Rules.MaxDaysToPayPastDue}}</NUMERO_DIAS>
+                  {{else}}
                      <NUMERO_DIAS>0</NUMERO_DIAS>
+                  {{end}}
                   </POS_VENCIMENTO>
                   <CODIGO_MOEDA>9</CODIGO_MOEDA>
                   <PAGADOR>
@@ -93,7 +97,19 @@ const requestToCaixa = `
                      <MENSAGENS>
                         <MENSAGEM>{{truncateOnly (clearStringCaixa .Title.Instructions) 40}}</MENSAGEM>
                      </MENSAGENS>
-                  </RECIBO_PAGADOR>                 
+                  </RECIBO_PAGADOR>
+               {{if .Title.HasRules}} 
+                  <PAGAMENTO>
+                     <QUANTIDADE_PERMITIDA>1</QUANTIDADE_PERMITIDA>   
+                  {{if .Title.Rules.AcceptDivergentAmount}}
+                     <TIPO>ACEITA_QUALQUER_VALOR</TIPO>
+                  {{else}}
+                     <TIPO>NAO_ACEITA_VALOR_DIVERGENTE</TIPO>
+                  {{end}}
+                     <VALOR_MINIMO>0.00</VALOR_MINIMO>
+                     <VALOR_MAXIMO>0.00</VALOR_MAXIMO>
+                  </PAGAMENTO>
+               {{end}}                 
                </TITULO>
             </INCLUI_BOLETO>
            </DADOS>

@@ -10,7 +10,6 @@ import (
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/test"
 	"github.com/mundipagg/boleto-api/tmpl"
-	"github.com/mundipagg/boleto-api/util"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -73,8 +72,8 @@ var boletoInstructionsParameters = []test.Parameter{
 
 func TestProcessBoleto_WhenServiceRespondsSuccessfully_ShouldHasSuccessfulBoletoResponse(t *testing.T) {
 	mock.StartMockService("9093")
-	input := new(models.BoletoRequest)
-	util.FromJSON(baseMockJSON, input)
+
+	input := newStubBoletoRequestCaixa().Build()
 	bank := New()
 
 	output, _ := bank.ProcessBoleto(input)
@@ -84,9 +83,8 @@ func TestProcessBoleto_WhenServiceRespondsSuccessfully_ShouldHasSuccessfulBoleto
 
 func TestProcessBoleto_WhenServiceRespondsFailed_ShouldHasFailedBoletoResponse(t *testing.T) {
 	mock.StartMockService("9092")
-	input := new(models.BoletoRequest)
-	util.FromJSON(baseMockJSON, input)
-	input.Title.AmountInCents = 400
+
+	input := newStubBoletoRequestCaixa().WithAmountInCents(400).Build()
 	bank := New()
 
 	output, _ := bank.ProcessBoleto(input)
@@ -94,12 +92,11 @@ func TestProcessBoleto_WhenServiceRespondsFailed_ShouldHasFailedBoletoResponse(t
 	test.AssertProcessBoletoFailed(t, output)
 }
 
-func TestProcessBoleto_WhenRequestContainsInvalidParameters_ShouldHasFailedBoletoResponse(t *testing.T) {
+func TestProcessBoleto_WhenRequestContainsInvalidOurNumberParameter_ShouldHasFailedBoletoResponse(t *testing.T) {
+	largeOurNumber := uint(9999999999999999)
 	mock.StartMockService("9092")
-	input := new(models.BoletoRequest)
-	util.FromJSON(baseMockJSON, input)
-	input.Title.Instructions = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-	input.Title.OurNumber = 9999999999999999
+	input := newStubBoletoRequestCaixa().WithOurNumber(largeOurNumber).Build()
+
 	bank := New()
 
 	output, _ := bank.ProcessBoleto(input)
@@ -111,37 +108,26 @@ func TestGetCaixaCheckSumInfo(t *testing.T) {
 	const expectedSumCode = "0200656000000000000000003008201700000000000100000732159000109"
 	const expectedToken = "LvWr1op5Ayibn6jsCQ3/2bW4KwThVAlLK5ftxABlq20="
 
-	boleto := models.BoletoRequest{
-		Agreement: models.Agreement{
-			AgreementNumber: 200656,
-		},
-		Title: models.Title{
-			OurNumber:      0,
-			ExpireDateTime: time.Date(2017, 8, 30, 12, 12, 12, 12, time.Local),
-			AmountInCents:  1000,
-		},
-		Recipient: models.Recipient{
-			Document: models.Document{
-				Number: "00732159000109",
-			},
-		},
-	}
-	caixa := New()
+	bank := New()
+	agreement := uint(200656)
+	expiredAt := time.Date(2017, 8, 30, 12, 12, 12, 12, time.Local)
+	doc := "00732159000109"
 
-	assert.Equal(t, expectedSumCode, caixa.getCheckSumCode(boleto), "Deve-se formar uma string seguindo o padrão da documentação")
-	assert.Equal(t, expectedToken, caixa.getAuthToken(caixa.getCheckSumCode(boleto)), "Deve-se fazer um hash sha256 e encodar com base64")
+	s := newStubBoletoRequestCaixa()
+	s.WithAgreementNumber(agreement).WithOurNumber(0).WithAmountInCents(1000)
+	s.WithExpirationDate(expiredAt).WithRecipientDocumentNumber(doc)
+
+	input := s.Build()
+
+	assert.Equal(t, expectedSumCode, bank.getCheckSumCode(*input), "Deve-se formar uma string seguindo o padrão da documentação")
+	assert.Equal(t, expectedToken, bank.getAuthToken(bank.getCheckSumCode(*input)), "Deve-se fazer um hash sha256 e encodar com base64")
 }
 
 func TestShouldCalculateAccountDigitCaixa(t *testing.T) {
-	boleto := models.BoletoRequest{
-		Agreement: models.Agreement{
-			Account: "100000448",
-			Agency:  "2004",
-		},
-	}
+	input := newStubBoletoRequestCaixa().WithAgreementAccount("100000448").WithAgreementAgency("2004").Build()
 
-	assert.Nil(t, caixaValidateAccountAndDigit(&boleto))
-	assert.Nil(t, caixaValidateAgency(&boleto))
+	assert.Nil(t, caixaValidateAccountAndDigit(input))
+	assert.Nil(t, caixaValidateAgency(input))
 }
 
 func TestGetBoletoType_WhenCalled_ShouldBeMapTypeSuccessful(t *testing.T) {
@@ -155,12 +141,10 @@ func TestGetBoletoType_WhenCalled_ShouldBeMapTypeSuccessful(t *testing.T) {
 
 func TestTempletaRequestCaixa_WhenParseBuyerName_ShouldParseSucessfully(t *testing.T) {
 	f := flow.NewFlow()
-
-	request := new(models.BoletoRequest)
-	util.FromJSON(baseMockJSON, request)
+	s := newStubBoletoRequestCaixa()
 
 	for _, fact := range boletoBuyerNameParameters {
-		request.Buyer.Name = fact.Input.(string)
+		request := s.WithBuyerName(fact.Input.(string))
 		result := fmt.Sprintf("%v", f.From("message://?source=inline", request, getRequestCaixa(), tmpl.GetFuncMaps()).GetBody())
 		assert.Contains(t, result, fact.Expected, "Conversão não realizada como esperado")
 	}
@@ -168,13 +152,72 @@ func TestTempletaRequestCaixa_WhenParseBuyerName_ShouldParseSucessfully(t *testi
 
 func TestTempletaRequestCaixa_WhenParseInstruction_ShouldParseSucessfully(t *testing.T) {
 	f := flow.NewFlow()
-
-	request := new(models.BoletoRequest)
-	util.FromJSON(baseMockJSON, request)
+	s := newStubBoletoRequestCaixa()
 
 	for _, fact := range boletoInstructionsParameters {
-		request.Title.Instructions = fact.Input.(string)
+		request := s.WithInstructions(fact.Input.(string))
 		result := fmt.Sprintf("%v", f.From("message://?source=inline", request, getRequestCaixa(), tmpl.GetFuncMaps()).GetBody())
 		assert.Contains(t, result, fact.Expected, "Conversão não realizada como esperado")
+	}
+}
+
+func TestTemplateRequestCaixa_WhenRequestV1_ParseSuccessful(t *testing.T) {
+	f := flow.NewFlow()
+	input := newStubBoletoRequestCaixa().Build()
+
+	b := fmt.Sprintf("%v", f.From("message://?source=inline", input, getRequestCaixa(), tmpl.GetFuncMaps()).GetBody())
+
+	for _, expected := range expectedBasicTitleRequestFields {
+		assert.Contains(t, b, expected, "Erro no mapeamento dos campos básicos do Título")
+	}
+
+	for _, expected := range expectedBuyerRequestFields {
+		assert.Contains(t, b, expected, "Erro no mapeamento dos campos básicos do Comprador")
+	}
+
+	for _, notExpected := range expectedStrictRulesFieldsV2 {
+		assert.NotContains(t, b, notExpected, "Não devem haver campos de regras de pagamento na V1")
+	}
+
+	for _, notExpected := range expectedFlexRulesFieldsV2 {
+		assert.NotContains(t, b, notExpected, "Não devem haver campos de regras de pagamento na V1")
+	}
+}
+
+func TestTemplateRequestCaixa_WhenRequestWithStrictRulesV2_ParseSuccessful(t *testing.T) {
+	f := flow.NewFlow()
+	input := newStubBoletoRequestCaixa().WithStrictRules().Build()
+
+	b := fmt.Sprintf("%v", f.From("message://?source=inline", input, getRequestCaixa(), tmpl.GetFuncMaps()).GetBody())
+
+	for _, expected := range expectedBasicTitleRequestFields {
+		assert.Contains(t, b, expected, "Erro no mapeamento dos campos básicos do Título")
+	}
+
+	for _, expected := range expectedBuyerRequestFields {
+		assert.Contains(t, b, expected, "Erro no mapeamento dos campos básicos do Comprador")
+	}
+
+	for _, expected := range expectedStrictRulesFieldsV2 {
+		assert.Contains(t, b, expected, "Erro no mapeamento das regras de pagamento")
+	}
+}
+
+func TestTemplateRequestCaixa_WhenRequestWithFlexRulesV2_ParseSuccessful(t *testing.T) {
+	f := flow.NewFlow()
+	input := newStubBoletoRequestCaixa().WithFlexRules().Build()
+
+	b := fmt.Sprintf("%v", f.From("message://?source=inline", input, getRequestCaixa(), tmpl.GetFuncMaps()).GetBody())
+
+	for _, expected := range expectedBasicTitleRequestFields {
+		assert.Contains(t, b, expected, "Erro no mapeamento dos campos básicos do Título")
+	}
+
+	for _, expected := range expectedBuyerRequestFields {
+		assert.Contains(t, b, expected, "Erro no mapeamento dos campos básicos do Comprador")
+	}
+
+	for _, expected := range expectedFlexRulesFieldsV2 {
+		assert.Contains(t, b, expected, "Erro no mapeamento das regras de pagamento")
 	}
 }
