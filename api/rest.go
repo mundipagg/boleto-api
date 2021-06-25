@@ -1,8 +1,14 @@
 package api
 
 import (
+	"context"
+	stdlog "log"
 	"net/http"
 	"net/http/httputil"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/newrelic/go-agent/v3/integrations/nrgin"
 	"github.com/newrelic/go-agent/v3/newrelic"
@@ -21,7 +27,6 @@ func InstallRestAPI() {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	router.Use(gin.Recovery())
-	router.Use(executionController())
 	useNewRelic(router)
 
 	if config.Get().DevMode && !config.Get().MockMode {
@@ -34,7 +39,36 @@ func InstallRestAPI() {
 	router.GET("/boleto", getBoleto)
 	router.GET("/boleto/confirmation", confirmation)
 	router.POST("/boleto/confirmation", confirmation)
-	router.Run(config.Get().APIPort)
+	router.GET("/test-shutdown", func(c *gin.Context) {
+		stdlog.Println("Test Gracefully Shutdown")
+		time.Sleep(5*time.Second)
+		c.Status(200)
+	})
+
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	server := &http.Server{
+		Addr:    config.Get().APIPort,
+		Handler: router,
+	}
+
+	go func() {
+		err := server.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			interrupt <- syscall.SIGTERM
+			stdlog.Println("err: ", err)
+		}
+	}()
+
+	<-interrupt
+	stdlog.Println("shutdown server")
+	err := server.Shutdown(context.Background())
+	if err != nil {
+		stdlog.Print(err)
+	}
+
+	stdlog.Println("shutdown completed")
 }
 
 func useNewRelic(router *gin.Engine) {
