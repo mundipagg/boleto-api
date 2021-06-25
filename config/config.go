@@ -40,6 +40,7 @@ type Config struct {
 	MongoDatabase                    string
 	MongoBoletoCollection            string
 	MongoCredentialsCollection       string
+	MongoTokenCollection             string
 	MongoAuthSource                  string
 	RedisURL                         string
 	RedisPassword                    string
@@ -145,6 +146,7 @@ func Install(mockMode, devMode, disableLog bool) {
 		MongoPassword:                    os.Getenv("MONGODB_PASSWORD"),
 		MongoDatabase:                    os.Getenv("MONGODB_DATABASE"),
 		MongoBoletoCollection:            os.Getenv("MONGODB_BOLETO_COLLECTION"),
+		MongoTokenCollection:             os.Getenv("MONGODB_TOKEN_COLLECTION"),
 		MongoCredentialsCollection:       os.Getenv("MONGODB_CREDENTIALS_COLLECTION"),
 		MongoAuthSource:                  os.Getenv("MONGODB_AUTH_SOURCE"),
 		RetryNumberGetBoleto:             getValueInt(os.Getenv("RETRY_NUMBER_GET_BOLETO")),

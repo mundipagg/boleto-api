@@ -7,6 +7,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func Test_accessToken(t *testing.T) {
+	tests := []struct {
+		name string
+		want string
+	}{
+		{
+			name: "Generate AccessToken",
+			want: "xxx",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, accessToken())
+		})
+	}
+}
+
 func Test_generateJWT(t *testing.T) {
 	tests := []struct {
 		name    string

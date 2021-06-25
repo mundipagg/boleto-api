@@ -25,6 +25,7 @@ var (
 	conn              *mongo.Client // is concurrent safe: https://github.com/mongodb/mongo-go-driver/blob/master/mongo/client.go#L46
 	ConnectionTimeout = 10 * time.Second
 	mu                sync.RWMutex
+	TTLTokenInSeconds int32 = 780 // 13 minutes
 )
 
 const (
@@ -199,6 +200,60 @@ func GetUserCredentials() ([]models.Credentials, error) {
 	}
 
 	return result, nil
+}
+
+// GetAccessTokenByOrigin fetches a token by origin
+func GetAccessTokenByOrigin(origin string) (models.Token, error) {
+	result := models.Token{}
+	if origin == "" {
+		return result, fmt.Errorf("origin cannot be empty")
+	}
+
+	filter := bson.M{"origin": origin}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	conn, err := CreateMongo()
+	if err != nil {
+		return result, err
+	}
+
+	collection := conn.Database(config.Get().MongoDatabase).Collection(config.Get().MongoTokenCollection)
+	err = collection.FindOne(ctx, filter).Decode(&result)
+	if err != nil {
+		return result, err
+	}
+
+	return result, nil
+}
+
+// SaveAccessToken saves an access token at mongoDB
+func SaveAccessToken(token models.Token) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	conn, err := CreateMongo()
+	if err != nil {
+		return err
+	}
+
+	collection := conn.Database(config.Get().MongoDatabase).Collection(config.Get().MongoTokenCollection)
+
+	mod := mongo.IndexModel{
+		Keys:    bson.M{"createdat": 1},
+		Options: options.Index().SetExpireAfterSeconds(TTLTokenInSeconds),
+	}
+	opts := options.CreateIndexes().SetMaxTime(2 * time.Second)
+	// Create the index, if it not exists
+	_, err = collection.Indexes().CreateOne(ctx, mod, opts)
+	if err != nil {
+		return fmt.Errorf("Error creating ttl index")
+	}
+
+	_, err = collection.InsertOne(ctx, token)
+
+	return err
 }
 
 func hasValidKey(r models.BoletoView, pk string) bool {

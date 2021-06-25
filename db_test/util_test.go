@@ -136,3 +136,28 @@ func getUserCredentialByID(id string) (models.Credentials, error) {
 
 	return result, nil
 }
+
+func deleteTokenByOrigin(origin string) error {
+	if origin == "" {
+		return fmt.Errorf("origin cannot be empty")
+	}
+
+	filter := bson.M{"origin": origin}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	dbSession, err := db.CreateMongo()
+	if err != nil {
+		return err
+	}
+
+	collection := dbSession.Database(config.Get().MongoDatabase).Collection(config.Get().MongoTokenCollection)
+	_, err = collection.DeleteOne(ctx, filter)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -19,6 +19,14 @@ const (
 	privKeyPath = "../OpenBank.pem"
 )
 
+func accessToken() string {
+	return fetchAccessToken()
+}
+
+func fetchAccessToken() string {
+	return ""
+}
+
 func generateJWT() (string, error) {
 	signBytes, err := ioutil.ReadFile(privKeyPath)
 	if err != nil {
@@ -38,8 +46,8 @@ func generateJWT() (string, error) {
 	atClaims["nbf"] = now.Unix()
 	atClaims["aud"] = "https://sandbox-accounts.openbank.stone.com.br/auth/realms/stone_bank"
 	atClaims["realm"] = "stone_bank"
-	atClaims["sub"] = "x"
-	atClaims["clientId"] = "x"
+	atClaims["sub"] = "xxxxx"
+	atClaims["clientId"] = "xxxxx"
 	atClaims["iat"] = now.Unix()
 	atClaims["jti"] = generateJTIFromTime(now)
 
