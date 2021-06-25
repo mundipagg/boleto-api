@@ -19,14 +19,6 @@ const (
 	privKeyPath = "../OpenBank.pem"
 )
 
-func accessToken() string {
-	return fetchAccessToken()
-}
-
-func fetchAccessToken() string {
-	return ""
-}
-
 func generateJWT() (string, error) {
 	signBytes, err := ioutil.ReadFile(privKeyPath)
 	if err != nil {
