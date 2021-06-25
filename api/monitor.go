@@ -20,13 +20,11 @@ func useNewRelic(router *gin.Engine) {
 	if !config.Get().TelemetryEnabled {
 		return
 	}
-
 	app, _ := newrelic.NewApplication(
 		newrelic.ConfigAppName(config.Get().NewRelicAppName),
 		newrelic.ConfigLicense(config.Get().NewRelicLicence),
 		newrelic.ConfigDistributedTracerEnabled(true),
 	)
-
 	router.Use(nrgin.Middleware(app))
 }
 
