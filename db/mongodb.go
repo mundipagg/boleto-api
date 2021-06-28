@@ -202,17 +202,21 @@ func GetUserCredentials() ([]models.Credentials, error) {
 	return result, nil
 }
 
-// GetAccessTokenByOrigin fetches a token by origin
-func GetAccessTokenByOrigin(origin string) (models.Token, error) {
+// GetAccessTokenByClientIDAndOrigin fetches a token by clientID and origin
+func GetAccessTokenByClientIDAndOrigin(clientID, origin string) (models.Token, error) {
 	result := models.Token{}
 	if origin == "" {
 		return result, fmt.Errorf("origin cannot be empty")
 	}
 
-	filter := bson.M{"origin": origin}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
+
+	filter := bson.D{
+		primitive.E{Key: "origin", Value: origin},
+		primitive.E{Key: "clientid", Value: clientID},
+	}
+	opts := options.FindOne().SetSort(bson.D{primitive.E{Key: "createdat", Value: -1}})
 
 	conn, err := CreateMongo()
 	if err != nil {
@@ -220,7 +224,7 @@ func GetAccessTokenByOrigin(origin string) (models.Token, error) {
 	}
 
 	collection := conn.Database(config.Get().MongoDatabase).Collection(config.Get().MongoTokenCollection)
-	err = collection.FindOne(ctx, filter).Decode(&result)
+	err = collection.FindOne(ctx, filter, opts).Decode(&result)
 	if err != nil {
 		return result, err
 	}

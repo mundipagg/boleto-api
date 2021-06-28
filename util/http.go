@@ -69,9 +69,6 @@ func (hc *HTTPClient) PostFormURLEncoded(endpoint string, params map[string]stri
 	req.Header.Add("content-type", "application/x-www-form-urlencoded")
 	req.Header.Add("content-length", strconv.Itoa(len(values.Encode())))
 
-	// log.Printf("------> requesting url via POST [%v]\n", uri.String())
-	// log.Printf("------> with headers [%v]\n", req.Header)
-
 	return client.Do(req)
 }
 

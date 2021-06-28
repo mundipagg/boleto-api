@@ -29,6 +29,7 @@ type Config struct {
 	URLBBToken                       string
 	URLCitiBoleto                    string
 	URLCiti                          string
+	URLStoneBankToken                string
 	MockMode                         bool
 	DevMode                          bool
 	HTTPOnly                         bool
@@ -136,6 +137,7 @@ func Install(mockMode, devMode, disableLog bool) {
 		URLBBToken:                       os.Getenv("URL_BB_TOKEN"),
 		URLCitiBoleto:                    os.Getenv("URL_CITI_BOLETO"),
 		URLCiti:                          os.Getenv("URL_CITI"),
+		URLStoneBankToken:                os.Getenv("URL_STONEBANK_TOKEN"),
 		MockMode:                         mockMode,
 		AppURL:                           os.Getenv("APP_URL"),
 		ElasticURL:                       os.Getenv("ELASTIC_URL"),
