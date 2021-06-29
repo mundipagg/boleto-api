@@ -11,7 +11,7 @@ var successRequest *models.BoletoRequest = &models.BoletoRequest{
 		Username:           "VsKkTASTTdri0",
 		Password:           "Tkms6VwoPdjLWFCLOLhYt_KbV2hIvdWqmNKQX7XOVclTnigKXmn6CqQMf2UxhVoo",
 		AuthorizationToken: "",
-		AccessKey:          "2939c495-98a1-728a-q81c-9cce00z8006p",
+		AccessKey:          "",
 	},
 	Agreement: models.Agreement{
 		AgreementNumber: 0,
@@ -25,7 +25,7 @@ var successRequest *models.BoletoRequest = &models.BoletoRequest{
 	Title: models.Title{
 		CreateDate:     time.Now(),
 		ExpireDateTime: time.Now().Add(5 * time.Hour * 24),
-		ExpireDate:     time.Now().Format("2006-05-11"),
+		ExpireDate:     time.Now().Format("2006-01-02"),
 		AmountInCents:  200,
 		OurNumber:      94726341,
 		Instructions:   "Sr. Caixa, favor não receber após vencimento",

@@ -28,7 +28,7 @@ var (
 )
 
 const (
-	TokenOrigin     = "stonebank"
+	issuerBank      = "stonebank"
 	BadRequestError = "status code 400"
 )
 
@@ -50,46 +50,44 @@ type AccessTokenResponse struct {
 	Scope                 string `json:"scope"`
 }
 
-func accessToken(clientID string) (string, error) {
-	tk := fetchAccessTokenFromStorage(clientID)
+func authenticate(clientID string) (string, error) {
+	tk := fetchTokenFromStorage(clientID)
 	if tk != "" {
 		return tk, nil
 	}
 
-	return requestAndSaveAccessToken(clientID)
+	return authenticateAndSaveToken(clientID)
 }
 
-func requestAndSaveAccessToken(clientID string) (string, error) {
+func authenticateAndSaveToken(clientID string) (string, error) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	tk, err := requestAccessTokenWithRetryOnBadRequest(clientID)
+	tk, err := AuthenticationWithRetryOnBadRequest(clientID)
 	if err != nil {
-		l.Error(err.Error(), "Error fetching stonebank access token")
+		l.Error(err.Error(), "Error at stonebank authentication")
 		return "", err
 	}
 
-	// saves the new access token
-	token := models.NewToken(clientID, TokenOrigin, tk)
-	db.SaveAccessToken(token)
+	token := models.NewToken(clientID, issuerBank, tk)
+	db.SaveToken(token)
 
-	// return token
 	return tk, nil
 }
 
-func fetchAccessTokenFromStorage(clientID string) string {
-	token, err := db.GetAccessTokenByClientIDAndOrigin(clientID, TokenOrigin)
+func fetchTokenFromStorage(clientID string) string {
+	token, err := db.GetTokenByClientIDAndIssuerBank(clientID, issuerBank)
 	if err != nil {
-		l.Error(err.Error(), "Error fetching stonebank access token")
+		l.Error(err.Error(), "Error at stonebank authentication")
 		return ""
 	}
 
 	return token.AccessToken
 }
 
-// requestAccessTokenWithRetryOnBadRequest encapsulates logic for retry access token request once again
+// AuthenticationWithRetryOnBadRequest encapsulates logic for retry access token request once again
 // in bad request status code. That's because duplicated jti returns this mencioned status code
-func requestAccessTokenWithRetryOnBadRequest(clientID string) (string, error) {
+func AuthenticationWithRetryOnBadRequest(clientID string) (string, error) {
 	var tk string
 	var err error
 

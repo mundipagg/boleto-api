@@ -25,7 +25,7 @@ func Test_generateJWT(t *testing.T) {
 			got, err := generateJWT()
 			assert.Nil(t, err)
 			assert.Equal(t, (err != nil), tt.wantErr)
-			assert.True(t, len(got) == 1095)
+			assert.NotEmpty(t, got)
 		})
 	}
 }

@@ -9,6 +9,7 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
+	"github.com/mundipagg/boleto-api/config"
 )
 
 var (
@@ -16,7 +17,8 @@ var (
 )
 
 const (
-	privKeyPath = "../OpenBank.pem"
+	privKeyPath    = "../OpenBank.pem"
+	StoneBankRealm = "stone_bank"
 )
 
 func generateJWT() (string, error) {
@@ -33,13 +35,12 @@ func generateJWT() (string, error) {
 	now := time.Now()
 
 	atClaims := jwt.MapClaims{}
-
-	atClaims["exp"] = now.Add(15 * time.Minute).Unix()
+	atClaims["exp"] = now.Add(time.Duration(config.Get().StoneBankTokenDurationInMinutes) * time.Minute).Unix()
 	atClaims["nbf"] = now.Unix()
-	atClaims["aud"] = "https://sandbox-accounts.openbank.stone.com.br/auth/realms/stone_bank"
-	atClaims["realm"] = "stone_bank"
-	atClaims["sub"] = "xxxxx"
-	atClaims["clientId"] = "xxxxx"
+	atClaims["aud"] = config.Get().StoneBankAudience
+	atClaims["realm"] = StoneBankRealm
+	atClaims["sub"] = config.Get().StoneBankClientID
+	atClaims["clientId"] = config.Get().StoneBankClientID
 	atClaims["iat"] = now.Unix()
 	atClaims["jti"] = generateJTIFromTime(now)
 
@@ -55,10 +56,11 @@ func generateJWT() (string, error) {
 func generateJTIFromTime(t time.Time) string {
 	id, _ := uuid.NewUUID()
 	nowStr := t.Format("2006-01-02T15:04:05.000Z")
-	nowStr = strings.ReplaceAll(nowStr, "-", "")
-	nowStr = strings.ReplaceAll(nowStr, "T", "")
-	nowStr = strings.ReplaceAll(nowStr, ":", "")
-	nowStr = strings.ReplaceAll(nowStr, ".", "")
+
+	removable := []string{"-", "T", ":", "."}
+	for _, ch := range removable {
+		nowStr = strings.ReplaceAll(nowStr, ch, "")
+	}
 
 	return fmt.Sprintf("%s.%s", nowStr[:17], id.String()[:7])
 }

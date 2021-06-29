@@ -137,12 +137,12 @@ func getUserCredentialByID(id string) (models.Credentials, error) {
 	return result, nil
 }
 
-func deleteTokenByOrigin(origin string) error {
-	if origin == "" {
-		return fmt.Errorf("origin cannot be empty")
+func deleteTokenByIssuerBank(issuerBank string) error {
+	if issuerBank == "" {
+		return fmt.Errorf("issuerBank cannot be empty")
 	}
 
-	filter := bson.M{"origin": origin}
+	filter := bson.M{"issuerbank": issuerBank}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()

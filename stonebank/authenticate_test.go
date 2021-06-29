@@ -6,7 +6,7 @@ import (
 	"github.com/mundipagg/boleto-api/mock"
 )
 
-func Test_accessToken(t *testing.T) {
+func Test_authenticate(t *testing.T) {
 	mock.StartMockService("9093")
 
 	type args struct {
@@ -29,13 +29,13 @@ func Test_accessToken(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := accessToken(tt.args.clientID)
+			got, err := authenticate(tt.args.clientID)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("accessToken() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("authenticate() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("accessToken() = %v, want %v", got, tt.want)
+				t.Errorf("authenticate() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -22,10 +22,10 @@ import (
 )
 
 var (
-	conn              *mongo.Client // is concurrent safe: https://github.com/mongodb/mongo-go-driver/blob/master/mongo/client.go#L46
-	ConnectionTimeout = 10 * time.Second
-	mu                sync.RWMutex
-	TTLTokenInSeconds int32 = 780 // 13 minutes
+	conn                  *mongo.Client // is concurrent safe: https://github.com/mongodb/mongo-go-driver/blob/master/mongo/client.go#L46
+	ConnectionTimeout     = 10 * time.Second
+	mu                    sync.RWMutex
+	SafeDurationInMinutes int = 13
 )
 
 const (
@@ -202,26 +202,26 @@ func GetUserCredentials() ([]models.Credentials, error) {
 	return result, nil
 }
 
-// GetAccessTokenByClientIDAndOrigin fetches a token by clientID and origin
-func GetAccessTokenByClientIDAndOrigin(clientID, origin string) (models.Token, error) {
+// GetTokenByClientIDAndIssuerBank fetches a token by clientID and issuerBank
+func GetTokenByClientIDAndIssuerBank(clientID, issuerBank string) (models.Token, error) {
 	result := models.Token{}
-	if origin == "" {
-		return result, fmt.Errorf("origin cannot be empty")
+	if clientID == "" || issuerBank == "" {
+		return result, fmt.Errorf("fields clientID and issuerBank cannot be empty")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	filter := bson.D{
-		primitive.E{Key: "origin", Value: origin},
-		primitive.E{Key: "clientid", Value: clientID},
-	}
-	opts := options.FindOne().SetSort(bson.D{primitive.E{Key: "createdat", Value: -1}})
-
 	conn, err := CreateMongo()
 	if err != nil {
 		return result, err
 	}
+
+	filter := bson.D{
+		primitive.E{Key: "clientid", Value: clientID},
+		primitive.E{Key: "issuerbank", Value: issuerBank},
+	}
+	opts := options.FindOne().SetSort(bson.D{primitive.E{Key: "createdat", Value: -1}})
 
 	collection := conn.Database(config.Get().MongoDatabase).Collection(config.Get().MongoTokenCollection)
 	err = collection.FindOne(ctx, filter, opts).Decode(&result)
@@ -229,11 +229,15 @@ func GetAccessTokenByClientIDAndOrigin(clientID, origin string) (models.Token, e
 		return result, err
 	}
 
+	if time.Now().After(result.CreatedAt.Add(time.Duration(SafeDurationInMinutes) * time.Minute)) { // safety margin
+		result = models.Token{} // a little help for GC
+	}
+
 	return result, nil
 }
 
-// SaveAccessToken saves an access token at mongoDB
-func SaveAccessToken(token models.Token) error {
+// SaveToken saves an access token at mongoDB
+func SaveToken(token models.Token) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
@@ -243,18 +247,6 @@ func SaveAccessToken(token models.Token) error {
 	}
 
 	collection := conn.Database(config.Get().MongoDatabase).Collection(config.Get().MongoTokenCollection)
-
-	mod := mongo.IndexModel{
-		Keys:    bson.M{"createdat": 1},
-		Options: options.Index().SetExpireAfterSeconds(TTLTokenInSeconds),
-	}
-	opts := options.CreateIndexes().SetMaxTime(2 * time.Second)
-	// Create the index, if it not exists
-	_, err = collection.Indexes().CreateOne(ctx, mod, opts)
-	if err != nil {
-		return fmt.Errorf("Error creating ttl index")
-	}
-
 	_, err = collection.InsertOne(ctx, token)
 
 	return err
