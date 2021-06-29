@@ -4,6 +4,7 @@ import (
 	"crypto/rsa"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 	"time"
 
@@ -22,6 +23,10 @@ const (
 )
 
 func generateJWT() (string, error) {
+	if _, err := os.Stat(privKeyPath); os.IsNotExist(err) {
+		return "", fmt.Errorf("Stone Keyfile not found")
+	}
+
 	signBytes, err := ioutil.ReadFile(privKeyPath)
 	if err != nil {
 		return "", err

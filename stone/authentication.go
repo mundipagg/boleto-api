@@ -102,10 +102,7 @@ func doAuthentication() (string, error) {
 	}
 
 	AccessTokenPayload["client_assertion"] = jwt
-	// AccessTokenPayload["client_id"] = config.Get().StoneClientID
-	client_id := config.Get().StoneClientID
-
-	AccessTokenPayload["client_id"] = client_id
+	AccessTokenPayload["client_id"] = config.Get().StoneClientID
 	resp, err := HttpClient.PostFormURLEncoded(config.Get().URLStoneToken, AccessTokenPayload)
 	defer resp.Body.Close()
 
