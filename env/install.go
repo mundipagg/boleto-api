@@ -31,7 +31,6 @@ func ConfigMock(port string) {
 	os.Setenv("URL_BRADESCO_NET_EMPRESA", "http://localhost:"+port+"/bradesconetempresa/registrarBoleto")
 	os.Setenv("URL_PEFISA_TOKEN", "http://localhost:"+port+"/pefisa/gerarToken")
 	os.Setenv("URL_PEFISA_REGISTER", "http://localhost:"+port+"/pefisa/registrarBoleto")
-	os.Setenv("URL_STONE_TOKEN", "https://sandbox-accounts.openbank.stone.com.br/auth/realms/stone_bank/protocol/openid-connect/token")
 	os.Setenv("URL_STONE_TOKEN", "http://localhost:"+port+"/auth/realms/stone_bank/protocol/openid-connect/token")
 	os.Setenv("STONE_TOKEN_DURATION_IN_MINUTES", "15")
 	os.Setenv("STONE_AUDIENCE", "https://sandbox-accounts.openbank.stone.com.br/auth/realms/stone_bank")
