@@ -1,4 +1,4 @@
-package stonebank
+package stone
 
 import (
 	"fmt"
@@ -8,21 +8,21 @@ import (
 	"github.com/mundipagg/boleto-api/validations"
 )
 
-type bankStoneBank struct {
+type stone struct {
 	validate *models.Validator
 	log      *log.Log
 }
 
-//New Create a new Santander Integration Instance
-func New() (bankStoneBank, error) {
+//New Create a new Stone Integration Instance
+func New() (stone, error) {
 	var err error
-	b := bankStoneBank{
+	b := stone{
 		validate: models.NewValidator(),
 		log:      log.CreateLog(),
 	}
 
 	if err != nil {
-		return bankStoneBank{}, err
+		return stone{}, err
 	}
 
 	b.validate.Push(validations.ValidateAmount)
@@ -30,12 +30,12 @@ func New() (bankStoneBank, error) {
 	b.validate.Push(validations.ValidateBuyerDocumentNumber)
 	b.validate.Push(validations.ValidateRecipientDocumentNumber)
 
-	b.validate.Push(stoneBankValidateAccessKeyNotEmpty)
+	b.validate.Push(stoneValidateAccessKeyNotEmpty)
 
 	return b, nil
 }
 
-func (b bankStoneBank) ProcessBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
+func (b stone) ProcessBoleto(boleto *models.BoletoRequest) (models.BoletoResponse, error) {
 	errs := b.ValidateBoleto(boleto)
 	if len(errs) > 0 {
 		return models.BoletoResponse{Errors: errs}, nil
@@ -50,23 +50,23 @@ func (b bankStoneBank) ProcessBoleto(boleto *models.BoletoRequest) (models.Bolet
 	return b.RegisterBoleto(boleto)
 }
 
-func (b bankStoneBank) RegisterBoleto(request *models.BoletoRequest) (models.BoletoResponse, error) {
-	b.log.Info(fmt.Sprintf("StoneBank Register Boleto %v", request))
+func (b stone) RegisterBoleto(request *models.BoletoRequest) (models.BoletoResponse, error) {
+	b.log.Info(fmt.Sprintf("Stone Register Boleto %v", request))
 	return models.BoletoResponse{}, nil
 }
 
-func (b bankStoneBank) ValidateBoleto(request *models.BoletoRequest) models.Errors {
+func (b stone) ValidateBoleto(request *models.BoletoRequest) models.Errors {
 	return models.Errors(b.validate.Assert(request))
 }
 
-func (b bankStoneBank) GetBankNumber() models.BankNumber {
-	return models.StoneBank
+func (b stone) GetBankNumber() models.BankNumber {
+	return models.Stone
 }
 
-func (b bankStoneBank) GetBankNameIntegration() string {
-	return "stonebank"
+func (b stone) GetBankNameIntegration() string {
+	return "stone"
 }
 
-func (b bankStoneBank) Log() *log.Log {
+func (b stone) Log() *log.Log {
 	return b.log
 }

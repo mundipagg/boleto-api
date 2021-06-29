@@ -15,7 +15,7 @@ import (
 )
 
 func TestGetBoletoById(t *testing.T) {
-	mock.StartMockService("9093")
+	mock.StartMockService("9092")
 
 	bank := caixa.New()
 	input := caixa.NewStubBoletoRequestCaixa().Build()

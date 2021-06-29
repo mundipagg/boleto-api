@@ -1,4 +1,4 @@
-package stonebank
+package stone
 
 import (
 	"testing"
@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_bankStoneBank_ProcessBoleto(t *testing.T) {
+func Test_bankStone_ProcessBoleto(t *testing.T) {
 	mock.StartMockService("9093")
 
 	bankInst, err := New()
@@ -19,13 +19,13 @@ func Test_bankStoneBank_ProcessBoleto(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		b       bankStoneBank
+		b       stone
 		args    args
 		want    models.BoletoResponse
 		wantErr bool
 	}{
 		{
-			name: "BankStoneEmptyAccessKeyRequest",
+			name: "StoneEmptyAccessKeyRequest",
 			b:    bankInst,
 			args: args{
 				request: successRequest,

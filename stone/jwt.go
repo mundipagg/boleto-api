@@ -1,4 +1,4 @@
-package stonebank
+package stone
 
 import (
 	"crypto/rsa"
@@ -17,8 +17,8 @@ var (
 )
 
 const (
-	privKeyPath    = "../OpenBank.pem"
-	StoneBankRealm = "stone_bank"
+	privKeyPath = "../OpenBank.pem"
+	StoneRealm  = "stone"
 )
 
 func generateJWT() (string, error) {
@@ -35,12 +35,12 @@ func generateJWT() (string, error) {
 	now := time.Now()
 
 	atClaims := jwt.MapClaims{}
-	atClaims["exp"] = now.Add(time.Duration(config.Get().StoneBankTokenDurationInMinutes) * time.Minute).Unix()
+	atClaims["exp"] = now.Add(time.Duration(config.Get().StoneTokenDurationInMinutes) * time.Minute).Unix()
 	atClaims["nbf"] = now.Unix()
-	atClaims["aud"] = config.Get().StoneBankAudience
-	atClaims["realm"] = StoneBankRealm
-	atClaims["sub"] = config.Get().StoneBankClientID
-	atClaims["clientId"] = config.Get().StoneBankClientID
+	atClaims["aud"] = config.Get().StoneAudience
+	atClaims["realm"] = StoneRealm
+	atClaims["sub"] = config.Get().StoneClientID
+	atClaims["clientId"] = config.Get().StoneClientID
 	atClaims["iat"] = now.Unix()
 	atClaims["jti"] = generateJTIFromTime(now)
 

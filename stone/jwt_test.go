@@ -1,4 +1,4 @@
-package stonebank
+package stone
 
 import (
 	"testing"

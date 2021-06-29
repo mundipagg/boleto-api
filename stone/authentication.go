@@ -1,4 +1,4 @@
-package stonebank
+package stone
 
 import (
 	"encoding/json"
@@ -28,18 +28,11 @@ var (
 )
 
 const (
-	issuerBank      = "stonebank"
+	issuerBank      = "stone"
 	BadRequestError = "status code 400"
 )
 
-type AcessTokenRequest struct {
-	ClientID            string `json:"client_id"`
-	GrantType           string `json:"client_credentials"`
-	ClientAssertionType string `json:"client_assertion_type"`
-	ClientAssertion     string `json:"client_assertion"`
-}
-
-type AccessTokenResponse struct {
+type AuthResponse struct {
 	AccessToken           string `json:"access_token"`
 	AccessTokenExpiresAt  int    `json:"expires_in"`
 	RefreshToken          string `json:"refresh_token"`
@@ -63,9 +56,9 @@ func authenticateAndSaveToken(clientID string) (string, error) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	tk, err := AuthenticationWithRetryOnBadRequest(clientID)
+	tk, err := AuthenticationWithRetryOnBadRequest()
 	if err != nil {
-		l.Error(err.Error(), "Error at stonebank authentication")
+		l.Error(err.Error(), "Error at stone authentication")
 		return "", err
 	}
 
@@ -78,7 +71,7 @@ func authenticateAndSaveToken(clientID string) (string, error) {
 func fetchTokenFromStorage(clientID string) string {
 	token, err := db.GetTokenByClientIDAndIssuerBank(clientID, issuerBank)
 	if err != nil {
-		l.Error(err.Error(), "Error at stonebank authentication")
+		l.Error(err.Error(), "Error at stone authentication")
 		return ""
 	}
 
@@ -87,21 +80,21 @@ func fetchTokenFromStorage(clientID string) string {
 
 // AuthenticationWithRetryOnBadRequest encapsulates logic for retry access token request once again
 // in bad request status code. That's because duplicated jti returns this mencioned status code
-func AuthenticationWithRetryOnBadRequest(clientID string) (string, error) {
+func AuthenticationWithRetryOnBadRequest() (string, error) {
 	var tk string
 	var err error
 
-	if tk, err = requestAccessToken(clientID); err != nil {
+	if tk, err = doAuthentication(); err != nil {
 		if !strings.Contains(err.Error(), BadRequestError) {
 			return "", err
 		}
-		return requestAccessToken(clientID)
+		return doAuthentication()
 	}
 
 	return tk, nil
 }
 
-func requestAccessToken(clientID string) (string, error) {
+func doAuthentication() (string, error) {
 	jwt, err := generateJWT()
 	if err != nil {
 		l.Error(err.Error(), "Error generating jwt")
@@ -109,29 +102,32 @@ func requestAccessToken(clientID string) (string, error) {
 	}
 
 	AccessTokenPayload["client_assertion"] = jwt
-	AccessTokenPayload["client_id"] = clientID
-	resp, err := HttpClient.PostFormURLEncoded(config.Get().URLStoneBankToken, AccessTokenPayload)
+	// AccessTokenPayload["client_id"] = config.Get().StoneClientID
+	client_id := config.Get().StoneClientID
+
+	AccessTokenPayload["client_id"] = client_id
+	resp, err := HttpClient.PostFormURLEncoded(config.Get().URLStoneToken, AccessTokenPayload)
 	defer resp.Body.Close()
 
 	if err != nil {
-		l.Error(err.Error(), "Error requesting a new stonebank access token")
+		l.Error(err.Error(), "stone authentication error")
 		return "", err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("Request for clientID %s returns status code %d", clientID, resp.StatusCode)
+		return "", fmt.Errorf("stone authentication returns status code %d", resp.StatusCode)
 	}
 
 	responseBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		l.Error(err.Error(), "Error reading stonebank access token response")
+		l.Error(err.Error(), "Error reading stone authentication response")
 		return "", err
 	}
 
-	var r AccessTokenResponse
+	var r AuthResponse
 	err = json.Unmarshal(responseBody, &r)
 	if err != nil {
-		l.Error(err.Error(), "Error unmarshaling stonebank access token response")
+		l.Error(err.Error(), "Error unmarshaling stone authentication response")
 		return "", err
 	}
 

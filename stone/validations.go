@@ -1,11 +1,11 @@
-package stonebank
+package stone
 
 import (
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/validations"
 )
 
-func stoneBankValidateAccessKeyNotEmpty(b interface{}) error {
+func stoneValidateAccessKeyNotEmpty(b interface{}) error {
 	switch t := b.(type) {
 	case *models.BoletoRequest:
 		if t.Authentication.AccessKey == "" {

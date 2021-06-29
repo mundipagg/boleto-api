@@ -29,10 +29,10 @@ type Config struct {
 	URLBBToken                       string
 	URLCitiBoleto                    string
 	URLCiti                          string
-	URLStoneBankToken                string
-	StoneBankTokenDurationInMinutes  int
-	StoneBankAudience                string
-	StoneBankClientID                string
+	URLStoneToken                    string
+	StoneTokenDurationInMinutes      int
+	StoneAudience                    string
+	StoneClientID                    string
 	MockMode                         bool
 	DevMode                          bool
 	HTTPOnly                         bool
@@ -140,10 +140,10 @@ func Install(mockMode, devMode, disableLog bool) {
 		URLBBToken:                       os.Getenv("URL_BB_TOKEN"),
 		URLCitiBoleto:                    os.Getenv("URL_CITI_BOLETO"),
 		URLCiti:                          os.Getenv("URL_CITI"),
-		URLStoneBankToken:                os.Getenv("URL_STONEBANK_TOKEN"),
-		StoneBankTokenDurationInMinutes:  getValueInt(os.Getenv("STONEBANK_TOKEN_DURATION_IN_MINUTES")),
-		StoneBankAudience:                os.Getenv("STONEBANK_AUDIENCE"),
-		StoneBankClientID:                os.Getenv("STONEBANK_CLIENT_ID"),
+		URLStoneToken:                    os.Getenv("URL_STONE_TOKEN"),
+		StoneTokenDurationInMinutes:      getValueInt(os.Getenv("STONE_TOKEN_DURATION_IN_MINUTES")),
+		StoneAudience:                    os.Getenv("STONE_AUDIENCE"),
+		StoneClientID:                    os.Getenv("STONE_CLIENT_ID"),
 		MockMode:                         mockMode,
 		AppURL:                           os.Getenv("APP_URL"),
 		ElasticURL:                       os.Getenv("ELASTIC_URL"),
