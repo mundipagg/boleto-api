@@ -13,45 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const baseMockJSON = `
-{
-	"BankNumber": 104,
-	"Agreement": {
-		"AgreementNumber": 555555,
-		"Agency":"5555"
-	},
-	"Title": {
-		"ExpireDate": "2029-08-30",
-		"AmountInCents": 200,
-		"OurNumber": 0,
-		"Instructions": "Mensagem",
-		"DocumentNumber": "NPC160517"
-	},
-	"Buyer": {
-		"Name": "TESTE PAGADOR 001",
-		"Document": {
-			"Type": "CPF",
-			"Number": "57962014849"
-		},
-		"Address": {
-			"Street": "SAUS QUADRA 03",
-			"Number": "",
-			"Complement": "",
-			"ZipCode": "20520051",
-			"City": "Rio de Janeiro",
-			"District": "Tijuca",
-			"StateCode": "RJ"
-		}
-	},
-	"Recipient": {
-		"Document": {
-			"Type": "CNPJ",
-			"Number": "00555555000109"
-		}
-	}
-}
-`
-
 var boletoTypeParameters = []test.Parameter{
 	{Input: models.Title{BoletoType: ""}, Expected: "99"},
 	{Input: models.Title{BoletoType: "NSA"}, Expected: "99"},
