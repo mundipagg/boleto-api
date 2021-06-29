@@ -29,6 +29,10 @@ type Config struct {
 	URLBBToken                       string
 	URLCitiBoleto                    string
 	URLCiti                          string
+	URLStoneToken                    string
+	StoneTokenDurationInMinutes      int
+	StoneAudience                    string
+	StoneClientID                    string
 	MockMode                         bool
 	DevMode                          bool
 	HTTPOnly                         bool
@@ -40,6 +44,7 @@ type Config struct {
 	MongoDatabase                    string
 	MongoBoletoCollection            string
 	MongoCredentialsCollection       string
+	MongoTokenCollection             string
 	MongoAuthSource                  string
 	RedisURL                         string
 	RedisPassword                    string
@@ -135,6 +140,10 @@ func Install(mockMode, devMode, disableLog bool) {
 		URLBBToken:                       os.Getenv("URL_BB_TOKEN"),
 		URLCitiBoleto:                    os.Getenv("URL_CITI_BOLETO"),
 		URLCiti:                          os.Getenv("URL_CITI"),
+		URLStoneToken:                    os.Getenv("URL_STONE_TOKEN"),
+		StoneTokenDurationInMinutes:      getValueInt(os.Getenv("STONE_TOKEN_DURATION_IN_MINUTES")),
+		StoneAudience:                    os.Getenv("STONE_AUDIENCE"),
+		StoneClientID:                    os.Getenv("STONE_CLIENT_ID"),
 		MockMode:                         mockMode,
 		AppURL:                           os.Getenv("APP_URL"),
 		ElasticURL:                       os.Getenv("ELASTIC_URL"),
@@ -145,6 +154,7 @@ func Install(mockMode, devMode, disableLog bool) {
 		MongoPassword:                    os.Getenv("MONGODB_PASSWORD"),
 		MongoDatabase:                    os.Getenv("MONGODB_DATABASE"),
 		MongoBoletoCollection:            os.Getenv("MONGODB_BOLETO_COLLECTION"),
+		MongoTokenCollection:             os.Getenv("MONGODB_TOKEN_COLLECTION"),
 		MongoCredentialsCollection:       os.Getenv("MONGODB_CREDENTIALS_COLLECTION"),
 		MongoAuthSource:                  os.Getenv("MONGODB_AUTH_SOURCE"),
 		RetryNumberGetBoleto:             getValueInt(os.Getenv("RETRY_NUMBER_GET_BOLETO")),

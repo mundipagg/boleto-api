@@ -134,6 +134,8 @@ func (b BankNumber) IsBankNumberValid() bool {
 //GetBoletoBankNumberAndDigit Retorna o numero da conta do banco do boleto
 func (b BankNumber) GetBoletoBankNumberAndDigit() string {
 	switch b {
+	case Stone:
+		return "197"
 	case BancoDoBrasil:
 		return "001-9"
 	case Caixa:
@@ -174,6 +176,9 @@ const (
 
 	// Pefisa constante do Pefisa
 	Pefisa = 174
+
+	// Stone constante do Stone
+	Stone = 197
 )
 
 // BoletoErrorConector é um connector flow para criar um objeto de erro

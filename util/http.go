@@ -12,6 +12,8 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -31,6 +33,44 @@ var (
 	icpCert           certificate.ICPCertificate
 	transport         *http.Transport
 )
+
+// HTTPInterface is an abstraction for HTTP client
+type HTTPInterface interface {
+	Post(url string, headers map[string]string, body interface{}) (*http.Response, error)
+}
+
+// HTTPClient is the struct for making requests
+type HTTPClient struct{}
+
+// PostFormEncoded is a function for making requests using Post Http method with content-type application/x-www-form-urlencoded.
+//
+// It receives an endpoint and body and it creates a new Post request, returning *http.Response and a error.
+func (hc *HTTPClient) PostFormURLEncoded(endpoint string, params map[string]string) (*http.Response, error) {
+	client := &http.Client{
+		Timeout: time.Second * 10,
+	}
+
+	uri, err := url.ParseRequestURI(endpoint)
+	if err != nil {
+		return &http.Response{}, err
+	}
+
+	values := uri.Query()
+	for k, v := range params {
+		values.Set(k, v)
+	}
+
+	req, err := http.NewRequest(http.MethodPost, uri.String(), strings.NewReader(values.Encode())) // URL-encoded payload
+
+	if err != nil {
+		return &http.Response{}, err
+	}
+
+	req.Header.Add("content-type", "application/x-www-form-urlencoded")
+	req.Header.Add("content-length", strconv.Itoa(len(values.Encode())))
+
+	return client.Do(req)
+}
 
 // DefaultHTTPClient retorna um cliente http configurado para dar um skip na validação do certificado digital
 func DefaultHTTPClient() *http.Client {
@@ -93,8 +133,8 @@ func doRequest(method, url, body, timeout string, header map[string]string) (str
 // BuildTLSTransport creates a TLS Client Transport from crt, ca and key files
 func BuildTLSTransport() (*http.Transport, error) {
 
-	if (config.Get().MockMode){
-		return nil, nil;
+	if config.Get().MockMode {
+		return nil, nil
 	}
 
 	var errF error
