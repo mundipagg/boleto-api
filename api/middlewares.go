@@ -1,12 +1,10 @@
 package api
 
 import (
-	"errors"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mundipagg/boleto-api/bank"
-	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/metrics"
 	"github.com/mundipagg/boleto-api/models"
@@ -19,15 +17,6 @@ func ReturnHeaders() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Content-Type", "application/json")
 		c.Next()
-	}
-}
-
-func executionController() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if config.IsRunning() {
-			c.AbortWithError(500, errors.New("A aplicação está sendo finalizada"))
-			return
-		}
 	}
 }
 
