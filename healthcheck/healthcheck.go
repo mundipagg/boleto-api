@@ -8,8 +8,9 @@ import (
 	"github.com/mundipagg/boleto-api/log"
 )
 
-func EnsureDependencies() {
+func EnsureDependencies() bool {
 	ensureMongo()
+	return true
 }
 
 func ensureMongo() {

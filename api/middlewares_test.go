@@ -164,6 +164,28 @@ func Test_ParseExpirationDate(t *testing.T) {
 	assert.Equal(t, expectedExpireDateTime, boleto.Title.ExpireDateTime)
 }
 
+func Test_LoadLog(t *testing.T) {
+	expectedIP := "127.0.0.1"
+	expectedUser := "user"
+	expectedOurNumber := uint(1234567890)
+
+	boleto := test.NewStubBoletoRequest(models.BancoDoBrasil).WithOurNumber(expectedOurNumber).Build()
+	bank, _ := bank.Get(*boleto)
+
+	ginCtx, _ := gin.CreateTestContext(httptest.NewRecorder())
+	ginCtx.Set(serviceUserKey, expectedUser)
+	ginCtx.Request, _ = http.NewRequest("POST", "/", nil)
+	ginCtx.Request.Header.Set("X-Forwarded-For", expectedIP)
+
+	l := loadLog(ginCtx, *boleto, bank)
+
+	assert.NotNil(t, l)
+	assert.Equal(t, expectedIP, l.IPAddress)
+	assert.Equal(t, expectedUser, l.ServiceUser)
+	assert.Equal(t, expectedOurNumber, l.NossoNumero)
+	assert.Equal(t, bank.GetBankNameIntegration(), l.BankName)
+}
+
 func arrangeMiddlewareRoute(route string, handlers ...gin.HandlerFunc) (*gin.Engine, *httptest.ResponseRecorder) {
 	router := mockInstallApi()
 	router.POST(route, handlers...)
