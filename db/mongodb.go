@@ -49,6 +49,10 @@ func CreateMongo() (*mongo.Client, error) {
 	mu.Lock()
 	defer mu.Unlock()
 
+	if conn != nil {
+		return conn, nil
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), ConnectionTimeout)
 	defer cancel()
 
