@@ -5,12 +5,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
-
-type Foo struct {
-	StringField string
-	IntField    int
-}
-
 type UtilTestParameter struct {
 	Input    interface{}
 	Expected interface{}

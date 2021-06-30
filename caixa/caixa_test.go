@@ -32,7 +32,7 @@ var boletoInstructionsParameters = []test.Parameter{
 }
 
 func TestProcessBoleto_WhenServiceRespondsSuccessfully_ShouldHasSuccessfulBoletoResponse(t *testing.T) {
-	mock.StartMockService("9093")
+	mock.StartMockService("9094")
 
 	input := newStubBoletoRequestCaixa().Build()
 	bank := New()
@@ -43,7 +43,7 @@ func TestProcessBoleto_WhenServiceRespondsSuccessfully_ShouldHasSuccessfulBoleto
 }
 
 func TestProcessBoleto_WhenServiceRespondsFailed_ShouldHasFailedBoletoResponse(t *testing.T) {
-	mock.StartMockService("9092")
+	mock.StartMockService("9094")
 
 	input := newStubBoletoRequestCaixa().WithAmountInCents(400).Build()
 	bank := New()
@@ -55,7 +55,7 @@ func TestProcessBoleto_WhenServiceRespondsFailed_ShouldHasFailedBoletoResponse(t
 
 func TestProcessBoleto_WhenRequestContainsInvalidOurNumberParameter_ShouldHasFailedBoletoResponse(t *testing.T) {
 	largeOurNumber := uint(9999999999999999)
-	mock.StartMockService("9092")
+	mock.StartMockService("9094")
 	input := newStubBoletoRequestCaixa().WithOurNumber(largeOurNumber).Build()
 
 	bank := New()

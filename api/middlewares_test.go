@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mundipagg/boleto-api/bank"
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/test"
 	"github.com/mundipagg/boleto-api/usermanagement"
@@ -150,6 +151,17 @@ func Test_ValidateRegisterV2_WhenHasRulesAndCaixaBank_PassSuccessful(t *testing.
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, 200, w.Code)
+}
+
+func Test_ParseExpirationDate(t *testing.T) {
+	expectedExpireDate := time.Now().Format("2006-01-02")
+	expectedExpireDateTime, _ := time.Parse("2006-01-02", expectedExpireDate)
+
+	boleto := models.BoletoRequest{BankNumber: models.BancoDoBrasil, Title: models.Title{ExpireDate: expectedExpireDate}}
+	bank, _ := bank.Get(boleto)
+	parseExpirationDate(nil, &boleto, bank)
+
+	assert.Equal(t, expectedExpireDateTime, boleto.Title.ExpireDateTime)
 }
 
 func arrangeMiddlewareRoute(route string, handlers ...gin.HandlerFunc) (*gin.Engine, *httptest.ResponseRecorder) {

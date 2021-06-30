@@ -51,7 +51,7 @@ func parseBoleto(c *gin.Context) {
 		return
 	}
 
-	if !parseExpirationDate(c, boleto, bank) {
+	if !parseExpirationDate(c, &boleto, bank) {
 		return
 	}
 
@@ -207,7 +207,7 @@ func getBank(c *gin.Context, boleto models.BoletoRequest) (bank.Bank, bool) {
 	return bank, true
 }
 
-func parseExpirationDate(c *gin.Context, boleto models.BoletoRequest, bank bank.Bank) bool {
+func parseExpirationDate(c *gin.Context, boleto *models.BoletoRequest, bank bank.Bank) bool {
 	d, errFmt := time.Parse("2006-01-02", boleto.Title.ExpireDate)
 	boleto.Title.ExpireDateTime = d
 	if errFmt != nil {
