@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mundipagg/boleto-api/bank"
+	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/test"
 	"github.com/mundipagg/boleto-api/usermanagement"
@@ -184,6 +186,54 @@ func Test_LoadLog(t *testing.T) {
 	assert.Equal(t, expectedUser, l.ServiceUser)
 	assert.Equal(t, expectedOurNumber, l.NossoNumero)
 	assert.Equal(t, bank.GetBankNameIntegration(), l.BankName)
+}
+
+func Test_CheckError_WhenNotFoundError(t *testing.T) {
+	_, w := arrangeMiddlewareRoute("/err", gin.Default().HandleContext)
+	ginCtx, _ := gin.CreateTestContext(w)
+	err := models.NewHTTPNotFound("404", "objeto não encontrado")
+	l := log.CreateLog()
+
+	checkError(ginCtx, err, l)
+
+	assert.Equal(t, http.StatusNotFound, w.Result().StatusCode)
+	assert.Equal(t, `{"errors":[{"code":"MP404","message":"objeto não encontrado"}]}`, w.Body.String())
+}
+
+func Test_CheckError_WhenInternalServerError(t *testing.T) {
+	_, w := arrangeMiddlewareRoute("/err", gin.Default().HandleContext)
+	ginCtx, _ := gin.CreateTestContext(w)
+	err := models.NewInternalServerError("500", "erro interno")
+	l := log.CreateLog()
+
+	checkError(ginCtx, err, l)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Result().StatusCode)
+	assert.Equal(t, `{"errors":[{"code":"MP500","message":"erro interno"}]}`, w.Body.String())
+}
+
+func Test_CheckError_WhenBadGatewayError(t *testing.T) {
+	_, w := arrangeMiddlewareRoute("/err", gin.Default().HandleContext)
+	ginCtx, _ := gin.CreateTestContext(w)
+	err := models.NewBadGatewayError("erro externo")
+	l := log.CreateLog()
+
+	checkError(ginCtx, err, l)
+
+	assert.Equal(t, http.StatusBadGateway, w.Result().StatusCode)
+	assert.Equal(t, `{"errors":[{"code":"MP502","message":"erro externo"}]}`, w.Body.String())
+}
+
+func Test_CheckError_WhenGenericError(t *testing.T) {
+	_, w := arrangeMiddlewareRoute("/err", gin.Default().HandleContext)
+	ginCtx, _ := gin.CreateTestContext(w)
+	err := fmt.Errorf("erro generico")
+	l := log.CreateLog()
+
+	checkError(ginCtx, err, l)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Result().StatusCode)
+	assert.Equal(t, `{"errors":[{"code":"MP500","message":"Internal Error"}]}`, w.Body.String())
 }
 
 func arrangeMiddlewareRoute(route string, handlers ...gin.HandlerFunc) (*gin.Engine, *httptest.ResponseRecorder) {
