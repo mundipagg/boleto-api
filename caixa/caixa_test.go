@@ -100,7 +100,7 @@ func TestGetBoletoType_WhenCalled_ShouldBeMapTypeSuccessful(t *testing.T) {
 	}
 }
 
-func TestTempletaRequestCaixa_WhenParseBuyerName_ShouldParseSucessfully(t *testing.T) {
+func TestTemplateRequestCaixa_BuyerName_ParseSuccessful(t *testing.T) {
 	f := flow.NewFlow()
 	s := newStubBoletoRequestCaixa()
 
@@ -111,7 +111,7 @@ func TestTempletaRequestCaixa_WhenParseBuyerName_ShouldParseSucessfully(t *testi
 	}
 }
 
-func TestTempletaRequestCaixa_WhenParseInstruction_ShouldParseSucessfully(t *testing.T) {
+func TestTemplateRequestCaixa_Instructions_ParseSuccessful(t *testing.T) {
 	f := flow.NewFlow()
 	s := newStubBoletoRequestCaixa()
 

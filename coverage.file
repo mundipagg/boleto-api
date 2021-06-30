@@ -18,9 +18,7 @@ github.com/mundipagg/boleto-api/bank/bank.go:31.24,32.41 1 1
 github.com/mundipagg/boleto-api/bank/bank.go:33.19,34.36 1 1
 github.com/mundipagg/boleto-api/bank/bank.go:35.21,36.38 1 0
 github.com/mundipagg/boleto-api/bank/bank.go:37.10,38.110 1 0
-github.com/mundipagg/boleto-api/bb/validations.go:10.52,13.2 2 1
-github.com/mundipagg/boleto-api/bb/validations.go:15.62,18.2 2 1
-github.com/mundipagg/boleto-api/bb/validations.go:20.52,21.23 1 1
+github.com/mundipagg/boleto-api/bank/bb.go:8.66,10.2 1 1
 github.com/mundipagg/boleto-api/bb/validations.go:22.29,24.17 2 1
 github.com/mundipagg/boleto-api/bb/validations.go:27.3,28.13 2 1
 github.com/mundipagg/boleto-api/bb/validations.go:29.10,30.36 1 0

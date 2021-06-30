@@ -4,8 +4,7 @@ import (
 	"time"
 
 	"github.com/mundipagg/boleto-api/util"
-
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/mundipagg/boleto-api/config"
 
@@ -49,7 +48,7 @@ type Link struct {
 
 // BoletoView contem as informações que serão preenchidas no boleto
 type BoletoView struct {
-	ID            bson.ObjectId `bson:"_id,omitempty"`
+	ID            primitive.ObjectID `bson:"_id,omitempty"`
 	UID           string
 	SecretKey     string
 	PublicKey     string        `json:"pk,omitempty"`
@@ -69,7 +68,7 @@ type BoletoView struct {
 func NewBoletoView(boleto BoletoRequest, response BoletoResponse, bankName string) BoletoView {
 	boleto.Authentication = Authentication{}
 	uid, _ := uuid.NewUUID()
-	id := bson.NewObjectId()
+	id := primitive.NewObjectID()
 	view := BoletoView{
 		ID:            id,
 		UID:           uid.String(),
@@ -92,10 +91,10 @@ func NewBoletoView(boleto BoletoRequest, response BoletoResponse, bankName strin
 
 //EncodeURL tranforma o boleto view na forma que será escrito na url
 func (b *BoletoView) EncodeURL(format string) string {
-	idBson, _ := b.ID.MarshalText()
-	_url := fmt.Sprintf("%s?fmt=%s&id=%s&pk=%s", config.Get().AppURL, format, string(idBson), b.PublicKey)
+	idBson := b.ID.Hex()
+	url := fmt.Sprintf("%s?fmt=%s&id=%s&pk=%s", config.Get().AppURL, format, idBson, b.PublicKey)
 
-	return _url
+	return url
 }
 
 //CreateLinks cria a lista de links com os formatos suportados
