@@ -91,7 +91,7 @@ func TestProcessBoleto_WhenServiceRespondsSuccessfully_ShouldHasSuccessfulBoleto
 }
 
 func TestProcessBoleto_WhenServiceRespondsFailed_ShouldHasFailedBoletoResponse(t *testing.T) {
-	mock.StartMockService("9092")
+	mock.StartMockService("9093")
 	input := new(models.BoletoRequest)
 	util.FromJSON(baseMockJSON, input)
 	input.Title.AmountInCents = 400

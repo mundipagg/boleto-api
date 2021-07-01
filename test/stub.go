@@ -38,7 +38,17 @@ func (s *StubBoletoRequest) WithAgreementNumber(number uint) *StubBoletoRequest 
 	return s
 }
 
-func (s *StubBoletoRequest) WithAmountIsCents(amount uint64) *StubBoletoRequest {
+func (s *StubBoletoRequest) WithAgreementAgency(agency string) *StubBoletoRequest {
+	s.Agreement.Agency = agency
+	return s
+}
+
+func (s *StubBoletoRequest) WithAgreementAccount(account string) *StubBoletoRequest {
+	s.Agreement.Account = account
+	return s
+}
+
+func (s *StubBoletoRequest) WithAmountInCents(amount uint64) *StubBoletoRequest {
 	s.Title.AmountInCents = amount
 	return s
 }
@@ -54,8 +64,27 @@ func (s *StubBoletoRequest) WithExpirationDate(expiredAt time.Time) *StubBoletoR
 	return s
 }
 
+func (s *StubBoletoRequest) WithInstructions(instructions string) *StubBoletoRequest {
+	s.Title.Instructions = instructions
+	return s
+}
+
+func (s *StubBoletoRequest) WithAcceptDivergentAmount(accepted bool) *StubBoletoRequest {
+	if !s.Title.HasRules() {
+		s.Title.Rules = &models.Rules{}
+	}
+
+	s.Title.Rules.AcceptDivergentAmount = accepted
+	return s
+}
+
 func (s *StubBoletoRequest) WithRecipientDocumentNumber(docNumber string) *StubBoletoRequest {
 	s.Recipient.Document.Number = docNumber
+	return s
+}
+
+func (s *StubBoletoRequest) WithBuyerName(buyerName string) *StubBoletoRequest {
+	s.Buyer.Name = buyerName
 	return s
 }
 

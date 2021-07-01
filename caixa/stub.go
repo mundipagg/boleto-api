@@ -9,14 +9,14 @@ import (
 
 const day = time.Hour * 24
 
-var expirationDate = time.Now().Add(5 * day)
-
 type stubBoletoRequestCaixa struct {
 	test.StubBoletoRequest
 }
 
-//NewStubBoletoRequestCaixa Cria um novo StubBoletoRequest com valores default validáveis para Caixa
-func NewStubBoletoRequestCaixa() *stubBoletoRequestCaixa {
+//newStubBoletoRequestCaixa Cria um novo StubBoletoRequest com valores default validáveis para Caixa
+func newStubBoletoRequestCaixa() *stubBoletoRequestCaixa {
+	expirationDate := time.Now().Add(5 * day)
+
 	base := test.NewStubBoletoRequest(models.Caixa)
 	s := &stubBoletoRequestCaixa{
 		StubBoletoRequest: *base,
@@ -60,6 +60,22 @@ func NewStubBoletoRequestCaixa() *stubBoletoRequestCaixa {
 			District:   "Açaí",
 			StateCode:  "PA",
 		},
+	}
+	return s
+}
+
+func (s *stubBoletoRequestCaixa) WithStrictRules() *stubBoletoRequestCaixa {
+	s.Title.Rules = &models.Rules{
+		AcceptDivergentAmount: false,
+		MaxDaysToPayPastDue:   0,
+	}
+	return s
+}
+
+func (s *stubBoletoRequestCaixa) WithFlexRules() *stubBoletoRequestCaixa {
+	s.Title.Rules = &models.Rules{
+		AcceptDivergentAmount: true,
+		MaxDaysToPayPastDue:   60,
 	}
 	return s
 }

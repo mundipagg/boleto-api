@@ -14,11 +14,41 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+func TestCreateMongo(t *testing.T) {
+	mock.StartMockService("9089")
+	conn, err := db.CreateMongo()
+
+	assert.Nil(t, err)
+	assert.NotNil(t, conn)
+}
+
+func TestCreateMongoMustNoBeRecreated(t *testing.T) {
+	mock.StartMockService("9089")
+	conn1, err := db.CreateMongo()
+
+	assert.Nil(t, err)
+	assert.NotNil(t, conn1)
+
+	conn2, err := db.CreateMongo()
+
+	assert.Nil(t, err)
+	assert.NotNil(t, conn2)
+
+	assert.Equal(t, conn1, conn2)
+}
+
+func TestCheckMongo(t *testing.T) {
+	mock.StartMockService("9089")
+	err := db.CheckMongo()
+
+	assert.Nil(t, err)
+}
+
 func TestGetBoletoById(t *testing.T) {
-	mock.StartMockService("9093")
+	mock.StartMockService("9089")
 
 	bank := caixa.New()
-	input := caixa.NewStubBoletoRequestCaixa().Build()
+	input := newStubBoletoRequestDb(models.Caixa).Build()
 	resp, err := bank.ProcessBoleto(input)
 	assert.Nil(t, err)
 
@@ -125,7 +155,7 @@ func TestGetBoletoById(t *testing.T) {
 }
 
 func TestMongoDb_GetUserCredentials(t *testing.T) {
-	mock.StartMockService("9093")
+	mock.StartMockService("9089")
 
 	gandalfID := "60c293944808daa6fdf2f3b1"
 	gID, _ := primitive.ObjectIDFromHex(gandalfID)

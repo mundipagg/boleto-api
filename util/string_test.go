@@ -5,7 +5,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
-
 type UtilTestParameter struct {
 	Input    interface{}
 	Expected interface{}
@@ -83,4 +82,51 @@ func TestIsSpecialCharacterCaixa(t *testing.T) {
 			assert.Equal(t, fact.Expected, result, "A verificação de caracter deve ocorrer corretamente")
 		}
 	}
+}
+
+func TestStringfy(t *testing.T) {
+	expected := `{"Input":"Texto","Expected":1234}`
+
+	input := UtilTestParameter{
+		Input:    "Texto",
+		Expected: 1234,
+	}
+
+	result := Stringify(input)
+
+	assert.Equal(t, expected, result)
+}
+
+func TestParseJson(t *testing.T) {
+	input := `{"Input":"Texto","Expected":1234.0}`
+
+	result := ParseJSON(input, new(UtilTestParameter)).(*UtilTestParameter)
+
+	assert.Equal(t, "Texto", result.Input)
+	assert.Equal(t, 1234.0, result.Expected)
+}
+
+func TestMinifyString(t *testing.T) {
+	input := `<html>
+			 	<body>
+					<p><b>Get My PDF</b></p>
+				</body>
+			</html>`
+
+	expected := `<html><body><p><b>Get My PDF</b></p></body></html>`
+
+	result := MinifyString(input, "text/html")
+
+	assert.Equal(t, expected, result)
+
+	input = `{
+				"Input":"Texto",
+				"Expected":1234.0
+			 }`
+	expected = `{"Input":"Texto","Expected":1234.0}`
+
+	result = MinifyString(input, "application/json")
+
+	assert.Equal(t, expected, result)
+
 }

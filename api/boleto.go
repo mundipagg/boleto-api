@@ -1,18 +1,13 @@
 package api
 
 import (
-	"encoding/json"
 	"net/http"
+	"net/http/httputil"
 	"time"
 
 	"github.com/mundipagg/boleto-api/queue"
 
 	"github.com/gin-gonic/gin"
-	"github.com/tdewolff/minify"
-	"github.com/tdewolff/minify/css"
-	"github.com/tdewolff/minify/html"
-	"github.com/tdewolff/minify/js"
-	jm "github.com/tdewolff/minify/json"
 
 	"strings"
 
@@ -73,7 +68,7 @@ func registerBoleto(c *gin.Context) {
 
 		if errMongo != nil {
 			lg.Warn(errMongo.Error(), fmt.Sprintf("Error saving to mongo - %s", errMongo.Error()))
-			b := minifyJSON(boView)
+			b := boView.ToMinifyJSON()
 			p := queue.NewPublisher(b)
 
 			if !queue.WriteMessage(p) {
@@ -84,8 +79,7 @@ func registerBoleto(c *gin.Context) {
 			}
 		}
 
-		bhtml, _ := boleto.HTML(boView, "html")
-		s := minifyString(bhtml, "text/html")
+		s := boleto.MinifyHTML(boView)
 		redis.SetBoletoHTML(s, resp.ID, boView.PublicKey, lg)
 	}
 	c.JSON(st, resp)
@@ -130,8 +124,7 @@ func getBoleto(c *gin.Context) {
 			return
 		}
 		result.BoletoSource = "mongo"
-		html, err := boleto.HTML(boView, "html")
-		boletoHtml = minifyString(html, "text/html")
+		boletoHtml = boleto.MinifyHTML(boView)
 	} else {
 		result.BoletoSource = "redis"
 	}
@@ -186,30 +179,12 @@ func getBoletoByID(c *gin.Context) {
 	c.JSON(http.StatusOK, boleto)
 }
 
-//minifyJSON converte um model BoletoView para um JSON/STRING
-func minifyJSON(m models.BoletoView) string {
-	j, _ := json.Marshal(m)
-
-	return minifyString(string(j), "application/json")
-}
-
-func minifyString(mString, tp string) string {
-	m := minify.New()
-	m.Add("text/html", &html.Minifier{
-		KeepDocumentTags:        true,
-		KeepEndTags:             true,
-		KeepWhitespace:          false,
-		KeepConditionalComments: true,
-	})
-	m.AddFunc("text/css", css.Minify)
-	m.AddFunc("text/javascript", js.Minify)
-	m.AddFunc("application/json", jm.Minify)
-
-	s, err := m.String(tp, mString)
-
-	if err != nil {
-		return mString
+func confirmation(c *gin.Context) {
+	if dump, err := httputil.DumpRequest(c.Request, true); err == nil {
+		l := log.CreateLog()
+		l.BankName = "BradescoShopFacil"
+		l.Operation = "BoletoConfirmation"
+		l.Request(string(dump), c.Request.URL.String(), nil)
 	}
-
-	return s
+	c.String(200, "OK")
 }

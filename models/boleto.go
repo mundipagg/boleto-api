@@ -112,6 +112,11 @@ func (b BoletoView) ToJSON() string {
 	return string(json)
 }
 
+//ToMinifyJSON converte um model BoletoView para um JSON/STRING
+func (b BoletoView) ToMinifyJSON() string {
+	return util.MinifyString(b.ToJSON(), "application/json")
+}
+
 //GeneratePublicKey Gera a chave pública criptografada para geração da URL do boleto
 func (b *BoletoView) GeneratePublicKey() {
 	s := b.SecretKey + b.CreateDate.String() + b.Barcode + b.Boleto.Buyer.Document.Number + strconv.FormatUint(b.Boleto.Title.AmountInCents, 10)

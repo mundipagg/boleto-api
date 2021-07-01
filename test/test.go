@@ -65,7 +65,7 @@ func AssertProcessBoletoWithSuccess(t *testing.T, response models.BoletoResponse
 
 //AssertProcessBoletoFailed Valida se o houve um erro no processamento do boleto
 func AssertProcessBoletoFailed(t *testing.T, response models.BoletoResponse) {
-	assert.NotEmpty(t, response.Errors, "Devem ocorrer erros ")
+	assert.Greater(t, len(response.Errors), 0, "Devem ocorrer erros ")
 	assert.Empty(t, response.BarCodeNumber, "Não deve haver um Barcode")
 	assert.Empty(t, response.DigitableLine, "Não deve haver uma linha digitável")
 }

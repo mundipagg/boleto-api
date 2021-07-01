@@ -19,6 +19,7 @@ type Title struct {
 	DocumentNumber string    `json:"documentNumber,omitempty"`
 	NSU            string    `json:"nsu,omitempty"`
 	BoletoType     string    `json:"boletoType,omitempty"`
+	Rules          *Rules    `json:"rules,omitempty"`
 	BoletoTypeCode string
 }
 
@@ -65,6 +66,11 @@ func (t *Title) IsAmountInCentsValid() error {
 		return NewErrorResponse("MPAmountInCents", "Valor não pode ser menor do que 1 centavo")
 	}
 	return nil
+}
+
+//HasRules Verifica se o nó de rules está preenchido
+func (t *Title) HasRules() bool {
+	return t.Rules != nil
 }
 
 func parseDate(t string) (time.Time, error) {
