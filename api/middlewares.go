@@ -90,7 +90,8 @@ func logger(c *gin.Context) {
 	c.Next()
 
 	resp, _ := c.Get(responseKey)
-	l.ResponseApplication(resp, c.Request.URL.RequestURI())
+
+	l.ResponseApplication(resp, c.Request.URL.RequestURI(), getErrorCodeToLog(c))
 
 	tag := bank.GetBankNameIntegration() + "-status"
 	metrics.PushBusinessMetric(tag, c.Writer.Status())

@@ -79,3 +79,11 @@ func qualifiedForNewErrorHandling(c *gin.Context, response models.BoletoResponse
 	}
 	return false
 }
+
+func getErrorCodeToLog(c *gin.Context) string {
+	response := getResponseFromContext(c)
+	if response.HasErrors() {
+		return response.Errors[0].ErrorCode()
+	}
+	return ""
+}

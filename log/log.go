@@ -106,13 +106,17 @@ func (l *Log) RequestApplication(content interface{}, url string, headers map[st
 }
 
 //ResponseApplication loga o response que sai da boleto api
-func (l *Log) ResponseApplication(content interface{}, url string) {
+func (l *Log) ResponseApplication(content interface{}, url string, errorCode string) {
 	if config.Get().DisableLog {
 		return
 	}
 	go (func() {
 		props := l.defaultProperties("Response", content)
 		props["URL"] = url
+
+		if errorCode != "" {
+			props["ErrorCode"] = errorCode
+		}
 
 		msg := formatter("{Operation} | {Recipient}")
 
