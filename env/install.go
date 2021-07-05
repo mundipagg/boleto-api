@@ -31,6 +31,7 @@ func ConfigMock(port string) {
 	os.Setenv("URL_BRADESCO_NET_EMPRESA", "http://localhost:"+port+"/bradesconetempresa/registrarBoleto")
 	os.Setenv("URL_PEFISA_TOKEN", "http://localhost:"+port+"/pefisa/gerarToken")
 	os.Setenv("URL_PEFISA_REGISTER", "http://localhost:"+port+"/pefisa/registrarBoleto")
+	os.Setenv("URL_STONE_REGISTER", "http://localhost:"+port+"/stone/registrarBoleto")
 	os.Setenv("MONGODB_URL", "localhost:27017")
 	os.Setenv("MONGODB_USER", "test")
 	os.Setenv("MONGODB_PASSWORD", "test")
