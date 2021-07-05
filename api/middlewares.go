@@ -19,6 +19,7 @@ const (
 	boletoKey      = "boleto"
 	bankKey        = "bank"
 	serviceUserKey = "serviceuser"
+	responseKey    = "boletoResponse"
 )
 
 func returnHeaders() gin.HandlerFunc {
@@ -82,38 +83,17 @@ func logger(c *gin.Context) {
 	boleto := getBoletoFromContext(c)
 	bank := getBankFromContext(c)
 
-	l := loadLog(c, boleto, bank)
+	l := loadBankLog(c)
 
 	l.RequestApplication(boleto, c.Request.URL.RequestURI(), util.HeaderToMap(c.Request.Header))
 
 	c.Next()
 
-	resp, _ := c.Get("boletoResponse")
+	resp, _ := c.Get(responseKey)
 	l.ResponseApplication(resp, c.Request.URL.RequestURI())
 
 	tag := bank.GetBankNameIntegration() + "-status"
 	metrics.PushBusinessMetric(tag, c.Writer.Status())
-}
-
-//validateRegisterV1 Middleware de validação das requisições de registro de boleto na rota V1
-func validateRegisterV1(c *gin.Context) {
-	rules := getBoletoFromContext(c).Title.Rules
-
-	if rules != nil {
-		c.AbortWithStatusJSON(400, models.NewSingleErrorCollection("MP400", "title.rules not available in this version"))
-		return
-	}
-}
-
-//validateRegisterV2 Middleware de validação das requisições de registro de boleto na rota V2
-func validateRegisterV2(c *gin.Context) {
-	r := getBoletoFromContext(c).Title.Rules
-	bn := getBankFromContext(c).GetBankNumber()
-
-	if r != nil && bn != models.Caixa {
-		c.AbortWithStatusJSON(400, models.NewSingleErrorCollection("MP400", "title.rules not available for this bank"))
-		return
-	}
 }
 
 //checkError Middleware de verificação de erros
@@ -219,33 +199,44 @@ func parseExpirationDate(c *gin.Context, boleto *models.BoletoRequest, bank bank
 	return true
 }
 
-func loadLog(c *gin.Context, boleto models.BoletoRequest, bank bank.Bank) *log.Log {
-	l := log.CreateLog()
-	user, _ := c.Get(serviceUserKey)
-	l.NossoNumero = boleto.Title.OurNumber
+func loadBankLog(c *gin.Context) *log.Log {
+	boleto := getBoletoFromContext(c)
+	bank := getBankFromContext(c)
+	l := bank.Log()
 	l.Operation = "RegisterBoleto"
+	l.NossoNumero = boleto.Title.OurNumber
 	l.Recipient = boleto.Recipient.Name
 	l.RequestKey = boleto.RequestKey
 	l.BankName = bank.GetBankNameIntegration()
 	l.IPAddress = c.ClientIP()
-	l.ServiceUser = user.(string)
+	l.ServiceUser = getUserFromContext(c)
 	return l
 }
 
 func getBoletoFromContext(c *gin.Context) models.BoletoRequest {
-	var exists bool
-	var boleto interface{}
-	if boleto, exists = c.Get(boletoKey); exists {
+	if boleto, exists := c.Get(boletoKey); exists {
 		return boleto.(models.BoletoRequest)
 	}
 	return models.BoletoRequest{}
 }
 
 func getBankFromContext(c *gin.Context) bank.Bank {
-	var exists bool
-	var banking interface{}
-	if banking, exists = c.Get(bankKey); exists {
+	if banking, exists := c.Get(bankKey); exists {
 		return banking.(bank.Bank)
 	}
 	return nil
+}
+
+func getUserFromContext(c *gin.Context) string {
+	if user, exists := c.Get(serviceUserKey); exists {
+		return user.(string)
+	}
+	return ""
+}
+
+func getResponseFromContext(c *gin.Context) models.BoletoResponse {
+	if response, exists := c.Get(responseKey); exists {
+		return response.(models.BoletoResponse)
+	}
+	return models.BoletoResponse{}
 }
