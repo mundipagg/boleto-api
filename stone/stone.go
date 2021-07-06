@@ -41,10 +41,6 @@ func (b bankStone) ProcessBoleto(boleto *models.BoletoRequest) (models.BoletoRes
 		return models.BoletoResponse{Errors: errs}, nil
 	}
 
-	if !accessToken() {
-		return models.BoletoResponse{Errors: errs}, nil
-	}
-
 	return b.RegisterBoleto(boleto)
 }
 

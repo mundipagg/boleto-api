@@ -20,6 +20,7 @@ var boletoTypeParameters = []test.Parameter{
 }
 
 var boletoResponseFailParameters = []test.Parameter{
+	{Input: newStubBoletoRequestStone().WithAccessKey("").Build(), Expected: models.ErrorResponse{Code: `MP400`, Message: `accessKey is required`}},
 	{Input: newStubBoletoRequestStone().WithAmountInCents(200).Build(), Expected: models.ErrorResponse{Code: "MPOurNumberFail", Message: "our number was not returned by the bank"}},
 	{Input: newStubBoletoRequestStone().WithAmountInCents(401).Build(), Expected: models.ErrorResponse{Code: `srn:error:unauthenticated`, Message: `srn:error:unauthenticated`}},
 	{Input: newStubBoletoRequestStone().WithAmountInCents(403).Build(), Expected: models.ErrorResponse{Code: `srn:error:unauthorized`, Message: `srn:error:unauthorized`}},
@@ -33,7 +34,7 @@ var boletoResponseFailParameters = []test.Parameter{
 	{Input: newStubBoletoRequestStone().WithAmountInCents(504).Build(), Expected: models.ErrorResponse{Code: `MPTimeout`, Message: `Post http://localhost:9099/stone/registrarBoleto: context deadline exceeded`}},
 }
 
-func TestGetBoletoType_WhenCalled_ShouldBeMapTypeSuccessful(t *testing.T) {
+func Test_GetBoletoType_WhenCalled_ShouldBeMapTypeSuccessful(t *testing.T) {
 	request := new(models.BoletoRequest)
 	for _, fact := range boletoTypeParameters {
 		request.Title = fact.Input.(models.Title)
@@ -74,7 +75,7 @@ func Test_TemplateRequestStone_WhenBuyerIsCompany_ParseSuccessful(t *testing.T) 
 	assert.Equal(t, result["customer"].(map[string]interface{})["trade_name"], input.Buyer.Name)
 }
 
-func TestProcessBoleto_WhenServiceRespondsSuccessfully_ShouldHasSuccessfulBoletoResponse(t *testing.T) {
+func Test_ProcessBoleto_WhenServiceRespondsSuccessfully_ShouldHasSuccessfulBoletoResponse(t *testing.T) {
 	mock.StartMockService("9099")
 
 	input := newStubBoletoRequestStone().WithAmountInCents(201).Build()
@@ -85,7 +86,7 @@ func TestProcessBoleto_WhenServiceRespondsSuccessfully_ShouldHasSuccessfulBoleto
 	test.AssertProcessBoletoWithSuccess(t, output)
 }
 
-func TestProcessBoleto_WhenServiceRespondsUnsuccessful_ShouldHasErrorResponse(t *testing.T) {
+func Test_ProcessBoleto_WhenServiceRespondsUnsuccessful_ShouldHasErrorResponse(t *testing.T) {
 	bank := New()
 	mock.StartMockService("9099")
 
@@ -97,4 +98,28 @@ func TestProcessBoleto_WhenServiceRespondsUnsuccessful_ShouldHasErrorResponse(t 
 		assert.Equal(t, fact.Expected.(models.ErrorResponse).Code, response.Errors[0].Code)
 		assert.Equal(t, fact.Expected.(models.ErrorResponse).Message, response.Errors[0].Message)
 	}
+}
+
+func Test_GetBankNumber(t *testing.T) {
+	bank := New()
+
+	result := bank.GetBankNumber()
+
+	assert.Equal(t, models.Stone, int(result))
+}
+
+func Test_GetBankNameIntegration(t *testing.T) {
+	bank := New()
+
+	result := bank.GetBankNameIntegration()
+
+	assert.Equal(t, "Stone", result)
+}
+
+func Test_GetBankLog(t *testing.T) {
+	bank := New()
+
+	result := bank.Log()
+
+	assert.NotNil(t, result)
 }

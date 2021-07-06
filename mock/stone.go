@@ -8,6 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const contentApplication = "text/json"
+
 const success = `
    {
 	"account_id": "946b50ce-ed5d-45ab-8c86-ce3baf90a73a",
@@ -130,7 +132,7 @@ func authStoneBank(c *gin.Context) {
 		"session_state": "a3c2c678-08b1-4f6d-bd6b-06832453e36c",
 		"scope": "paymentaccount:paymentlinks:write paymentaccount:contact:write pix:payment_invoice pix:payment pix:entry_claim paymentaccount:read pix:entry paymentaccount:transfers:internal paymentaccount:fees:read paymentaccount:payments stone_subject_id paymentaccount:contact:read signup:paymentaccount paymentaccount:boletoissuance paymentaccount:paymentlinks:read paymentaccount:transfers:external"
 	}`
-	c.Data(200, "text/json", []byte(tkStoneBank))
+	c.Data(200, contentApplication, []byte(tkStoneBank))
 }
 
 func registerStone(c *gin.Context) {
@@ -138,31 +140,31 @@ func registerStone(c *gin.Context) {
 	json := string(d)
 
 	if strings.Contains(json, `amount": 201,`) {
-		c.Data(201, "text/json", []byte(success))
+		c.Data(201, contentApplication, []byte(success))
 	} else if strings.Contains(json, `amount": 200,`) {
-		c.Data(201, "text/json", []byte(successWithoutOurNumber))
+		c.Data(201, contentApplication, []byte(successWithoutOurNumber))
 	} else if strings.Contains(json, `amount": 401,`) {
-		c.Data(401, "text/json", []byte(unauthenticated))
+		c.Data(401, contentApplication, []byte(unauthenticated))
 	} else if strings.Contains(json, `amount": 403,`) {
-		c.Data(403, "text/json", []byte(unauthorized))
+		c.Data(403, contentApplication, []byte(unauthorized))
 	} else if strings.Contains(json, `amount": 409,`) {
-		c.Data(409, "text/json", []byte(conflict))
+		c.Data(409, contentApplication, []byte(conflict))
 	} else if strings.Contains(json, `amount": 422,`) {
-		c.Data(422, "text/json", []byte(unprocessableEntity))
+		c.Data(422, contentApplication, []byte(unprocessableEntity))
 	} else if strings.Contains(json, `amount": 4001,`) {
-		c.Data(400, "text/json", []byte(customer_doc_invalid))
+		c.Data(400, contentApplication, []byte(customer_doc_invalid))
 	} else if strings.Contains(json, `amount": 4002,`) {
-		c.Data(400, "text/json", []byte(customer_blank_name))
+		c.Data(400, contentApplication, []byte(customer_blank_name))
 	} else if strings.Contains(json, `amount": 4003,`) {
-		c.Data(400, "text/json", []byte(amount_not_allowed))
+		c.Data(400, contentApplication, []byte(amount_not_allowed))
 	} else if strings.Contains(json, `amount": 4004,`) {
-		c.Data(400, "text/json", []byte(multipleValidationErrorsPath))
+		c.Data(400, contentApplication, []byte(multipleValidationErrorsPath))
 	} else if strings.Contains(json, `amount": 4005,`) {
-		c.Data(400, "text/json", []byte(multipleValidationErrorsReason))
+		c.Data(400, contentApplication, []byte(multipleValidationErrorsReason))
 	} else if strings.Contains(json, `amount": 504,`) {
 		time.Sleep(35 * time.Second)
-		c.Data(504, "text/json", []byte("timeout"))
+		c.Data(504, contentApplication, []byte("timeout"))
 	} else {
-		c.Data(401, "text/json", []byte(unauthenticated))
+		c.Data(401, contentApplication, []byte(unauthenticated))
 	}
 }

@@ -67,8 +67,10 @@ func handleErrors(c *gin.Context) {
 
 func getMapper(bank models.BankNumber) map[string]int {
 	switch bank {
-	default:
+	case models.Stone:
 		return stone
+	default:
+		return make(map[string]int)
 	}
 }
 
