@@ -143,6 +143,8 @@ func (b BankNumber) GetBoletoBankNumberAndDigit() string {
 		return "001-9"
 	case Caixa:
 		return "104-0"
+	case Citibank:
+		return "745-5"
 	case Santander:
 		return "033-7"
 	case Itau:
