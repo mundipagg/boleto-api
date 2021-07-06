@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -74,6 +75,7 @@ func installCertificates() {
 		os.Exit(1)
 	}
 
+	l.Info(fmt.Sprintf("Success loading [%s] PK from blob", config.Get().AzureStorageOpenBankSkName))
 	certificate.SetCertificateOnStore(config.Get().AzureStorageOpenBankSkName, sk)
 }
 

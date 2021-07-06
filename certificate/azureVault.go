@@ -13,6 +13,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/keyvault/2016-10-01/keyvault"
 	"github.com/Azure/azure-sdk-for-go/services/keyvault/auth"
+	"github.com/mundipagg/boleto-api/log"
 )
 
 const azureVaultEnv = "vault"
@@ -26,6 +27,7 @@ type azureKeyVaultCertificate struct {
 }
 
 func InstanceStoreCertificatesFromAzureVault(vaultName string, certificatesName ...string) (err error) {
+	l := log.CreateLog()
 	ctx := context.Background()
 	configCertificate := azureKeyVaultCertificate{
 		Ctx:       ctx,
@@ -46,6 +48,8 @@ func InstanceStoreCertificatesFromAzureVault(vaultName string, certificatesName 
 		if err != nil {
 			return err
 		}
+
+		l.Info(fmt.Sprintf("Success in load certificate [%s] from azureVault", certificateName))
 	}
 
 	return nil
