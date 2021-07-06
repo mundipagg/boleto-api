@@ -3,13 +3,12 @@ package stone
 import (
 	"crypto/rsa"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"strings"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
+	"github.com/mundipagg/boleto-api/certificate"
 	"github.com/mundipagg/boleto-api/config"
 )
 
@@ -18,20 +17,17 @@ var (
 )
 
 const (
-	privKeyPath = "../OpenBank.pem"
-	StoneRealm  = "stone"
+	StoneRealm = "stone"
 )
 
 func generateJWT() (string, error) {
-	if _, err := os.Stat(privKeyPath); os.IsNotExist(err) {
-		return "", fmt.Errorf("Stone Keyfile not found")
-	}
-
-	signBytes, err := ioutil.ReadFile(privKeyPath)
+	sk, err := certificate.GetCertificateFromStore(config.Get().AzureStorageOpenBankSkName)
 	if err != nil {
 		return "", err
 	}
 
+	skString := sk.(string)
+	signBytes := []byte(skString)
 	signKey, err = jwt.ParseRSAPrivateKeyFromPEM(signBytes)
 	if err != nil {
 		return "", err

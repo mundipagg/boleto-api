@@ -1,13 +1,22 @@
 package stone
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/mundipagg/boleto-api/certificate"
+	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/mock"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_authenticate(t *testing.T) {
 	mock.StartMockService("9093")
+
+	pkByte, err := generateTestPK()
+	assert.Nil(t, err)
+	fmt.Println(string(pkByte))
+	certificate.SetCertificateOnStore(config.Get().AzureStorageOpenBankSkName, string(pkByte))
 
 	type args struct {
 		clientID string
@@ -19,7 +28,7 @@ func Test_authenticate(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "",
+			name: "Successfully create access token",
 			args: args{
 				clientID: "94j3943-394329x",
 			},
@@ -30,13 +39,9 @@ func Test_authenticate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := authenticate(tt.args.clientID)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("authenticate() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("authenticate() = %v, want %v", got, tt.want)
-			}
+			assert.Nil(t, err)
+			assert.False(t, (err != nil) != tt.wantErr)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

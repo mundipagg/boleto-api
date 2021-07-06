@@ -47,6 +47,9 @@ func loadCertificatesOnStorage(from string, certificateName string, pfxBytes []b
 		}
 		SetCertificateOnStore(certificateName, certificateSSL)
 
+	default:
+		SetCertificateOnStore(certificateName, pfxBytes)
 	}
+
 	return nil
 }

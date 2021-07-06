@@ -33,6 +33,11 @@ type Config struct {
 	StoneTokenDurationInMinutes      int
 	StoneAudience                    string
 	StoneClientID                    string
+	AzureStorageAccount              string
+	AzureStorageAccessKey            string
+	AzureStorageContainerName        string
+	AzureStorageOpenBankSkPath       string
+	AzureStorageOpenBankSkName       string
 	MockMode                         bool
 	DevMode                          bool
 	HTTPOnly                         bool
@@ -122,28 +127,34 @@ func Install(mockMode, devMode, disableLog bool) {
 	hostName := getHostName()
 
 	cnf = Config{
-		APIPort:                          ":" + os.Getenv("API_PORT"),
-		PdfAPIURL:                        os.Getenv("PDF_API"),
-		Version:                          os.Getenv("API_VERSION"),
-		MachineName:                      hostName,
-		SEQUrl:                           os.Getenv("SEQ_URL"),     //Pegar o SEQ de dev
-		SEQAPIKey:                        os.Getenv("SEQ_API_KEY"), //Staging Key:
-		SeqEnabled:                       os.Getenv("SEQ_ENABLED") == "true",
-		EnableRequestLog:                 os.Getenv("ENABLE_REQUEST_LOG") == "true",   // Log a cada request no SEQ
-		EnablePrintRequest:               os.Getenv("ENABLE_PRINT_REQUEST") == "true", // Imprime algumas informacoes da request no console
-		Environment:                      os.Getenv("ENVIRONMENT"),
-		SEQDomain:                        "One",
-		ApplicationName:                  "BoletoOnline",
-		URLBBRegisterBoleto:              os.Getenv("URL_BB_REGISTER_BOLETO"),
-		CaixaEnv:                         os.Getenv("CAIXA_ENV"),
-		URLCaixaRegisterBoleto:           os.Getenv("URL_CAIXA"),
-		URLBBToken:                       os.Getenv("URL_BB_TOKEN"),
-		URLCitiBoleto:                    os.Getenv("URL_CITI_BOLETO"),
-		URLCiti:                          os.Getenv("URL_CITI"),
-		URLStoneToken:                    os.Getenv("URL_STONE_TOKEN"),
-		StoneTokenDurationInMinutes:      getValueInt(os.Getenv("STONE_TOKEN_DURATION_IN_MINUTES")),
-		StoneAudience:                    os.Getenv("STONE_AUDIENCE"),
-		StoneClientID:                    os.Getenv("STONE_CLIENT_ID"),
+		APIPort:                     ":" + os.Getenv("API_PORT"),
+		PdfAPIURL:                   os.Getenv("PDF_API"),
+		Version:                     os.Getenv("API_VERSION"),
+		MachineName:                 hostName,
+		SEQUrl:                      os.Getenv("SEQ_URL"),     //Pegar o SEQ de dev
+		SEQAPIKey:                   os.Getenv("SEQ_API_KEY"), //Staging Key:
+		SeqEnabled:                  os.Getenv("SEQ_ENABLED") == "true",
+		EnableRequestLog:            os.Getenv("ENABLE_REQUEST_LOG") == "true",   // Log a cada request no SEQ
+		EnablePrintRequest:          os.Getenv("ENABLE_PRINT_REQUEST") == "true", // Imprime algumas informacoes da request no console
+		Environment:                 os.Getenv("ENVIRONMENT"),
+		SEQDomain:                   "One",
+		ApplicationName:             "BoletoOnline",
+		URLBBRegisterBoleto:         os.Getenv("URL_BB_REGISTER_BOLETO"),
+		CaixaEnv:                    os.Getenv("CAIXA_ENV"),
+		URLCaixaRegisterBoleto:      os.Getenv("URL_CAIXA"),
+		URLBBToken:                  os.Getenv("URL_BB_TOKEN"),
+		URLCitiBoleto:               os.Getenv("URL_CITI_BOLETO"),
+		URLCiti:                     os.Getenv("URL_CITI"),
+		URLStoneToken:               os.Getenv("URL_STONE_TOKEN"),
+		StoneTokenDurationInMinutes: getValueInt(os.Getenv("STONE_TOKEN_DURATION_IN_MINUTES")),
+		StoneAudience:               os.Getenv("STONE_AUDIENCE"),
+		StoneClientID:               os.Getenv("STONE_CLIENT_ID"),
+		AzureStorageAccount:         os.Getenv("AZURE_STORAGE_ACCOUNT"),
+		AzureStorageAccessKey:       os.Getenv("AZURE_STORAGE_ACCESS_KEY"),
+		AzureStorageContainerName:   os.Getenv("AZURE_STORAGE_CONTAINER_NAME"),
+		AzureStorageOpenBankSkPath:  os.Getenv("AZURE_STORAGE_OPEN_BANK_SK_PATH"),
+		AzureStorageOpenBankSkName:  os.Getenv("AZURE_STORAGE_OPEN_BANK_SK_NAME"),
+
 		MockMode:                         mockMode,
 		AppURL:                           os.Getenv("APP_URL"),
 		ElasticURL:                       os.Getenv("ELASTIC_URL"),
