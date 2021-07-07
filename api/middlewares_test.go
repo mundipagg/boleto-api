@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 	"time"
 
@@ -117,9 +118,10 @@ func Test_ParseExpirationDate(t *testing.T) {
 func Test_LoadLog(t *testing.T) {
 	expectedIP := "127.0.0.1"
 	expectedUser := "user"
-	expectedOurNumber := uint(1234567890)
+	requestOurNumber := uint(1234567890)
+	expectedOurNumber := strconv.FormatUint(uint64(requestOurNumber), 10)
 
-	boleto := test.NewStubBoletoRequest(models.BancoDoBrasil).WithOurNumber(expectedOurNumber).Build()
+	boleto := test.NewStubBoletoRequest(models.BancoDoBrasil).WithOurNumber(requestOurNumber).Build()
 	bank, _ := bank.Get(*boleto)
 
 	ginCtx, _ := gin.CreateTestContext(httptest.NewRecorder())
@@ -184,6 +186,30 @@ func Test_CheckError_WhenGenericError(t *testing.T) {
 
 	assert.Equal(t, http.StatusInternalServerError, w.Result().StatusCode)
 	assert.Equal(t, `{"errors":[{"code":"MP500","message":"Internal Error"}]}`, w.Body.String())
+}
+
+func Test_GetOurNumberFromContext_WhenOurNumberInRequest(t *testing.T) {
+	requestOurNumber := uint(12345678901234567890)
+	expectedOurNumber := strconv.FormatUint(uint64(requestOurNumber), 10)
+
+	c, _ := gin.CreateTestContext(httptest.NewRecorder())
+	request := test.NewStubBoletoRequest(models.BancoDoBrasil).WithOurNumber(requestOurNumber).Build()
+	c.Set(boletoKey, *request)
+
+	result := getNossoNumeroFromContext(c)
+
+	assert.Equal(t, expectedOurNumber, result)
+}
+
+func Test_GetOurNumberFromContext_WhenOurNumberInResponse(t *testing.T) {
+	expectedOurNumber := "123456789012345678901234567890"
+	c, _ := gin.CreateTestContext(httptest.NewRecorder())
+	response := models.BoletoResponse{OurNumber: expectedOurNumber}
+	c.Set(responseKey, response)
+
+	result := getNossoNumeroFromContext(c)
+
+	assert.Equal(t, expectedOurNumber, result)
 }
 
 func arrangeMiddlewareRoute(route string, handlers ...gin.HandlerFunc) (*gin.Engine, *httptest.ResponseRecorder) {

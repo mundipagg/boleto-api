@@ -32,7 +32,7 @@ type Log struct {
 	BankName    string
 	IPAddress   string
 	ServiceUser string
-	NossoNumero uint
+	NossoNumero string
 	logger      tracer.Logger
 }
 

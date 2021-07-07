@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -205,7 +206,7 @@ func loadBankLog(c *gin.Context) *log.Log {
 	bank := getBankFromContext(c)
 	l := bank.Log()
 	l.Operation = "RegisterBoleto"
-	l.NossoNumero = boleto.Title.OurNumber
+	l.NossoNumero = getNossoNumeroFromContext(c)
 	l.Recipient = boleto.Recipient.Name
 	l.RequestKey = boleto.RequestKey
 	l.BankName = bank.GetBankNameIntegration()
@@ -240,4 +241,12 @@ func getResponseFromContext(c *gin.Context) models.BoletoResponse {
 		return response.(models.BoletoResponse)
 	}
 	return models.BoletoResponse{}
+}
+
+func getNossoNumeroFromContext(c *gin.Context) string {
+	if respOurNumber := getResponseFromContext(c).OurNumber; respOurNumber != "" {
+		return respOurNumber
+	}
+
+	return strconv.FormatUint(uint64(getBoletoFromContext(c).Title.OurNumber), 10)
 }
