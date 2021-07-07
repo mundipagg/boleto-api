@@ -90,6 +90,8 @@ func logger(c *gin.Context) {
 
 	c.Next()
 
+	l = loadBankLog(c)
+
 	resp, _ := c.Get(responseKey)
 
 	l.ResponseApplication(resp, c.Request.URL.RequestURI(), getErrorCodeToLog(c))
