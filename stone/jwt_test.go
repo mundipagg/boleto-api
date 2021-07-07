@@ -20,8 +20,7 @@ func Test_generateJWT(t *testing.T) {
 
 	pkByte, err := generateTestPK()
 	assert.Nil(t, err)
-	fmt.Println(string(pkByte))
-	certificate.SetCertificateOnStore(config.Get().AzureStorageOpenBankSkName, string(pkByte))
+	certificate.SetCertificateOnStore(config.Get().AzureStorageOpenBankSkName, pkByte)
 
 	tests := []struct {
 		name    string

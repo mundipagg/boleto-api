@@ -26,9 +26,7 @@ func generateJWT() (string, error) {
 		return "", err
 	}
 
-	skString := sk.(string)
-	signBytes := []byte(skString)
-	signKey, err = jwt.ParseRSAPrivateKeyFromPEM(signBytes)
+	signKey, err = jwt.ParseRSAPrivateKeyFromPEM(sk.([]byte))
 	if err != nil {
 		return "", err
 	}

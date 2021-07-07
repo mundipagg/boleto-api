@@ -79,14 +79,14 @@ func installCertificates() {
 	certificate.SetCertificateOnStore(config.Get().AzureStorageOpenBankSkName, sk)
 }
 
-func openBankSkFromBlob() (string, error) {
+func openBankSkFromBlob() ([]byte, error) {
 	azureBlobInst, err := certificate.NewAzureBlob(
 		config.Get().AzureStorageAccount,
 		config.Get().AzureStorageAccessKey,
 		config.Get().AzureStorageContainerName,
 	)
 	if err != nil {
-		return "", err
+		return []byte(""), err
 	}
 
 	skBytes, err := azureBlobInst.Download(
@@ -94,8 +94,8 @@ func openBankSkFromBlob() (string, error) {
 		config.Get().AzureStorageOpenBankSkName,
 	)
 	if err != nil {
-		return "", err
+		return []byte(""), err
 	}
 
-	return string(skBytes), nil
+	return skBytes, nil
 }

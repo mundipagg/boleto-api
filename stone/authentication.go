@@ -10,13 +10,11 @@ import (
 
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/db"
-	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/util"
 )
 
 var (
-	l                  = log.CreateLog()
 	HttpClient         = &util.HTTPClient{}
 	mu                 sync.Mutex
 	AccessTokenPayload = map[string]string{
@@ -28,8 +26,9 @@ var (
 )
 
 const (
-	issuerBank      = "stone"
-	BadRequestError = "status code 400"
+	issuerBank       = "stone"
+	BadRequestError  = "status code 400"
+	DocumentNotFound = "mongo: no documents in result"
 )
 
 type AuthResponse struct {
@@ -44,7 +43,11 @@ type AuthResponse struct {
 }
 
 func authenticate(clientID string) (string, error) {
-	tk := fetchTokenFromStorage(clientID)
+	tk, err := fetchTokenFromStorage(clientID)
+	if err != nil {
+		return "", err
+	}
+
 	if tk != "" {
 		return tk, nil
 	}
@@ -58,7 +61,6 @@ func authenticateAndSaveToken(clientID string) (string, error) {
 
 	tk, err := AuthenticationWithRetryOnBadRequest()
 	if err != nil {
-		l.Error(err.Error(), "Error at stone authentication")
 		return "", err
 	}
 
@@ -68,14 +70,16 @@ func authenticateAndSaveToken(clientID string) (string, error) {
 	return tk, nil
 }
 
-func fetchTokenFromStorage(clientID string) string {
+func fetchTokenFromStorage(clientID string) (string, error) {
 	token, err := db.GetTokenByClientIDAndIssuerBank(clientID, issuerBank)
 	if err != nil {
-		l.Error(err.Error(), "Error at stone authentication")
-		return ""
+		if err.Error() == DocumentNotFound {
+			return "", nil
+		}
+		return "", err
 	}
 
-	return token.AccessToken
+	return token.AccessToken, nil
 }
 
 // AuthenticationWithRetryOnBadRequest encapsulates logic for retry access token request once again
@@ -97,7 +101,6 @@ func AuthenticationWithRetryOnBadRequest() (string, error) {
 func doAuthentication() (string, error) {
 	jwt, err := generateJWT()
 	if err != nil {
-		l.Error(err.Error(), "Error generating jwt")
 		return "", err
 	}
 
@@ -107,7 +110,6 @@ func doAuthentication() (string, error) {
 	defer resp.Body.Close()
 
 	if err != nil {
-		l.Error(err.Error(), "stone authentication error")
 		return "", err
 	}
 
@@ -117,14 +119,12 @@ func doAuthentication() (string, error) {
 
 	responseBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		l.Error(err.Error(), "Error reading stone authentication response")
 		return "", err
 	}
 
 	var r AuthResponse
 	err = json.Unmarshal(responseBody, &r)
 	if err != nil {
-		l.Error(err.Error(), "Error unmarshaling stone authentication response")
 		return "", err
 	}
 

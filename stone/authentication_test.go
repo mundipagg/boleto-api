@@ -1,7 +1,6 @@
 package stone
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/mundipagg/boleto-api/certificate"
@@ -15,8 +14,7 @@ func Test_authenticate(t *testing.T) {
 
 	pkByte, err := generateTestPK()
 	assert.Nil(t, err)
-	fmt.Println(string(pkByte))
-	certificate.SetCertificateOnStore(config.Get().AzureStorageOpenBankSkName, string(pkByte))
+	certificate.SetCertificateOnStore(config.Get().AzureStorageOpenBankSkName, pkByte)
 
 	type args struct {
 		clientID string
