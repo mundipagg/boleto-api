@@ -264,10 +264,10 @@ const boletoFormStone = `
                     <p class="content center" id="process_date">{{.View.Boleto.Title.CreateDate | brdate}}</p>
                 </td>
                 <td width="30%">
-                    <span class="title">Carteira/Nosso Número</span>
+                    <span class="title">Nosso Número</span>
                     <br/>
                     <br/>
-                    <p class="content right" id="ournumber">{{.View.Boleto.Agreement.Wallet}}/{{.View.OurNumber}}</p>                   
+                    <p class="content right" id="ournumber">{{.View.OurNumber}}</p>                   
                 </td>
             </tr>
 
@@ -304,13 +304,7 @@ const boletoFormStone = `
                             <td width="40%">
                                 <span class="title">Carteira</span>
                                 <br/>
-                                <p class="content center" id="wallet">
-                                {{if eq .View.BankNumber "104-0"}}
-                                    RG
-                                {{else}}
-                                    {{.View.Boleto.Agreement.Wallet}}
-                                {{end}}
-                                </p>
+                                <p class="content center" id="wallet">1</p>
                             </td>
                         </tr>
                     </table>
