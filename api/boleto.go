@@ -14,7 +14,6 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/mundipagg/boleto-api/bank"
 	"github.com/mundipagg/boleto-api/boleto"
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/db"
@@ -29,21 +28,17 @@ func registerBoleto(c *gin.Context) {
 		return
 	}
 
-	_user, _ := c.Get("serviceuser")
-	_boleto, _ := c.Get("boleto")
-	_bank, _ := c.Get("bank")
-	bol := _boleto.(models.BoletoRequest)
-	bank := _bank.(bank.Bank)
+	lg := loadBankLog(c)
+	bol := getBoletoFromContext(c)
+	bank := getBankFromContext(c)
 
-	lg := bank.Log()
-	lg.Operation = "RegisterBoleto"
-	lg.NossoNumero = bol.Title.OurNumber
-	lg.Recipient = bol.Recipient.Name
-	lg.RequestKey = bol.RequestKey
-	lg.BankName = bank.GetBankNameIntegration()
-	lg.IPAddress = c.ClientIP()
-	lg.ServiceUser = _user.(string)
 	resp, err := bank.ProcessBoleto(&bol)
+
+	if qualifiedForNewErrorHandling(c, resp) {
+		c.Set(responseKey, resp)
+		return
+	}
+
 	if checkError(c, err, lg) {
 		return
 	}
