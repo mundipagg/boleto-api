@@ -3,6 +3,10 @@
 	"ignore": "test",
 	"package": [
 		{
+			"path": "github.com/Azure/azure-pipeline-go/pipeline",
+			"revision": ""
+		},
+		{
 			"checksumSHA1": "Kw9y6PJtdWNNWDcz9LB3YHVMN8M=",
 			"path": "github.com/Azure/azure-sdk-for-go/services/keyvault/2016-10-01/keyvault",
 			"revision": "7577651eb4127da06c3cb42126e22d70ad974b12",
