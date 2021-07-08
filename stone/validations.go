@@ -5,11 +5,11 @@ import (
 	"github.com/mundipagg/boleto-api/validations"
 )
 
-func stoneValidateAccessKey(b interface{}) error {
+func stoneValidateAccessKeyNotEmpty(b interface{}) error {
 	switch t := b.(type) {
 	case *models.BoletoRequest:
 		if t.Authentication.AccessKey == "" {
-			return models.NewErrorResponse("MP400", "accessKey is required")
+			return models.NewErrorResponse("MP400", "o campo AccessKey não pode ser vazio")
 		}
 		return nil
 	default:

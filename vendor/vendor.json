@@ -21,6 +21,12 @@
 			"revisionTime": "2019-09-09T09:25:02Z"
 		},
 		{
+			"checksumSHA1": "YSTKBvCfCd+qvq1ze7iqlGgh/Bo=",
+			"path": "github.com/Azure/azure-storage-blob-go/azblob",
+			"revision": "e8074e10d5b4fb3b9e9edc3c02f459ac24755876",
+			"revisionTime": "2021-07-02T21:34:04Z"
+		},
+		{
 			"checksumSHA1": "mUWlGpmLo8aMWAokrrA+ifF9p/E=",
 			"path": "github.com/Azure/go-autorest/autorest",
 			"revision": "69b4126ece6b5257e2f9b0017007d2334153655f",

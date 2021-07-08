@@ -12,11 +12,14 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/mundipagg/boleto-api/certificate"
+	"github.com/mundipagg/boleto-api/log"
 
 	s "github.com/fullsailor/pkcs7"
 	"github.com/mundipagg/boleto-api/config"
@@ -31,6 +34,64 @@ var (
 	icpCert           certificate.ICPCertificate
 	transport         *http.Transport
 )
+
+// HTTPInterface is an abstraction for HTTP client
+type HTTPInterface interface {
+	Post(url string, headers map[string]string, body interface{}) (*http.Response, error)
+}
+
+// HTTPClient is the struct for making requests
+type HTTPClient struct{}
+
+// PostFormEncoded is a function for making requests using Post Http method with content-type application/x-www-form-urlencoded.
+//
+// It receives an endpoint, params and pointer for log and it creates a new Post request, returning []byte and a error.
+func (hc *HTTPClient) PostFormURLEncoded(endpoint string, params map[string]string, log *log.Log) ([]byte, error) {
+	client := &http.Client{
+		Timeout: time.Second * 10,
+	}
+
+	uri, err := url.ParseRequestURI(endpoint)
+	if err != nil {
+		return []byte(""), err
+	}
+
+	values := uri.Query()
+	for k, v := range params {
+		values.Set(k, v)
+	}
+
+	req, err := http.NewRequest(http.MethodPost, uri.String(), strings.NewReader(values.Encode())) // URL-encoded payload
+
+	if err != nil {
+		return []byte(""), err
+	}
+
+	header := map[string]string{
+		"content-type":   "application/x-www-form-urlencoded",
+		"content-length": strconv.Itoa(len(values.Encode())),
+	}
+
+	for k, v := range header {
+		req.Header.Add(k, v)
+	}
+
+	log.Request(params, endpoint, header)
+	resp, err := client.Do(req)
+	if err != nil {
+		return []byte(""), err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return []byte(""), fmt.Errorf("stone authentication returns status code %d", resp.StatusCode)
+	}
+
+	respByte, err := ioutil.ReadAll(resp.Body)
+	log.Response(string(respByte), endpoint)
+
+	return respByte, err
+}
 
 // DefaultHTTPClient retorna um cliente http configurado para dar um skip na validação do certificado digital
 func DefaultHTTPClient() *http.Client {
@@ -93,8 +154,8 @@ func doRequest(method, url, body, timeout string, header map[string]string) (str
 // BuildTLSTransport creates a TLS Client Transport from crt, ca and key files
 func BuildTLSTransport() (*http.Transport, error) {
 
-	if (config.Get().MockMode){
-		return nil, nil;
+	if config.Get().MockMode {
+		return nil, nil
 	}
 
 	var errF error

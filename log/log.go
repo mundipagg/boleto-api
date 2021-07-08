@@ -140,6 +140,20 @@ func Info(msg string) {
 	go logger.Info(msg, nil)
 }
 
+// InfoWithParams cria log generico para um map
+func (l *Log) InfoWithParams(msg, msgType string, params map[string]interface{}) {
+	if config.Get().DisableLog {
+		return
+	}
+	go (func() {
+		props := l.defaultProperties(msgType, "")
+		for k, v := range params {
+			props[k] = v
+		}
+		l.logger.Info(formatter(msg), props)
+	})()
+}
+
 //Warn loga mensagem do leve Warning
 func (l *Log) Warn(content interface{}, msg string) {
 	if config.Get().DisableLog {

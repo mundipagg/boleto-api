@@ -20,6 +20,8 @@ type Bank interface {
 //Get retorna estrategia de acordo com o banco ou erro caso o banco não exista
 func Get(boleto models.BoletoRequest) (Bank, error) {
 	switch boleto.BankNumber {
+	case models.Stone:
+		return getIntegrationStone(boleto)
 	case models.BancoDoBrasil:
 		return getIntegrationBB(boleto)
 	case models.Bradesco:

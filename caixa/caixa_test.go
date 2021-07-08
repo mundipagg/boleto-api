@@ -56,6 +56,7 @@ func TestProcessBoleto_WhenServiceRespondsFailed_ShouldHasFailedBoletoResponse(t
 func TestProcessBoleto_WhenRequestContainsInvalidOurNumberParameter_ShouldHasFailedBoletoResponse(t *testing.T) {
 	largeOurNumber := uint(9999999999999999)
 	mock.StartMockService("9094")
+
 	input := newStubBoletoRequestCaixa().WithOurNumber(largeOurNumber).Build()
 
 	bank := New()

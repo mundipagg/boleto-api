@@ -30,7 +30,7 @@ func New() bankStone {
 	b.validate.Push(validations.ValidateBuyerDocumentNumber)
 	b.validate.Push(validations.ValidateRecipientDocumentNumber)
 
-	b.validate.Push(stoneValidateAccessKey)
+	b.validate.Push(stoneValidateAccessKeyNotEmpty)
 
 	return b
 }
@@ -41,6 +41,11 @@ func (b bankStone) ProcessBoleto(boleto *models.BoletoRequest) (models.BoletoRes
 		return models.BoletoResponse{Errors: errs}, nil
 	}
 
+	if accToken, err := authenticate(boleto.Authentication.AccessKey, b.log); err != nil {
+		return models.BoletoResponse{Errors: errs}, err
+	} else {
+		boleto.Authentication.AuthorizationToken = accToken
+	}
 	return b.RegisterBoleto(boleto)
 }
 
