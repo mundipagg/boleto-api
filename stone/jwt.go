@@ -1,7 +1,6 @@
 package stone
 
 import (
-	"crypto/rsa"
 	"fmt"
 	"strings"
 	"time"
@@ -10,10 +9,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/mundipagg/boleto-api/certificate"
 	"github.com/mundipagg/boleto-api/config"
-)
-
-var (
-	signKey *rsa.PrivateKey
 )
 
 const (
@@ -26,7 +21,7 @@ func generateJWT() (string, error) {
 		return "", err
 	}
 
-	signKey, err = jwt.ParseRSAPrivateKeyFromPEM(sk.([]byte))
+	signKey, err := jwt.ParseRSAPrivateKeyFromPEM(sk.([]byte))
 	if err != nil {
 		return "", err
 	}
