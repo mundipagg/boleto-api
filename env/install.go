@@ -22,7 +22,7 @@ func ConfigMock(port string) {
 	os.Setenv("AZURE_TENANT_ID", "")
 	os.Setenv("AZURE_CLIENT_ID", "")
 	os.Setenv("AZURE_CLIENT_SECRET", "")
-	os.Setenv("KVAULT_NAME", "")
+	os.Setenv("VAULT_NAME", "")
 	os.Setenv("URL_BB_REGISTER_BOLETO", "http://localhost:"+port+"/registrarBoleto")
 	os.Setenv("URL_BB_TOKEN", "http://localhost:"+port+"/oauth/token")
 	os.Setenv("URL_CAIXA", "http://localhost:"+port+"/caixa/registrarBoleto")

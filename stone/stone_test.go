@@ -20,7 +20,7 @@ var boletoTypeParameters = []test.Parameter{
 }
 
 var boletoResponseFailParameters = []test.Parameter{
-	{Input: newStubBoletoRequestStone().WithAccessKey("").Build(), Expected: models.ErrorResponse{Code: `MP400`, Message: `accessKey is required`}},
+	{Input: newStubBoletoRequestStone().WithAccessKey("").Build(), Expected: models.ErrorResponse{Code: `MP400`, Message: `o campo AccessKey não pode ser vazio`}},
 	{Input: newStubBoletoRequestStone().WithAmountInCents(200).Build(), Expected: models.ErrorResponse{Code: "MPOurNumberFail", Message: "our number was not returned by the bank"}},
 	{Input: newStubBoletoRequestStone().WithAmountInCents(401).Build(), Expected: models.ErrorResponse{Code: `srn:error:unauthenticated`, Message: `srn:error:unauthenticated`}},
 	{Input: newStubBoletoRequestStone().WithAmountInCents(403).Build(), Expected: models.ErrorResponse{Code: `srn:error:unauthorized`, Message: `srn:error:unauthorized`}},
