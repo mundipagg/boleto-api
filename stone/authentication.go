@@ -2,14 +2,12 @@ package stone
 
 import (
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"net/http"
 	"strings"
 	"sync"
 
 	"github.com/mundipagg/boleto-api/config"
 	"github.com/mundipagg/boleto-api/db"
+	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/util"
 )
@@ -42,24 +40,26 @@ type AuthResponse struct {
 	Scope                 string `json:"scope"`
 }
 
-func authenticate(clientID string) (string, error) {
+func authenticate(clientID string, log *log.Log) (string, error) {
 	tk, err := fetchTokenFromStorage(clientID)
 	if err != nil {
+		log.Error(err, "query to mongo has failed")
 		return "", err
 	}
 
 	if tk != "" {
+		log.InfoWithParams("Token recovered from mongo", "Information", map[string]interface{}{"Content": tk})
 		return tk, nil
 	}
 
-	return authenticateAndSaveToken(clientID)
+	return authenticateAndSaveToken(clientID, log)
 }
 
-func authenticateAndSaveToken(clientID string) (string, error) {
+func authenticateAndSaveToken(clientID string, log *log.Log) (string, error) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	tk, err := AuthenticationWithRetryOnBadRequest()
+	tk, err := AuthenticationWithRetryOnBadRequest(log)
 	if err != nil {
 		return "", err
 	}
@@ -84,21 +84,21 @@ func fetchTokenFromStorage(clientID string) (string, error) {
 
 // AuthenticationWithRetryOnBadRequest encapsulates logic for retry access token request once again
 // in bad request status code. That's because duplicated jti returns this mencioned status code
-func AuthenticationWithRetryOnBadRequest() (string, error) {
+func AuthenticationWithRetryOnBadRequest(log *log.Log) (string, error) {
 	var tk string
 	var err error
 
-	if tk, err = doAuthentication(); err != nil {
+	if tk, err = doAuthentication(log); err != nil {
 		if !strings.Contains(err.Error(), BadRequestError) {
 			return "", err
 		}
-		return doAuthentication()
+		return doAuthentication(log)
 	}
 
 	return tk, nil
 }
 
-func doAuthentication() (string, error) {
+func doAuthentication(log *log.Log) (string, error) {
 	jwt, err := generateJWT()
 	if err != nil {
 		return "", err
@@ -106,24 +106,15 @@ func doAuthentication() (string, error) {
 
 	AccessTokenPayload["client_assertion"] = jwt
 	AccessTokenPayload["client_id"] = config.Get().StoneClientID
-	resp, err := HttpClient.PostFormURLEncoded(config.Get().URLStoneToken, AccessTokenPayload)
-	defer resp.Body.Close()
 
-	if err != nil {
-		return "", err
-	}
+	resp, err := HttpClient.PostFormURLEncoded(config.Get().URLStoneToken, AccessTokenPayload, log)
 
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("stone authentication returns status code %d", resp.StatusCode)
-	}
-
-	responseBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
 
 	var r AuthResponse
-	err = json.Unmarshal(responseBody, &r)
+	err = json.Unmarshal(resp, &r)
 	if err != nil {
 		return "", err
 	}

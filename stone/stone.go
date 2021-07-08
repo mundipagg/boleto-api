@@ -1,8 +1,6 @@
 package stone
 
 import (
-	"fmt"
-
 	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/models"
 	"github.com/mundipagg/boleto-api/validations"
@@ -41,7 +39,7 @@ func (b stone) ProcessBoleto(boleto *models.BoletoRequest) (models.BoletoRespons
 		return models.BoletoResponse{Errors: errs}, nil
 	}
 
-	if accToken, err := authenticate(boleto.Authentication.AccessKey); err != nil {
+	if accToken, err := authenticate(boleto.Authentication.AccessKey, b.log); err != nil {
 		return models.BoletoResponse{Errors: errs}, err
 	} else {
 		boleto.Authentication.AuthorizationToken = accToken
@@ -51,7 +49,6 @@ func (b stone) ProcessBoleto(boleto *models.BoletoRequest) (models.BoletoRespons
 }
 
 func (b stone) RegisterBoleto(request *models.BoletoRequest) (models.BoletoResponse, error) {
-	b.log.Info(fmt.Sprintf("Stone Register Boleto %v", request))
 	return models.BoletoResponse{}, nil
 }
 

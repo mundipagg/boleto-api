@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/mundipagg/boleto-api/certificate"
+	"github.com/mundipagg/boleto-api/log"
 
 	s "github.com/fullsailor/pkcs7"
 	"github.com/mundipagg/boleto-api/config"
@@ -44,15 +45,15 @@ type HTTPClient struct{}
 
 // PostFormEncoded is a function for making requests using Post Http method with content-type application/x-www-form-urlencoded.
 //
-// It receives an endpoint and body and it creates a new Post request, returning *http.Response and a error.
-func (hc *HTTPClient) PostFormURLEncoded(endpoint string, params map[string]string) (*http.Response, error) {
+// It receives an endpoint, params and pointer for log and it creates a new Post request, returning []byte and a error.
+func (hc *HTTPClient) PostFormURLEncoded(endpoint string, params map[string]string, log *log.Log) ([]byte, error) {
 	client := &http.Client{
 		Timeout: time.Second * 10,
 	}
 
 	uri, err := url.ParseRequestURI(endpoint)
 	if err != nil {
-		return &http.Response{}, err
+		return []byte(""), err
 	}
 
 	values := uri.Query()
@@ -63,13 +64,33 @@ func (hc *HTTPClient) PostFormURLEncoded(endpoint string, params map[string]stri
 	req, err := http.NewRequest(http.MethodPost, uri.String(), strings.NewReader(values.Encode())) // URL-encoded payload
 
 	if err != nil {
-		return &http.Response{}, err
+		return []byte(""), err
 	}
 
-	req.Header.Add("content-type", "application/x-www-form-urlencoded")
-	req.Header.Add("content-length", strconv.Itoa(len(values.Encode())))
+	header := map[string]string{
+		"content-type":   "application/x-www-form-urlencoded",
+		"content-length": strconv.Itoa(len(values.Encode())),
+	}
 
-	return client.Do(req)
+	for k, v := range header {
+		req.Header.Add(k, v)
+	}
+
+	log.Request(params, endpoint, header)
+	resp, err := client.Do(req)
+	if err != nil {
+		return []byte(""), err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return []byte(""), fmt.Errorf("stone authentication returns status code %d", resp.StatusCode)
+	}
+
+	respByte, err := ioutil.ReadAll(resp.Body)
+	log.Response(string(respByte), endpoint)
+
+	return respByte, err
 }
 
 // DefaultHTTPClient retorna um cliente http configurado para dar um skip na validação do certificado digital

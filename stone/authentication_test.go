@@ -5,12 +5,13 @@ import (
 
 	"github.com/mundipagg/boleto-api/certificate"
 	"github.com/mundipagg/boleto-api/config"
+	"github.com/mundipagg/boleto-api/log"
 	"github.com/mundipagg/boleto-api/mock"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_authenticate(t *testing.T) {
-	mock.StartMockService("9093")
+	mock.StartMockService("9099")
 
 	pkByte, err := generateTestPK()
 	assert.Nil(t, err)
@@ -34,9 +35,10 @@ func Test_authenticate(t *testing.T) {
 			wantErr: false,
 		},
 	}
+	l := log.CreateLog()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := authenticate(tt.args.clientID)
+			got, err := authenticate(tt.args.clientID, l)
 			assert.Nil(t, err)
 			assert.False(t, (err != nil) != tt.wantErr)
 			assert.Equal(t, tt.want, got)
