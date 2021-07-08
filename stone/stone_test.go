@@ -134,7 +134,7 @@ func Test_bankStone_ProcessBoleto(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		b       stone
+		b       bankStone
 		args    args
 		want    models.BoletoResponse
 		wantErr bool

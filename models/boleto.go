@@ -139,8 +139,6 @@ func (b BankNumber) IsBankNumberValid() bool {
 //GetBoletoBankNumberAndDigit Retorna o numero da conta do banco do boleto
 func (b BankNumber) GetBoletoBankNumberAndDigit() string {
 	switch b {
-	case Stone:
-		return "197"
 	case BancoDoBrasil:
 		return "001-9"
 	case Caixa:

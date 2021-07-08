@@ -10,14 +10,14 @@ import (
 func Test_ValidationAccessKey_WithSucessful(t *testing.T) {
 	input := newStubBoletoRequestStone().Build()
 
-	result := stoneValidateAccessKey(input)
+	result := stoneValidateAccessKeyNotEmpty(input)
 
 	assert.Nil(t, result)
 }
 
 func Test_ValidationAccessKey_WhenNotBoletoRequest_ReturnInvalidType(t *testing.T) {
 
-	result := stoneValidateAccessKey("input")
+	result := stoneValidateAccessKeyNotEmpty("input")
 
 	assert.NotNil(t, result)
 	assert.IsType(t, models.ErrorResponse{}, result)
@@ -27,7 +27,7 @@ func Test_ValidationAccessKey_WhenNotBoletoRequest_ReturnInvalidType(t *testing.
 func Test_ValidationAccessKey_WhenNotFill_ReturnBadRequestError(t *testing.T) {
 	input := newStubBoletoRequestStone().WithAccessKey("").Build()
 
-	result := stoneValidateAccessKey(input)
+	result := stoneValidateAccessKeyNotEmpty(input)
 
 	assert.NotNil(t, result)
 	assert.IsType(t, models.ErrorResponse{}, result)
