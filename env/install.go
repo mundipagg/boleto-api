@@ -159,7 +159,7 @@ func configFlags(devMode, mockMode, disableLog bool) {
 		os.Setenv("AZURE_TENANT_ID", "")
 		os.Setenv("AZURE_CLIENT_ID", "")
 		os.Setenv("AZURE_CLIENT_SECRET", "")
-		os.Setenv("KVAULT_NAME", "")
+		os.Setenv("VAULT_NAME", "")
 		os.Setenv("CERTIFICATE_ICP_NAME", "yourCertificateICP")
 		os.Setenv("PSW_CERTIFICATE_ICP_NAME", "yourPass")
 		os.Setenv("CERTIFICATE_SSL_NAME", "yourCertificateSSL")
