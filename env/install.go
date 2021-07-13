@@ -110,6 +110,7 @@ func configFlags(devMode, mockMode, disableLog bool) {
 		os.Setenv("URL_CITI", "https://citigroupsoauat.citigroup.com/comercioeletronico/registerboleto/RegisterBoletoSOAP")
 		os.Setenv("URL_CITI_BOLETO", "https://ebillpayer.uat.brazil.citigroup.com/ebillpayer/jspInformaDadosConsulta.jsp")
 		os.Setenv("URL_STONE_TOKEN", "https://sandbox-accounts.openbank.stone.com.br/auth/realms/stone_bank/protocol/openid-connect/token")
+		os.Setenv("URL_STONE_REGISTER", "https://sandbox-api.openbank.stone.com.br/api/v1/barcode_payment_invoices")
 		os.Setenv("STONE_TOKEN_DURATION_IN_MINUTES", "15")
 		os.Setenv("STONE_AUDIENCE", "")
 		os.Setenv("STONE_CLIENT_ID", "")
