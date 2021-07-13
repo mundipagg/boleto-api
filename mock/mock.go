@@ -15,6 +15,7 @@ func Run(port string) {
 	router := gin.New()
 	router.Use(gin.Recovery())
 	router.POST("/oauth/token", authBB)
+	router.POST("/auth/realms/stone_bank/protocol/openid-connect/token", authStone)
 	router.POST("/registrarBoleto", registerBoletoBB)
 	router.POST("/caixa/registrarBoleto", registerBoletoCaixa)
 	router.POST("/citi/registrarBoleto", registerBoletoCiti)
@@ -26,6 +27,8 @@ func Run(port string) {
 	router.POST("/bradesconetempresa/registrarBoleto", registerBoletoBradescoNetEmpresa)
 	router.POST("/pefisa/gerarToken", getTokenPefisa)
 	router.POST("/pefisa/registrarBoleto", registerPefisa)
+	router.POST("/stone/registrarBoleto", registerStone)
+
 	router.Run(":" + port)
 }
 

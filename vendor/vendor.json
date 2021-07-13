@@ -3,6 +3,10 @@
 	"ignore": "test",
 	"package": [
 		{
+			"path": "github.com/Azure/azure-pipeline-go/pipeline",
+			"revision": ""
+		},
+		{
 			"checksumSHA1": "Kw9y6PJtdWNNWDcz9LB3YHVMN8M=",
 			"path": "github.com/Azure/azure-sdk-for-go/services/keyvault/2016-10-01/keyvault",
 			"revision": "7577651eb4127da06c3cb42126e22d70ad974b12",
@@ -19,6 +23,12 @@
 			"path": "github.com/Azure/azure-sdk-for-go/version",
 			"revision": "7577651eb4127da06c3cb42126e22d70ad974b12",
 			"revisionTime": "2019-09-09T09:25:02Z"
+		},
+		{
+			"checksumSHA1": "YSTKBvCfCd+qvq1ze7iqlGgh/Bo=",
+			"path": "github.com/Azure/azure-storage-blob-go/azblob",
+			"revision": "e8074e10d5b4fb3b9e9edc3c02f459ac24755876",
+			"revisionTime": "2021-07-02T21:34:04Z"
 		},
 		{
 			"checksumSHA1": "mUWlGpmLo8aMWAokrrA+ifF9p/E=",

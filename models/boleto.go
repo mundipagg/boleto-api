@@ -129,7 +129,7 @@ type BankNumber int
 // IsBankNumberValid verifica se o banco enviado existe
 func (b BankNumber) IsBankNumberValid() bool {
 	switch b {
-	case BancoDoBrasil, Itau, Santander, Caixa, Bradesco, Citibank:
+	case BancoDoBrasil, Itau, Santander, Caixa, Bradesco, Citibank, Pefisa, Stone:
 		return true
 	default:
 		return false
@@ -143,6 +143,8 @@ func (b BankNumber) GetBoletoBankNumberAndDigit() string {
 		return "001-9"
 	case Caixa:
 		return "104-0"
+	case Citibank:
+		return "745-5"
 	case Santander:
 		return "033-7"
 	case Itau:
@@ -151,6 +153,8 @@ func (b BankNumber) GetBoletoBankNumberAndDigit() string {
 		return "237-2"
 	case Pefisa:
 		return "174"
+	case Stone:
+		return "197-1"
 	default:
 		return ""
 	}
@@ -179,6 +183,9 @@ const (
 
 	// Pefisa constante do Pefisa
 	Pefisa = 174
+
+	// Stone constante do Stone
+	Stone = 197
 )
 
 // BoletoErrorConector é um connector flow para criar um objeto de erro
@@ -189,6 +196,10 @@ func BoletoErrorConector(e *flow.ExchangeMessage, u flow.URI, params ...interfac
 		b = t.Error()
 	case string:
 		b = t
+	case *BoletoResponse:
+		if len(t.Errors) > 0 {
+			return nil
+		}
 	}
 
 	st, err := strconv.Atoi(e.GetHeader("status"))

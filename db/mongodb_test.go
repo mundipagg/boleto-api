@@ -45,6 +45,7 @@ func TestCheckMongo(t *testing.T) {
 }
 
 func TestGetBoletoById(t *testing.T) {
+
 	mock.StartMockService("9089")
 
 	bank := caixa.New()

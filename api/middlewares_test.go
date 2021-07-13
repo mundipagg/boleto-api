@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 	"time"
 
@@ -103,58 +104,6 @@ func Test_ParseBoleto_WhenValidRequest_PassSuccessful(t *testing.T) {
 	assert.Equal(t, 200, w.Code)
 }
 
-func Test_ValidateRegisterV1_WhenWithoutRules_PassSuccessful(t *testing.T) {
-	router, w := arrangeMiddlewareRoute("/validateV1", parseBoleto, validateRegisterV1)
-	body := test.NewStubBoletoRequest(models.BancoDoBrasil).WithExpirationDate(time.Now()).Build()
-	req, _ := http.NewRequest("POST", "/validateV1", bytes.NewBuffer([]byte(util.ToJSON(body))))
-
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, 200, w.Code)
-}
-
-func Test_ValidateRegisterV1_WhenHasRules_ReturnBadRequest(t *testing.T) {
-	router, w := arrangeMiddlewareRoute("/validateV1", parseBoleto, validateRegisterV1)
-	body := test.NewStubBoletoRequest(models.Caixa).WithExpirationDate(time.Now()).WithAcceptDivergentAmount(true).Build()
-	req, _ := http.NewRequest("POST", "/validateV1", bytes.NewBuffer([]byte(util.ToJSON(body))))
-
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, 400, w.Code)
-	assert.Equal(t, `[{"code":"MP400","message":"title.rules not available in this version"}]`, w.Body.String())
-}
-
-func Test_ValidateRegisterV2_WhenWithoutRules_PassSuccessful(t *testing.T) {
-	router, w := arrangeMiddlewareRoute("/validateV2", parseBoleto, validateRegisterV2)
-	body := test.NewStubBoletoRequest(models.BancoDoBrasil).WithExpirationDate(time.Now()).Build()
-	req, _ := http.NewRequest("POST", "/validateV2", bytes.NewBuffer([]byte(util.ToJSON(body))))
-
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, 200, w.Code)
-}
-
-func Test_ValidateRegisterV2_WhenHasRulesAndNotCaixaBank_ReturnBadRequest(t *testing.T) {
-	router, w := arrangeMiddlewareRoute("/validateV2", parseBoleto, validateRegisterV2)
-	body := test.NewStubBoletoRequest(models.BancoDoBrasil).WithExpirationDate(time.Now()).WithAcceptDivergentAmount(true).Build()
-	req, _ := http.NewRequest("POST", "/validateV2", bytes.NewBuffer([]byte(util.ToJSON(body))))
-
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, 400, w.Code)
-	assert.Equal(t, `[{"code":"MP400","message":"title.rules not available for this bank"}]`, w.Body.String())
-}
-
-func Test_ValidateRegisterV2_WhenHasRulesAndCaixaBank_PassSuccessful(t *testing.T) {
-	router, w := arrangeMiddlewareRoute("/validateV2", parseBoleto, validateRegisterV2)
-	body := test.NewStubBoletoRequest(models.Caixa).WithExpirationDate(time.Now()).WithAcceptDivergentAmount(true).Build()
-	req, _ := http.NewRequest("POST", "/validateV2", bytes.NewBuffer([]byte(util.ToJSON(body))))
-
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, 200, w.Code)
-}
-
 func Test_ParseExpirationDate(t *testing.T) {
 	expectedExpireDate := time.Now().Format("2006-01-02")
 	expectedExpireDateTime, _ := time.Parse("2006-01-02", expectedExpireDate)
@@ -169,17 +118,20 @@ func Test_ParseExpirationDate(t *testing.T) {
 func Test_LoadLog(t *testing.T) {
 	expectedIP := "127.0.0.1"
 	expectedUser := "user"
-	expectedOurNumber := uint(1234567890)
+	requestOurNumber := uint(1234567890)
+	expectedOurNumber := strconv.FormatUint(uint64(requestOurNumber), 10)
 
-	boleto := test.NewStubBoletoRequest(models.BancoDoBrasil).WithOurNumber(expectedOurNumber).Build()
+	boleto := test.NewStubBoletoRequest(models.BancoDoBrasil).WithOurNumber(requestOurNumber).Build()
 	bank, _ := bank.Get(*boleto)
 
 	ginCtx, _ := gin.CreateTestContext(httptest.NewRecorder())
 	ginCtx.Set(serviceUserKey, expectedUser)
+	ginCtx.Set(boletoKey, *boleto)
+	ginCtx.Set(bankKey, bank)
 	ginCtx.Request, _ = http.NewRequest("POST", "/", nil)
 	ginCtx.Request.Header.Set("X-Forwarded-For", expectedIP)
 
-	l := loadLog(ginCtx, *boleto, bank)
+	l := loadBankLog(ginCtx)
 
 	assert.NotNil(t, l)
 	assert.Equal(t, expectedIP, l.IPAddress)
@@ -234,6 +186,30 @@ func Test_CheckError_WhenGenericError(t *testing.T) {
 
 	assert.Equal(t, http.StatusInternalServerError, w.Result().StatusCode)
 	assert.Equal(t, `{"errors":[{"code":"MP500","message":"Internal Error"}]}`, w.Body.String())
+}
+
+func Test_GetOurNumberFromContext_WhenOurNumberInRequest(t *testing.T) {
+	requestOurNumber := uint(12345678901234567890)
+	expectedOurNumber := strconv.FormatUint(uint64(requestOurNumber), 10)
+
+	c, _ := gin.CreateTestContext(httptest.NewRecorder())
+	request := test.NewStubBoletoRequest(models.BancoDoBrasil).WithOurNumber(requestOurNumber).Build()
+	c.Set(boletoKey, *request)
+
+	result := getNossoNumeroFromContext(c)
+
+	assert.Equal(t, expectedOurNumber, result)
+}
+
+func Test_GetOurNumberFromContext_WhenOurNumberInResponse(t *testing.T) {
+	expectedOurNumber := "123456789012345678901234567890"
+	c, _ := gin.CreateTestContext(httptest.NewRecorder())
+	response := models.BoletoResponse{OurNumber: expectedOurNumber}
+	c.Set(responseKey, response)
+
+	result := getNossoNumeroFromContext(c)
+
+	assert.Equal(t, expectedOurNumber, result)
 }
 
 func arrangeMiddlewareRoute(route string, handlers ...gin.HandlerFunc) (*gin.Engine, *httptest.ResponseRecorder) {

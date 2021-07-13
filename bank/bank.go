@@ -34,6 +34,8 @@ func Get(boleto models.BoletoRequest) (Bank, error) {
 		return getIntegrationItau(boleto)
 	case models.Pefisa:
 		return getIntegrationPefisa(boleto)
+	case models.Stone:
+		return getIntegrationStone(boleto)
 	default:
 		return nil, models.NewErrorResponse("MPBankNumber", fmt.Sprintf("Banco %d não existe", boleto.BankNumber))
 	}

@@ -27,5 +27,5 @@ func V2(router *gin.Engine) {
 	v2 := router.Group("v2")
 	v2.Use(timingMetrics())
 	v2.Use(returnHeaders())
-	v2.POST("/boleto/register", authentication, parseBoleto, validateRegisterV2, logger, registerBoleto)
+	v2.POST("/boleto/register", authentication, parseBoleto, validateRegisterV2, logger, handleErrors, registerBoleto)
 }

@@ -59,8 +59,8 @@ func ExpectNil(obj interface{}, t *testing.T) {
 //AssertProcessBoletoWithSuccess Valida se o boleto foi gerado com sucesso
 func AssertProcessBoletoWithSuccess(t *testing.T, response models.BoletoResponse) {
 	assert.Empty(t, response.Errors, "Não deve ocorrer erros")
-	assert.NotNil(t, response.BarCodeNumber, "Deve haver um Barcode")
-	assert.NotNil(t, response.DigitableLine, "Deve haver uma linha digitável")
+	assert.NotEmpty(t, response.BarCodeNumber, "Deve haver um Barcode")
+	assert.NotEmpty(t, response.DigitableLine, "Deve haver uma linha digitável")
 }
 
 //AssertProcessBoletoFailed Valida se o houve um erro no processamento do boleto

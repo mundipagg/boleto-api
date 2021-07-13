@@ -32,7 +32,7 @@ type Log struct {
 	BankName    string
 	IPAddress   string
 	ServiceUser string
-	NossoNumero uint
+	NossoNumero string
 	logger      tracer.Logger
 }
 
@@ -106,13 +106,17 @@ func (l *Log) RequestApplication(content interface{}, url string, headers map[st
 }
 
 //ResponseApplication loga o response que sai da boleto api
-func (l *Log) ResponseApplication(content interface{}, url string) {
+func (l *Log) ResponseApplication(content interface{}, url string, errorCode string) {
 	if config.Get().DisableLog {
 		return
 	}
 	go (func() {
 		props := l.defaultProperties("Response", content)
 		props["URL"] = url
+
+		if errorCode != "" {
+			props["ErrorCode"] = errorCode
+		}
 
 		msg := formatter("{Operation} | {Recipient}")
 
@@ -134,6 +138,20 @@ func Info(msg string) {
 		return
 	}
 	go logger.Info(msg, nil)
+}
+
+// InfoWithParams cria log generico para um map
+func (l *Log) InfoWithParams(msg, msgType string, params map[string]interface{}) {
+	if config.Get().DisableLog {
+		return
+	}
+	go (func() {
+		props := l.defaultProperties(msgType, "")
+		for k, v := range params {
+			props[k] = v
+		}
+		l.logger.Info(formatter(msg), props)
+	})()
 }
 
 //Warn loga mensagem do leve Warning
